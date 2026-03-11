@@ -64,9 +64,21 @@
     --shadow-lg:  0 8px 40px rgba(0,0,0,0.5);
   }
 
-  /* Smooth theme transition on everything */
+  /* Smooth theme transition — solo en elementos clave, no en todo */
   *, *::before, *::after {
-    transition: background-color 0.25s ease, border-color 0.25s ease, color 0.2s ease, box-shadow 0.25s ease;
+    box-sizing: border-box;
+  }
+
+  body, #app-shell, .screen, .card, .topbar, #bottom-nav,
+  .map-topbar, .map-bottom-sheet, .modal-sheet, .login-form-sheet,
+  .settings-profile, .home-header, .student-hero, .status-pill,
+  .nav-label, .settings-item, .input-field, .filter-tab, .btn,
+  .quick-action-btn, .alert-banner, .alert-item, .timeline-item,
+  .info-tile, .stat-card, .student-card, .map-ctrl-btn, .back-btn {
+    transition: background-color 0.35s cubic-bezier(.4,0,.2,1),
+                border-color 0.35s cubic-bezier(.4,0,.2,1),
+                color 0.25s cubic-bezier(.4,0,.2,1),
+                box-shadow 0.35s cubic-bezier(.4,0,.2,1) !important;
   }
 
   /* Dark mode: inputs */
@@ -1434,8 +1446,297 @@
   .empty-state svg { margin-bottom: 16px; opacity: 0.3; }
   .empty-state p { font-size: 14px; }
 
-  /* Leaflet custom marker */
-  .student-marker {
+  /* ═══════════════════════════════════════
+     NOTIFICATION PANEL
+  ═══════════════════════════════════════ */
+  .notif-panel {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    background: var(--surface);
+    z-index: 500;
+    border-radius: 0 0 24px 24px;
+    box-shadow: 0 8px 40px rgba(10,22,40,0.18);
+    transform: translateY(-100%);
+    transition: transform 0.32s cubic-bezier(.4,0,.2,1) !important;
+    max-height: 75vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .notif-panel.open { transform: translateY(0); }
+
+  .notif-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 20px 12px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .notif-panel-title {
+    font-family: 'Sora', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-1);
+  }
+
+  .notif-panel-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .notif-clear-btn {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--blue-acc);
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 4px 0;
+  }
+
+  .notif-close-btn {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+  }
+
+  .notif-list {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 8px 0 16px;
+  }
+
+  .notif-list::-webkit-scrollbar { display: none; }
+
+  .notif-item {
+    display: flex;
+    gap: 12px;
+    padding: 14px 20px;
+    cursor: pointer;
+    transition: background 0.15s !important;
+    position: relative;
+  }
+
+  .notif-item:active { background: var(--bg); }
+
+  .notif-item.unread::before {
+    content: '';
+    position: absolute;
+    left: 8px; top: 50%;
+    transform: translateY(-50%);
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--blue-acc);
+  }
+
+  .notif-icon {
+    width: 42px; height: 42px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .notif-content { flex: 1; min-width: 0; }
+
+  .notif-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-1);
+    line-height: 1.3;
+  }
+
+  .notif-body {
+    font-size: 12px;
+    color: var(--text-2);
+    margin-top: 3px;
+    line-height: 1.4;
+  }
+
+  .notif-time {
+    font-size: 11px;
+    color: var(--text-3);
+    margin-top: 4px;
+  }
+
+  .notif-panel-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(10,22,40,0.4);
+    z-index: 499;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.32s !important;
+  }
+
+  .notif-panel-backdrop.open {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  /* ═══════════════════════════════════════
+     SENSOR CARDS
+  ═══════════════════════════════════════ */
+  .sensor-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 0 20px;
+  }
+
+  .sensor-card {
+    padding: 14px;
+    border-radius: var(--radius-sm);
+    background: var(--card);
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .sensor-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  }
+
+  .sensor-card.safe::after   { background: var(--safe); }
+  .sensor-card.warn::after   { background: var(--warn); }
+  .sensor-card.danger::after { background: var(--danger); }
+  .sensor-card.info::after   { background: var(--blue-acc); }
+
+  .sensor-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .sensor-value {
+    font-family: 'Sora', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--text-1);
+    line-height: 1;
+  }
+
+  .sensor-sub {
+    font-size: 11px;
+    color: var(--text-3);
+  }
+
+  .sensor-pulse {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    font-weight: 600;
+  }
+
+  .sensor-pulse-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    animation: live-pulse 1.5s infinite;
+  }
+
+  /* GPS accuracy ring */
+  .gps-ring {
+    width: 48px; height: 48px;
+    position: relative;
+    margin: 0 auto;
+  }
+
+  .gps-ring svg { animation: rotate-ring 3s linear infinite; }
+
+  @keyframes rotate-ring {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+
+  /* Accelerometer visual */
+  .accel-bars {
+    display: flex;
+    gap: 3px;
+    align-items: flex-end;
+    height: 28px;
+  }
+
+  .accel-bar {
+    flex: 1;
+    border-radius: 2px;
+    background: var(--blue-acc);
+    opacity: 0.7;
+    transition: height 0.4s ease !important;
+  }
+
+  /* Calling overlay */
+  .call-overlay {
+    position: absolute;
+    inset: 0;
+    background: var(--navy);
+    z-index: 600;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s !important;
+  }
+
+  .call-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .call-pulse {
+    width: 100px; height: 100px;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .call-ring {
+    position: absolute; inset: 0;
+    border-radius: 50%;
+    border: 2px solid rgba(15,191,122,0.4);
+    animation: ring-expand 2s ease-out infinite;
+  }
+  .call-ring:nth-child(2) { animation-delay: 0.6s; }
+  .call-ring:nth-child(3) { animation-delay: 1.2s; }
+
+  .call-name {
+    font-family: 'Sora', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: white;
+  }
+
+  .call-status {
+    font-size: 14px;
+    color: rgba(255,255,255,0.5);
+  }
+
+  .call-end-btn {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    background: var(--danger);
+    border: none;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(232,54,74,0.4);
+    margin-top: 20px;
+  }
     width: 44px; height: 44px;
     border-radius: 50%;
     border: 3px solid var(--safe);
@@ -1466,6 +1767,22 @@
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
+<!-- CALL OVERLAY -->
+<div class="call-overlay" id="call-overlay">
+  <div style="font-size:13px;color:rgba(255,255,255,0.4);letter-spacing:0.1em;font-weight:600;">LLAMANDO...</div>
+  <div class="call-pulse">
+    <div class="call-ring"></div><div class="call-ring"></div><div class="call-ring"></div>
+    <div class="avatar" id="call-avatar" style="width:72px;height:72px;font-size:26px;background:linear-gradient(135deg,#0D2E4F,#1A3358);z-index:1;position:relative;">S</div>
+  </div>
+  <div class="call-name" id="call-name">Sofía García</div>
+  <div class="call-status" id="call-status-text">Marcando...</div>
+  <button class="call-end-btn" onclick="endCall()">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+      <path d="M6.6 10.8C8 13.6 10.4 16 13.2 17.4L15.4 15.2C15.7 14.9 16.1 14.8 16.4 15C17.4 15.3 18.5 15.5 19.5 15.5C20.1 15.5 20.5 15.9 20.5 16.5V19.5C20.5 20.1 20.1 20.5 19.5 20.5C10.4 20.5 3 13.1 3 4C3 3.4 3.4 3 4 3H7C7.6 3 8 3.4 8 4C8 5 8.2 6.1 8.5 7.1C8.7 7.4 8.6 7.8 8.3 8.1L6.6 10.8Z" fill="white"/>
+    </svg>
+  </button>
+</div>
+
 <!-- MODAL OVERLAY -->
 <div class="modal-overlay" id="modal-overlay">
   <div class="modal-sheet" id="modal-sheet">
@@ -1474,6 +1791,27 @@
 </div>
 
 <div id="app-shell">
+
+  <!-- NOTIFICATION PANEL BACKDROP -->
+  <div class="notif-panel-backdrop" id="notif-backdrop" onclick="closeNotifPanel()"></div>
+
+  <!-- NOTIFICATION PANEL -->
+  <div class="notif-panel" id="notif-panel">
+    <div class="notif-panel-header">
+      <div class="notif-panel-title">Notificaciones</div>
+      <div class="notif-panel-actions">
+        <button class="notif-clear-btn" onclick="clearAllNotifs()">Limpiar todo</button>
+        <button class="notif-close-btn" onclick="closeNotifPanel()">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M4 4L12 12M12 4L4 12" stroke="var(--text-2)" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="notif-list" id="notif-list">
+      <!-- Rendered by JS -->
+    </div>
+  </div>
 
   <!-- ══════════════════════════════
        SCREEN: LOGIN
@@ -1549,12 +1887,12 @@
               <path d="M17 10.5C16.2 14.2 12.9 17 9 17C4.6 17 1 13.4 1 9C1 5.1 3.8 1.8 7.5 1C5.9 3 5 5.6 5 8.5C5 13.2 8.8 17 13.5 17C14.8 17 16 16.7 17 16.2V10.5Z" fill="rgba(255,255,255,0.8)"/>
             </svg>
           </button>
-          <button class="icon-btn">
+          <button class="icon-btn" onclick="openNotifPanel()">
             <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
               <path d="M11 2C7.13 2 4 5.13 4 9V16L2 18V19H20V18L18 16V9C18 5.13 14.87 2 11 2Z" fill="rgba(255,255,255,0.6)"/>
               <path d="M11 22C12.1 22 13 21.1 13 20H9C9 21.1 9.9 22 11 22Z" fill="rgba(255,255,255,0.6)"/>
               <circle cx="17" cy="5" r="4" fill="#E8364A" stroke="white" stroke-width="1.5"/>
-              <text x="17" y="8" text-anchor="middle" fill="white" font-size="5" font-weight="bold">2</text>
+              <text x="17" y="8" text-anchor="middle" fill="white" font-size="5" font-weight="bold" id="notif-badge-count">2</text>
             </svg>
           </button>
         </div>
@@ -1725,7 +2063,7 @@
         </button>
         <span style="font-size:14px; color:rgba(255,255,255,0.6); font-weight:500;">Perfil del Alumno</span>
         <div style="flex:1;"></div>
-        <button class="icon-btn" onclick="showToast('📞 Llamando a Sofía...')">
+        <button class="icon-btn" onclick="startCall('Sofía García','S')">
           <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
             <path d="M20 14.4C18.8 14.4 17.6 14.2 16.5 13.8C16.2 13.7 15.8 13.8 15.6 14L13.9 15.7C11.6 14.5 9.5 12.5 8.3 10.1L10 8.4C10.2 8.2 10.3 7.8 10.2 7.5C9.8 6.4 9.6 5.2 9.6 4C9.6 3.4 9.2 3 8.6 3H5.4C4.8 3 4 3.3 4 4C4 13.1 10.9 20 20 20C20.7 20 21 19.2 21 18.6V15.4C21 14.8 20.6 14.4 20 14.4Z" fill="rgba(255,255,255,0.7)"/>
           </svg>
@@ -1790,7 +2128,7 @@
             </svg>
             Mapa en Vivo
           </button>
-          <button class="quick-action-btn anim-item" onclick="showToast('📞 Llamando a Sofía...')">
+          <button class="quick-action-btn anim-item" onclick="startCall('Sofía García','S')">
             <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
               <path d="M20 14.4C18.8 14.4 17.6 14.2 16.5 13.8C16.2 13.7 15.8 13.8 15.6 14L13.9 15.7C11.6 14.5 9.5 12.5 8.3 10.1L10 8.4C10.2 8.2 10.3 7.8 10.2 7.5C9.8 6.4 9.6 5.2 9.6 4C9.6 3.4 9.2 3 8.6 3H5.4C4.8 3 4 3.3 4 4C4 13.1 10.9 20 20 20C20.7 20 21 19.2 21 18.6V15.4C21 14.8 20.6 14.4 20 14.4Z" fill="var(--safe)"/>
             </svg>
@@ -1813,7 +2151,64 @@
         </div>
       </div>
 
+      <!-- Sensores en tiempo real -->
       <div class="section-header">
+        <div class="section-title">Sensores en Tiempo Real</div>
+        <div class="sensor-pulse" style="color:var(--safe);">
+          <div class="sensor-pulse-dot" style="background:var(--safe);"></div>
+          En vivo
+        </div>
+      </div>
+
+      <div class="sensor-grid anim-item">
+        <!-- GPS -->
+        <div class="sensor-card info">
+          <div class="sensor-label">📍 GPS</div>
+          <div class="sensor-value" id="sensor-gps-acc">±8m</div>
+          <div class="sensor-sub" id="sensor-gps-loc">14.0817, -87.2068</div>
+          <div class="sensor-pulse" style="color:var(--blue-acc);margin-top:4px;">
+            <div class="sensor-pulse-dot" style="background:var(--blue-acc);"></div>
+            Señal buena
+          </div>
+        </div>
+
+        <!-- Acelerómetro -->
+        <div class="sensor-card safe">
+          <div class="sensor-label">📳 Movimiento</div>
+          <div class="accel-bars" id="accel-bars">
+            <div class="accel-bar" style="height:40%;"></div>
+            <div class="accel-bar" style="height:60%;"></div>
+            <div class="accel-bar" style="height:30%;"></div>
+            <div class="accel-bar" style="height:80%;"></div>
+            <div class="accel-bar" style="height:50%;"></div>
+            <div class="accel-bar" style="height:70%;"></div>
+          </div>
+          <div class="sensor-sub" id="sensor-motion">Normal · Caminando</div>
+        </div>
+
+        <!-- Batería -->
+        <div class="sensor-card safe">
+          <div class="sensor-label">🔋 Batería</div>
+          <div class="sensor-value" style="color:var(--safe);" id="sensor-battery">82%</div>
+          <div class="battery-bar" style="margin-top:4px;">
+            <div class="battery-fill" id="battery-fill-sensor" style="width:82%;background:var(--safe);"></div>
+          </div>
+          <div class="sensor-sub" id="sensor-charging">Cargando ⚡</div>
+        </div>
+
+        <!-- Velocidad -->
+        <div class="sensor-card info">
+          <div class="sensor-label">🚶 Velocidad</div>
+          <div class="sensor-value" id="sensor-speed">2.1</div>
+          <div class="sensor-sub">km/h · A pie</div>
+          <div class="sensor-pulse" style="color:var(--blue-acc);margin-top:4px;">
+            <div class="sensor-pulse-dot" style="background:var(--blue-acc);"></div>
+            Actualiza c/5s
+          </div>
+        </div>
+      </div>
+
+      <div class="section-header" style="padding-top:20px;">
         <div class="section-title">Actividad de Hoy</div>
       </div>
 
@@ -1899,13 +2294,13 @@
         <div class="status-pill status-safe"><div class="status-dot"></div>Segura</div>
       </div>
       <div style="display:flex;gap:8px;margin-top:14px;">
-        <button class="btn btn-ghost" style="flex:1;height:44px;" onclick="showToast('📞 Llamando a Sofía...')">
+        <button class="btn btn-ghost" style="flex:1;height:44px;" onclick="startCall('Sofía García','S')">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
             <path d="M14 10.4C13.1 10.4 12.2 10.2 11.4 9.9C11.2 9.8 10.9 9.9 10.8 10L9.6 11.2C7.9 10.3 6.7 9.1 5.8 7.4L7 6.2C7.1 6.1 7.2 5.8 7.1 5.6C6.8 4.8 6.6 3.9 6.6 3C6.6 2.7 6.4 2.5 6.1 2.5H3.9C3.6 2.5 3 2.7 3 3C3 9.8 8.2 15 15 15C15.3 15 15.5 14.4 15.5 14.1V11.9C15.5 11.6 15.3 10.4 14 10.4Z" fill="var(--navy)"/>
           </svg>
           Llamar
         </button>
-        <button class="btn btn-primary" style="flex:2;height:44px;" onclick="showToast('🗺️ Centrando en Sofía...')">
+        <button class="btn btn-primary" style="flex:2;height:44px;" onclick="switchTab('map');setTimeout(recenterMap,300)">
           Centrar en Mapa
         </button>
       </div>
@@ -1921,7 +2316,7 @@
         Centro de Alertas
         <span class="topbar-sub">2 alertas activas</span>
       </div>
-      <button class="icon-btn" onclick="showToast('✅ Alertas resueltas limpiadas')">
+      <button class="icon-btn" onclick="markAllAlertsRead()">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
           <path d="M4 10L8 14L16 6" stroke="var(--text-2)" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
@@ -2036,7 +2431,7 @@
           <span style="background:rgba(15,191,122,0.2);color:var(--safe);font-size:11px;font-weight:700;padding:3px 10px;border-radius:100px;border:1px solid rgba(15,191,122,0.3);">Plan Premium</span>
         </div>
       </div>
-      <button class="icon-btn" onclick="showToast('✏️ Opening profile editor...')">
+      <button class="icon-btn" onclick="showModal('edit-profile')">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
           <path d="M14 2L18 6L8 16L4 16L4 12L14 2Z" stroke="rgba(255,255,255,0.6)" stroke-width="1.5" fill="none" stroke-linejoin="round"/>
         </svg>
@@ -2159,7 +2554,7 @@
       <div class="settings-section">
         <div class="settings-section-title">Cuenta</div>
         <div class="card">
-          <div class="settings-item" onclick="showToast('🔒 Abriendo configuración de seguridad...')">
+          <div class="settings-item" onclick="showModal('security')">
             <div class="settings-item-icon" style="background:rgba(41,121,255,0.1);">
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
                 <rect x="4" y="8" width="10" height="8" rx="1.5" stroke="var(--blue-acc)" stroke-width="1.5" fill="none"/>
@@ -2171,7 +2566,7 @@
             </div>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4L10 8L6 12" stroke="var(--text-3)" stroke-width="1.5" stroke-linecap="round"/></svg>
           </div>
-          <div class="settings-item" onclick="showToast('💎 Abriendo suscripción...')">
+          <div class="settings-item" onclick="showModal('subscription')">
             <div class="settings-item-icon" style="background:rgba(245,166,35,0.1);">
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
                 <path d="M9 1L11 6H17L12.5 9.5L14.5 15.5L9 12L3.5 15.5L5.5 9.5L1 6H7L9 1Z" fill="var(--warn)"/>
@@ -2242,7 +2637,7 @@
     </div>
 
     <div class="emergency-actions" style="z-index:10;">
-      <button class="btn btn-ghost" style="flex:1;height:52px;border:1.5px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:white;" onclick="showToast('📞 Llamando a Mateo...')">
+      <button class="btn btn-ghost" style="flex:1;height:52px;border:1.5px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:white;" onclick="startCall('Mateo García','M')">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
           <path d="M16 11.6C15.1 11.6 14.2 11.4 13.4 11.1C13.2 11 12.9 11.1 12.8 11.2L11.3 12.7C9.6 11.8 8.2 10.4 7.3 8.7L8.8 7.2C8.9 7.1 9 6.8 8.9 6.6C8.6 5.8 8.4 4.9 8.4 4C8.4 3.7 8.2 3.5 7.9 3.5H5.7C5.4 3.5 5 3.7 5 4C5 10.8 10.2 16 17 16C17.3 16 17.5 15.6 17.5 15.3V13.1C17.5 12.8 17.3 11.6 16 11.6Z" fill="white"/>
         </svg>
@@ -2311,59 +2706,141 @@
 
 <script>
 /* ═══════════════════════════════════════
-   APP STATE & NAVIGATION
+   APP STATE
 ═══════════════════════════════════════ */
 let currentScreen = 'login';
 let prevScreen = null;
 let map = null;
 let emergencyMap = null;
-let studentMarkers = [];
 let emTimerInterval = null;
 let emSeconds = 14 * 60 + 23;
+let sensorInterval = null;
+let callTimeout = null;
+let isDark = false;
 
-// Students data
 const students = {
   1: { name: 'Sofía García', initial: 'S', grade: '9no Grado', school: 'Colegio Lincoln', status: 'safe', lat: 14.0817, lng: -87.2068 },
   2: { name: 'Mateo García', initial: 'M', grade: '7mo Grado', school: 'Colegio Lincoln', status: 'danger', lat: 14.0900, lng: -87.2150 }
 };
 
+/* ═══════════════════════════════════════
+   NOTIFICATIONS DATA
+═══════════════════════════════════════ */
+let notifications = [
+  { id: 1, type: 'danger', icon: '🆘', title: 'SOS activado — Mateo García', body: 'Movimiento inusual detectado cerca de Av. Circunvalación', time: 'Hace 14 min', unread: true, action: 'emergency' },
+  { id: 2, type: 'warn', icon: '📍', title: 'Salida de zona escolar', body: 'Mateo salió del perímetro del Colegio Lincoln por 4 minutos', time: 'Hace 23 min', unread: true, action: 'map' },
+  { id: 3, type: 'safe', icon: '✅', title: 'Sofía llegó al colegio', body: 'Entró a la zona segura del Colegio Lincoln', time: 'Hace 1h 12min', unread: false, action: 'student' },
+  { id: 4, type: 'info', icon: '🔋', title: 'Batería baja — Mateo', body: 'El dispositivo de Mateo está al 18% de batería', time: 'Hace 2h', unread: false, action: 'student' },
+  { id: 5, type: 'safe', icon: '🏠', title: 'Sofía salió de casa', body: 'Sofía salió de la zona hogar rumbo al colegio', time: 'Ayer 7:40 AM', unread: false, action: 'map' },
+];
+
+function renderNotifications() {
+  const list = document.getElementById('notif-list');
+  if (!list) return;
+  const unreadCount = notifications.filter(n => n.unread).length;
+
+  if (notifications.length === 0) {
+    list.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--text-3);">
+      <div style="font-size:40px;margin-bottom:12px;">🔕</div>
+      <div style="font-size:14px;font-weight:500;">Sin notificaciones nuevas</div>
+    </div>`;
+    return;
+  }
+
+  const colors = { danger: 'var(--danger-bg)', warn: 'var(--warn-bg)', safe: 'var(--safe-bg)', info: 'rgba(41,121,255,0.1)' };
+
+  list.innerHTML = notifications.map(n => `
+    <div class="notif-item ${n.unread ? 'unread' : ''}" onclick="handleNotifTap(${n.id})">
+      <div class="notif-icon" style="background:${colors[n.type]}; font-size:18px;">${n.icon}</div>
+      <div class="notif-content">
+        <div class="notif-title">${n.title}</div>
+        <div class="notif-body">${n.body}</div>
+        <div class="notif-time">${n.time}</div>
+      </div>
+      ${n.unread ? `<div style="width:8px;height:8px;border-radius:50%;background:var(--blue-acc);flex-shrink:0;margin-top:4px;"></div>` : ''}
+    </div>
+  `).join('');
+
+  // Update badge
+  const badge = document.getElementById('notif-badge-count');
+  if (badge) badge.textContent = unreadCount > 0 ? unreadCount : '';
+  // Update nav badge
+  const navBadge = document.querySelector('#bottom-nav .nav-badge');
+  if (navBadge) navBadge.textContent = unreadCount > 0 ? unreadCount : '';
+}
+
+function openNotifPanel() {
+  renderNotifications();
+  document.getElementById('notif-panel').classList.add('open');
+  document.getElementById('notif-backdrop').classList.add('open');
+}
+
+function closeNotifPanel() {
+  document.getElementById('notif-panel').classList.remove('open');
+  document.getElementById('notif-backdrop').classList.remove('open');
+}
+
+function handleNotifTap(id) {
+  const n = notifications.find(x => x.id === id);
+  if (!n) return;
+  n.unread = false;
+  closeNotifPanel();
+  if (n.action === 'emergency') navigateTo('emergency');
+  else if (n.action === 'map') switchTab('map');
+  else if (n.action === 'student') navigateTo('student', {id:1});
+  renderNotifications();
+}
+
+function clearAllNotifs() {
+  notifications.forEach(n => n.unread = false);
+  renderNotifications();
+  showToast('✅ Notificaciones marcadas como leídas');
+}
+
+function markAllAlertsRead() {
+  notifications.forEach(n => n.unread = false);
+  renderNotifications();
+  showToast('✅ Todas las alertas marcadas como leídas');
+}
+
+/* ═══════════════════════════════════════
+   NAVIGATION
+═══════════════════════════════════════ */
 function navigateTo(screen, data = {}) {
   const screenEl = document.getElementById(`screen-${screen}`);
   if (!screenEl) return;
 
-  // Hide current
   const current = document.getElementById(`screen-${currentScreen}`);
-  if (current) {
-    current.classList.remove('active');
-  }
+  if (current) current.classList.remove('active');
 
   prevScreen = currentScreen;
   currentScreen = screen;
-
-  // Show new
   screenEl.classList.add('active');
 
-  // Hide/show nav
   const nav = document.getElementById('bottom-nav');
   const mainScreens = ['home','map','alerts','settings'];
   if (mainScreens.includes(screen)) {
     nav.style.display = 'flex';
-    updateNavActive(screen === 'home' ? 'home' : screen);
+    updateNavActive(screen);
   } else if (screen === 'student') {
     nav.style.display = 'flex';
+    updateNavActive('student');
   } else {
     nav.style.display = 'none';
   }
 
-  // Initialize map if needed
-  if (screen === 'map' && !map) {
-    setTimeout(initMap, 100);
-  }
+  if (screen === 'map' && !map) setTimeout(initMap, 100);
 
   if (screen === 'emergency') {
     nav.style.display = 'none';
     startEmTimer();
     setTimeout(initEmergencyMap, 100);
+  }
+
+  if (screen === 'student') {
+    startSensorSimulation();
+  } else {
+    stopSensorSimulation();
   }
 
   // Re-trigger animations
@@ -2386,12 +2863,107 @@ function updateNavActive(tab) {
 }
 
 function goBack() {
-  if (prevScreen) {
-    navigateTo(prevScreen);
-  } else {
-    navigateTo('home');
-  }
   stopEmTimer();
+  if (prevScreen) navigateTo(prevScreen);
+  else navigateTo('home');
+}
+
+/* ═══════════════════════════════════════
+   SENSOR SIMULATION
+═══════════════════════════════════════ */
+function startSensorSimulation() {
+  stopSensorSimulation();
+  sensorInterval = setInterval(updateSensors, 2000);
+  updateSensors();
+}
+
+function stopSensorSimulation() {
+  if (sensorInterval) { clearInterval(sensorInterval); sensorInterval = null; }
+}
+
+const motionStates = ['Normal · Caminando', 'Quieto · Sentado', 'Rápido · Corriendo', 'Normal · Caminando', 'Quieto · En clase'];
+
+function updateSensors() {
+  // GPS - small drift
+  const baseLat = 14.0817, baseLng = -87.2068;
+  const dLat = (Math.random() - 0.5) * 0.0002;
+  const dLng = (Math.random() - 0.5) * 0.0002;
+  const acc = Math.floor(Math.random() * 10) + 4;
+  const gpsEl = document.getElementById('sensor-gps-acc');
+  const gpsLoc = document.getElementById('sensor-gps-loc');
+  if (gpsEl) gpsEl.textContent = `±${acc}m`;
+  if (gpsLoc) gpsLoc.textContent = `${(baseLat + dLat).toFixed(4)}, ${(baseLng + dLng).toFixed(4)}`;
+
+  // Accelerometer bars
+  const bars = document.querySelectorAll('#accel-bars .accel-bar');
+  bars.forEach(bar => {
+    const h = Math.floor(Math.random() * 80) + 15;
+    bar.style.height = h + '%';
+  });
+
+  // Motion state (changes slowly)
+  const motionEl = document.getElementById('sensor-motion');
+  if (motionEl && Math.random() > 0.8) {
+    motionEl.textContent = motionStates[Math.floor(Math.random() * motionStates.length)];
+  }
+
+  // Battery - slow drain
+  const battEl = document.getElementById('sensor-battery');
+  const fillEl = document.getElementById('battery-fill-sensor');
+  const chargEl = document.getElementById('sensor-charging');
+  if (battEl) {
+    let batt = parseInt(battEl.textContent) || 82;
+    batt = Math.max(10, Math.min(100, batt + (Math.random() > 0.7 ? 1 : -1)));
+    battEl.textContent = batt + '%';
+    battEl.style.color = batt > 30 ? 'var(--safe)' : batt > 15 ? 'var(--warn)' : 'var(--danger)';
+    if (fillEl) {
+      fillEl.style.width = batt + '%';
+      fillEl.style.background = batt > 30 ? 'var(--safe)' : batt > 15 ? 'var(--warn)' : 'var(--danger)';
+    }
+    if (chargEl) chargEl.textContent = batt > 90 ? 'Cargado ✅' : Math.random() > 0.5 ? 'Cargando ⚡' : 'Sin cargador';
+  }
+
+  // Speed
+  const speedEl = document.getElementById('sensor-speed');
+  if (speedEl) {
+    const speed = (Math.random() * 4).toFixed(1);
+    speedEl.textContent = speed;
+  }
+}
+
+/* ═══════════════════════════════════════
+   CALL OVERLAY
+═══════════════════════════════════════ */
+function startCall(name, initial) {
+  const overlay = document.getElementById('call-overlay');
+  const nameEl = document.getElementById('call-name');
+  const avatarEl = document.getElementById('call-avatar');
+  const statusEl = document.getElementById('call-status-text');
+
+  if (nameEl) nameEl.textContent = name;
+  if (avatarEl) avatarEl.textContent = initial;
+  if (statusEl) statusEl.textContent = 'Marcando...';
+
+  overlay.classList.add('active');
+
+  // Simulate call connecting
+  callTimeout = setTimeout(() => {
+    if (statusEl) statusEl.textContent = 'Llamada en curso · 00:00';
+    let secs = 0;
+    callTimeout = setInterval(() => {
+      secs++;
+      const m = String(Math.floor(secs/60)).padStart(2,'0');
+      const s = String(secs%60).padStart(2,'0');
+      if (statusEl) statusEl.textContent = `Llamada en curso · ${m}:${s}`;
+    }, 1000);
+  }, 2000);
+}
+
+function endCall() {
+  const overlay = document.getElementById('call-overlay');
+  overlay.classList.remove('active');
+  if (callTimeout) { clearInterval(callTimeout); clearTimeout(callTimeout); callTimeout = null; }
+  showToast('📵 Llamada terminada');
 }
 
 /* ═══════════════════════════════════════
@@ -2399,122 +2971,52 @@ function goBack() {
 ═══════════════════════════════════════ */
 function initMap() {
   if (map) return;
-
-  // San Pedro Sula (or use generic school coords)
   const center = [14.0817, -87.2068];
+  map = L.map('leaflet-map', { center, zoom: 15, zoomControl: false, attributionControl: false });
 
-  map = L.map('leaflet-map', {
-    center: center,
-    zoom: 15,
-    zoomControl: false,
-    attributionControl: false
-  });
+  const tiles = isDark
+    ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+    : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+  L.tileLayer(tiles, { maxZoom: 19 }).addTo(map);
 
-  // Clean tile layer
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    maxZoom: 19
-  }).addTo(map);
+  L.circle(center, { radius: 150, color: '#2979FF', fillColor: '#2979FF', fillOpacity: 0.08, weight: 2, dashArray: '6 4' }).addTo(map);
+  L.marker(center, { icon: L.divIcon({ className: '', html: '<div class="zone-label">🏫 Colegio Lincoln</div>', iconAnchor: [70, -10] }) }).addTo(map);
 
-  // Safe zone circle (school)
-  L.circle(center, {
-    radius: 150,
-    color: '#2979FF',
-    fillColor: '#2979FF',
-    fillOpacity: 0.08,
-    weight: 2,
-    dashArray: '6 4'
-  }).addTo(map);
-
-  // School label
-  L.marker(center, {
-    icon: L.divIcon({
-      className: '',
-      html: '<div class="zone-label">🏫 Colegio Lincoln</div>',
-      iconAnchor: [70, -10]
-    })
-  }).addTo(map);
-
-  // Student marker - Sofía (safe, at school)
   addStudentMarker(map, students[1], '#0FBF7A');
+  addStudentMarker(map, students[2], '#E8364A', [14.0900, -87.2150]);
 
-  // Student marker - Mateo (danger, away)
-  const mateoPos = [14.0900, -87.2150];
-  addStudentMarker(map, students[2], '#E8364A', mateoPos);
-
-  // Home zone
-  L.circle([14.075, -87.21], {
-    radius: 100,
-    color: '#0FBF7A',
-    fillColor: '#0FBF7A',
-    fillOpacity: 0.06,
-    weight: 1.5,
-    dashArray: '4 3'
-  }).addTo(map);
-
-  L.marker([14.075, -87.21], {
-    icon: L.divIcon({
-      className: '',
-      html: '<div class="zone-label" style="background:rgba(15,191,122,0.9)">🏠 Casa</div>',
-      iconAnchor: [30, -10]
-    })
-  }).addTo(map);
+  L.circle([14.075, -87.21], { radius: 100, color: '#0FBF7A', fillColor: '#0FBF7A', fillOpacity: 0.06, weight: 1.5, dashArray: '4 3' }).addTo(map);
+  L.marker([14.075, -87.21], { icon: L.divIcon({ className: '', html: '<div class="zone-label" style="background:rgba(15,191,122,0.9)">🏠 Casa</div>', iconAnchor: [30, -10] }) }).addTo(map);
 }
 
 function addStudentMarker(mapInst, student, color, customPos = null) {
   const pos = customPos || [student.lat, student.lng];
   const icon = L.divIcon({
     className: '',
-    html: `<div style="
-      width:44px;height:44px;border-radius:50%;
-      background:linear-gradient(135deg,#0D2E4F,#1A3358);
-      border:3px solid ${color};
-      display:flex;align-items:center;justify-content:center;
-      font-family:'Sora',sans-serif;font-weight:700;color:white;font-size:16px;
-      box-shadow:0 4px 20px ${color}66;
-    ">${student.initial}</div>`,
-    iconSize: [44, 44],
-    iconAnchor: [22, 22]
+    html: `<div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#0D2E4F,#1A3358);border:3px solid ${color};display:flex;align-items:center;justify-content:center;font-family:'Sora',sans-serif;font-weight:700;color:white;font-size:16px;box-shadow:0 4px 20px ${color}66;">${student.initial}</div>`,
+    iconSize: [44, 44], iconAnchor: [22, 22]
   });
-
-  return L.marker(pos, { icon }).addTo(mapInst)
-    .bindPopup(`<b>${student.name}</b><br>${student.grade}`);
+  return L.marker(pos, { icon }).addTo(mapInst).bindPopup(`<b>${student.name}</b><br>${student.grade}`);
 }
 
 function recenterMap() {
-  if (map) {
-    map.setView([students[1].lat, students[1].lng], 15, { animate: true });
-    showToast('📍 Centrado en Sofía');
-  }
+  if (map) map.setView([students[1].lat, students[1].lng], 15, { animate: true });
 }
 
 function filterMapStudent(id, btn) {
-  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('#screen-map .filter-tab').forEach(t => t.classList.remove('active'));
   btn.classList.add('active');
   const s = students[id];
-  if (map) {
-    map.setView([s.lat, s.lng], 16, { animate: true });
-  }
-  const sheet = document.querySelector('.map-student-row');
-  if (sheet) {
-    sheet.querySelector('.student-hero-name, [style*="font-size:16px"]').textContent = s.name;
-  }
+  if (map) map.setView([s.lat, s.lng], 16, { animate: true });
 }
 
 function initEmergencyMap() {
   if (emergencyMap) return;
   const pos = [14.0900, -87.2150];
-  emergencyMap = L.map('emergency-map', {
-    center: pos, zoom: 16,
-    zoomControl: false, attributionControl: false,
-    dragging: false, scrollWheelZoom: false
-  });
+  emergencyMap = L.map('emergency-map', { center: pos, zoom: 16, zoomControl: false, attributionControl: false, dragging: false, scrollWheelZoom: false });
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(emergencyMap);
   L.circle(pos, { radius: 80, color: '#E8364A', fillColor: '#E8364A', fillOpacity: 0.2, weight: 2 }).addTo(emergencyMap);
-  const icon = L.divIcon({
-    className: '',
-    html: `<div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#7A1E2E,#4A1520);border:3px solid #E8364A;display:flex;align-items:center;justify-content:center;font-family:'Sora',sans-serif;font-weight:700;color:white;font-size:14px;box-shadow:0 0 20px #E8364A88;">M</div>`,
-    iconSize: [36, 36], iconAnchor: [18, 18]
-  });
+  const icon = L.divIcon({ className: '', html: `<div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#7A1E2E,#4A1520);border:3px solid #E8364A;display:flex;align-items:center;justify-content:center;font-family:'Sora',sans-serif;font-weight:700;color:white;font-size:14px;box-shadow:0 0 20px #E8364A88;">M</div>`, iconSize: [36, 36], iconAnchor: [18, 18] });
   L.marker(pos, { icon }).addTo(emergencyMap);
 }
 
@@ -2549,6 +3051,61 @@ function showToast(msg) {
 }
 
 /* ═══════════════════════════════════════
+   DARK MODE — sin flash, suave
+═══════════════════════════════════════ */
+function toggleDarkMode() {
+  isDark = !isDark;
+
+  // Prevent transition flash by briefly disabling pointer events
+  document.body.style.pointerEvents = 'none';
+  setTimeout(() => document.body.style.pointerEvents = '', 400);
+
+  document.documentElement.classList.toggle('dark', isDark);
+
+  const toggle = document.getElementById('dark-mode-toggle');
+  if (toggle) toggle.classList.toggle('on', isDark);
+
+  const sub = document.getElementById('dark-mode-sub');
+  if (sub) sub.textContent = isDark ? 'Tema oscuro activo' : 'Tema claro activo';
+
+  const moonIcon = document.getElementById('dark-icon-moon');
+  const sunIcon  = document.getElementById('dark-icon-sun');
+  const iconBg   = document.getElementById('dark-mode-icon');
+  if (moonIcon) moonIcon.style.display = isDark ? 'none' : 'block';
+  if (sunIcon)  sunIcon.style.display  = isDark ? 'block' : 'none';
+  if (iconBg)   iconBg.style.background = isDark ? 'rgba(245,166,35,0.12)' : 'rgba(10,22,40,0.07)';
+
+  // Rebuild map with correct tile theme
+  if (map) {
+    map.eachLayer(layer => { if (layer._url) map.removeLayer(layer); });
+    const tiles = isDark
+      ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+      : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+    L.tileLayer(tiles, { maxZoom: 19 }).addTo(map);
+    setTimeout(() => map.invalidateSize(), 350);
+  }
+
+  showToast(isDark ? '🌙 Modo oscuro activado' : '☀️ Modo claro activado');
+}
+
+/* ═══════════════════════════════════════
+   TOGGLE SWITCH
+═══════════════════════════════════════ */
+function toggleSwitch(el) {
+  el.classList.toggle('on');
+  const label = el.parentElement.querySelector('.settings-item-label');
+  showToast(el.classList.contains('on') ? `✅ ${label?.textContent} activado` : `🔕 ${label?.textContent} desactivado`);
+}
+
+/* ═══════════════════════════════════════
+   FILTER TABS
+═══════════════════════════════════════ */
+function setFilter(el) {
+  el.closest('.filter-tabs').querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+/* ═══════════════════════════════════════
    MODAL
 ═══════════════════════════════════════ */
 const modals = {
@@ -2560,8 +3117,7 @@ const modals = {
       <div class="input-group"><label class="input-label">Colegio</label><input class="input-field" placeholder="Nombre del colegio" type="text"></div>
       <div class="input-group"><label class="input-label">Grado</label><input class="input-field" placeholder="Ej. 8vo Grado" type="text"></div>
       <button class="btn btn-primary btn-full" style="margin-top:8px;height:52px;" onclick="closeModal();showToast('👶 ¡Hijo agregado! Comparte el enlace a su celular.')">Continuar</button>
-      <button class="btn btn-ghost btn-full" style="margin-top:10px;height:44px;" onclick="closeModal()">Cancelar</button>
-    `
+      <button class="btn btn-ghost btn-full" style="margin-top:10px;height:44px;" onclick="closeModal()">Cancelar</button>`
   },
   'zone': {
     title: 'Zonas Seguras',
@@ -2579,28 +3135,69 @@ const modals = {
           <div class="status-pill status-safe" style="font-size:11px;"><div class="status-dot"></div>Activa</div>
         </div>
       </div>
-      <button class="btn btn-primary btn-full" style="height:48px;" onclick="closeModal();showToast('🗺️ Dibujando zona en el mapa...')">+ Agregar Nueva Zona</button>
-    `
+      <button class="btn btn-primary btn-full" style="height:48px;" onclick="closeModal();switchTab('map')">+ Agregar Nueva Zona en Mapa</button>`
   },
   'call-911': {
     title: '🚨 ¿Llamar a Autoridades?',
     sub: 'Esto te conectará con los servicios de emergencia. Úsalo solo en una emergencia confirmada.',
     content: `
-      <button class="btn btn-danger btn-full" style="height:56px;font-size:16px;margin-bottom:12px;" onclick="closeModal();showToast('📞 Conectando con servicios de emergencia...')">
-        ☎️ Llamar al 911 Ahora
-      </button>
-      <button class="btn btn-ghost btn-full" style="height:48px;" onclick="closeModal()">Cancelar — No es una emergencia</button>
-    `
+      <button class="btn btn-danger btn-full" style="height:56px;font-size:16px;margin-bottom:12px;" onclick="closeModal();showToast('📞 Marcando 911...')">☎️ Llamar al 911 Ahora</button>
+      <button class="btn btn-ghost btn-full" style="height:48px;" onclick="closeModal()">Cancelar — No es una emergencia</button>`
   },
   'dismiss-sos': {
     title: '¿Descartar Alerta SOS?',
     sub: 'Solo descarta si confirmaste que tu hijo está seguro. Esta acción queda registrada.',
     content: `
-      <button class="btn btn-danger btn-full" style="height:52px;margin-bottom:12px;" onclick="closeModal();goBack();showToast('✅ Alerta descartada y registrada')">
-        Confirmar — Mi hijo está seguro
-      </button>
-      <button class="btn btn-ghost btn-full" style="height:48px;" onclick="closeModal()">Mantener Alerta Activa</button>
-    `
+      <button class="btn btn-danger btn-full" style="height:52px;margin-bottom:12px;" onclick="closeModal();goBack();showToast('✅ Alerta descartada y registrada')">Confirmar — Mi hijo está seguro</button>
+      <button class="btn btn-ghost btn-full" style="height:48px;" onclick="closeModal()">Mantener Alerta Activa</button>`
+  },
+  'edit-profile': {
+    title: 'Editar Perfil',
+    sub: 'Actualiza tu información de contacto.',
+    content: `
+      <div class="input-group"><label class="input-label">Nombre Completo</label><input class="input-field" value="María García" type="text"></div>
+      <div class="input-group"><label class="input-label">Teléfono</label><input class="input-field" value="+504 9999-8888" type="tel"></div>
+      <div class="input-group"><label class="input-label">Correo</label><input class="input-field" value="maria.garcia@gmail.com" type="email"></div>
+      <button class="btn btn-primary btn-full" style="margin-top:8px;height:52px;" onclick="closeModal();showToast('✅ Perfil actualizado')">Guardar Cambios</button>
+      <button class="btn btn-ghost btn-full" style="margin-top:10px;height:44px;" onclick="closeModal()">Cancelar</button>`
+  },
+  'security': {
+    title: '🔒 Privacidad y Seguridad',
+    sub: 'Controla quién puede acceder a la información de tus hijos.',
+    content: `
+      <div class="card" style="margin-bottom:16px;">
+        <div class="settings-item" style="border-bottom:1px solid var(--border);">
+          <div style="flex:1;"><div style="font-size:14px;font-weight:600;color:var(--text-1);">Cambiar contraseña</div></div>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4L10 8L6 12" stroke="var(--text-3)" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+        <div class="settings-item" style="border-bottom:1px solid var(--border);">
+          <div style="flex:1;"><div style="font-size:14px;font-weight:600;color:var(--text-1);">Autenticación en 2 pasos</div><div style="font-size:12px;color:var(--text-3);">Desactivado</div></div>
+          <div class="toggle" onclick="this.classList.toggle('on')"><div class="toggle-thumb"></div></div>
+        </div>
+        <div class="settings-item">
+          <div style="flex:1;"><div style="font-size:14px;font-weight:600;color:var(--text-1);">Historial de accesos</div></div>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4L10 8L6 12" stroke="var(--text-3)" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+      </div>
+      <button class="btn btn-ghost btn-full" style="height:48px;" onclick="closeModal()">Cerrar</button>`
+  },
+  'subscription': {
+    title: '💎 Suscripción Premium',
+    sub: 'Tu plan actual y beneficios.',
+    content: `
+      <div style="background:linear-gradient(135deg,#0D2E4F,#1A3358);border-radius:16px;padding:20px;margin-bottom:20px;text-align:center;">
+        <div style="font-size:28px;margin-bottom:8px;">⭐</div>
+        <div style="font-family:'Sora',sans-serif;font-size:20px;font-weight:800;color:white;">Plan Premium</div>
+        <div style="color:rgba(255,255,255,0.5);font-size:13px;margin-top:4px;">Renueva el 15 de Abril 2026</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;">
+        <div style="display:flex;gap:10px;align-items:center;font-size:14px;color:var(--text-1);">✅ Hasta 5 hijos monitoreados</div>
+        <div style="display:flex;gap:10px;align-items:center;font-size:14px;color:var(--text-1);">✅ Notificaciones ilimitadas</div>
+        <div style="display:flex;gap:10px;align-items:center;font-size:14px;color:var(--text-1);">✅ Historial de 30 días</div>
+        <div style="display:flex;gap:10px;align-items:center;font-size:14px;color:var(--text-1);">✅ Soporte prioritario</div>
+        <div style="display:flex;gap:10px;align-items:center;font-size:14px;color:var(--text-1);">✅ Compatible con pulsera</div>
+      </div>
+      <button class="btn btn-ghost btn-full" style="height:48px;" onclick="closeModal()">Cerrar</button>`
   }
 };
 
@@ -2626,63 +3223,12 @@ document.getElementById('modal-overlay').addEventListener('click', function(e) {
 });
 
 /* ═══════════════════════════════════════
-   DARK MODE
-═══════════════════════════════════════ */
-let isDark = false;
-
-function toggleDarkMode() {
-  isDark = !isDark;
-  document.documentElement.classList.toggle('dark', isDark);
-
-  // Sync the settings toggle
-  const toggle = document.getElementById('dark-mode-toggle');
-  if (toggle) toggle.classList.toggle('on', isDark);
-
-  // Sync label & sub text
-  const label = document.getElementById('dark-mode-label');
-  const sub   = document.getElementById('dark-mode-sub');
-  if (label) label.textContent = isDark ? 'Modo Oscuro' : 'Modo Oscuro';
-  if (sub)   sub.textContent   = isDark ? 'Tema oscuro activo' : 'Tema claro activo';
-
-  // Swap icons in settings
-  const moonIcon = document.getElementById('dark-icon-moon');
-  const sunIcon  = document.getElementById('dark-icon-sun');
-  const iconBg   = document.getElementById('dark-mode-icon');
-  if (moonIcon) moonIcon.style.display = isDark ? 'none' : 'block';
-  if (sunIcon)  sunIcon.style.display  = isDark ? 'block' : 'none';
-  if (iconBg)   iconBg.style.background = isDark ? 'rgba(245,166,35,0.12)' : 'rgba(10,22,40,0.07)';
-
-  // Refresh maps if visible (tile contrast)
-  if (map) { setTimeout(() => map.invalidateSize(), 300); }
-  if (emergencyMap) { setTimeout(() => emergencyMap.invalidateSize(), 300); }
-
-  showToast(isDark ? '🌙 Modo oscuro activado' : '☀️ Modo claro activado');
-}
-
-/* ═══════════════════════════════════════
-   TOGGLE
-═══════════════════════════════════════ */
-function toggleSwitch(el) {
-  el.classList.toggle('on');
-  const label = el.parentElement.querySelector('.settings-item-label');
-  showToast(el.classList.contains('on') ? `✅ ${label?.textContent} activado` : `🔕 ${label?.textContent} desactivado`);
-}
-
-/* ═══════════════════════════════════════
-   FILTER TABS
-═══════════════════════════════════════ */
-function setFilter(el) {
-  el.closest('.filter-tabs').querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-}
-
-/* ═══════════════════════════════════════
    INIT
 ═══════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', () => {
-  // Start on login
   navigateTo('login');
   document.getElementById('bottom-nav').style.display = 'none';
+  renderNotifications();
 });
 </script>
 </body>
