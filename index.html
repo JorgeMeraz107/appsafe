@@ -7,8 +7,6 @@
 <title>SchoolSafe — Guardián</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
   /* ═══════════════════════════════════════
      DESIGN TOKENS
@@ -907,16 +905,31 @@
   ═══════════════════════════════════════ */
   #screen-map {
     background: var(--navy);
+    display: flex;
+    flex-direction: column;
   }
 
   #map-container {
     flex: 1;
     position: relative;
+    overflow: hidden;
+    min-height: 0;
   }
 
-  #leaflet-map {
+  #parent-gmap {
     width: 100%;
     height: 100%;
+    border: none;
+    display: block;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  @keyframes pulse-safe {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
   }
 
   .map-topbar {
@@ -1150,6 +1163,25 @@
   .settings-section {
     margin: 0 20px 16px;
   }
+
+  .day-chip {
+    height: 34px; min-width: 40px;
+    padding: 0 10px;
+    border-radius: 10px;
+    border: 1.5px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-3);
+    font-size: 12px; font-weight: 700;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .day-chip.on {
+    background: rgba(41,121,255,0.15);
+    border-color: var(--blue-acc);
+    color: var(--blue-acc);
+  }
+  .day-chip:active { opacity: 0.7; }
 
   .settings-section-title {
     font-size: 11px;
@@ -1973,20 +2005,18 @@
       <!-- Students -->
       <div class="section-header" style="padding-top:24px;">
         <div class="section-title">Mis Hijos</div>
-        <button class="section-link" onclick="showModal('add-student')">+ Agregar</button>
+        <button class="section-link" onclick="switchTab('children')">Ver todos</button>
       </div>
 
       <!-- Student card 1 - Safe -->
-      <div class="card card-pressable student-card anim-item" onclick="navigateTo('student', {id:1})">
-        <div class="avatar avatar-ring-safe" style="width:52px;height:52px;font-size:18px; background: linear-gradient(135deg, #0D2E4F, #1A3358);">S</div>
+      <div class="card card-pressable student-card anim-item" onclick="navigateTo('student',{id:1})">
+        <div class="avatar avatar-ring-safe" style="width:52px;height:52px;font-size:18px;background:linear-gradient(135deg,#0D2E4F,#1A3358);">S</div>
         <div class="student-info">
           <div class="student-name">Sofía García</div>
           <div class="student-meta">9no Grado · Colegio Lincoln</div>
           <div class="student-status-row">
-            <div class="status-pill status-safe">
-              <div class="status-dot"></div> Segura
-            </div>
-            <div style="font-size:11px; color:var(--text-3);">📍 Colegio · hace 2 min</div>
+            <div class="status-pill status-safe"><div class="status-dot"></div> Segura</div>
+            <div style="font-size:11px;color:var(--text-3);">📍 Colegio · hace 2 min</div>
           </div>
         </div>
         <svg class="student-card-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -1995,16 +2025,14 @@
       </div>
 
       <!-- Student card 2 - Danger -->
-      <div class="card card-pressable student-card anim-item" onclick="navigateTo('emergency')">
-        <div class="avatar avatar-ring-danger" style="width:52px;height:52px;font-size:18px; background: linear-gradient(135deg, #4A1520, #7A1E2E);">M</div>
+      <div class="card card-pressable student-card anim-item" onclick="navigateTo('student',{id:2})">
+        <div class="avatar avatar-ring-danger" style="width:52px;height:52px;font-size:18px;background:linear-gradient(135deg,#4A1520,#7A1E2E);">M</div>
         <div class="student-info">
           <div class="student-name">Mateo García</div>
           <div class="student-meta">7mo Grado · Colegio Lincoln</div>
           <div class="student-status-row">
-            <div class="status-pill status-danger">
-              <div class="status-dot"></div> SOS Activo
-            </div>
-            <div style="font-size:11px; color:var(--danger);">⚡ Toca para responder</div>
+            <div class="status-pill status-danger"><div class="status-dot"></div> SOS Activo</div>
+            <div style="font-size:11px;color:var(--danger);">⚡ Toca para ver</div>
           </div>
         </div>
         <svg class="student-card-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -2050,109 +2078,134 @@
   </div>
 
   <!-- ══════════════════════════════
-       SCREEN: STUDENT DETAIL
+       SCREEN: HIJOS (Tab principal)
+       Lista de todos los hijos
   ══════════════════════════════ -->
-  <div class="screen" id="screen-student">
-    <div class="student-hero" id="student-hero">
-      <div class="student-hero-bg"></div>
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;position:relative;">
-        <button class="back-btn" style="background:rgba(255,255,255,0.1);" onclick="goBack()">
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-            <path d="M11 4L7 9L11 14" stroke="rgba(255,255,255,0.8)" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-        </button>
-        <span style="font-size:14px; color:rgba(255,255,255,0.6); font-weight:500;">Perfil del Alumno</span>
-        <div style="flex:1;"></div>
-        <button class="icon-btn" onclick="startCall('Sofía García','S')">
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-            <path d="M20 14.4C18.8 14.4 17.6 14.2 16.5 13.8C16.2 13.7 15.8 13.8 15.6 14L13.9 15.7C11.6 14.5 9.5 12.5 8.3 10.1L10 8.4C10.2 8.2 10.3 7.8 10.2 7.5C9.8 6.4 9.6 5.2 9.6 4C9.6 3.4 9.2 3 8.6 3H5.4C4.8 3 4 3.3 4 4C4 13.1 10.9 20 20 20C20.7 20 21 19.2 21 18.6V15.4C21 14.8 20.6 14.4 20 14.4Z" fill="rgba(255,255,255,0.7)"/>
-          </svg>
-        </button>
+  <div class="screen" id="screen-children">
+    <div class="topbar">
+      <div class="topbar-title">Mis Hijos</div>
+      <button onclick="openEditStudent(null)" class="btn btn-primary" style="height:36px;padding:0 16px;font-size:13px;border-radius:12px;display:flex;align-items:center;gap:6px;">
+        <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M7 1V13M1 7H13" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+        Agregar
+      </button>
+    </div>
+    <div class="scroll-content" style="padding-top:8px;">
+      <div id="children-list" style="padding:0 16px 100px;display:flex;flex-direction:column;gap:12px;">
+        <!-- Renderizado dinámicamente -->
       </div>
+    </div>
+  </div>
 
-      <div class="student-hero-content">
-        <div class="avatar avatar-ring-safe" style="width:80px;height:80px;font-size:28px; background: linear-gradient(135deg, #0D2E4F, #1A3358);">S</div>
-        <div>
-          <div class="student-hero-name">Sofía García</div>
-          <div class="student-hero-grade">9no Grado · Colegio Lincoln · ID: #2847</div>
-        </div>
-        <div class="status-pill status-safe">
-          <div class="status-dot"></div> Segura — En el colegio
+  <!-- ══════════════════════════════
+       SCREEN: PERFIL DEL HIJO
+       Flujo: Tab Hijos → toca hijo → este perfil
+       Muestra: estado en vivo + mapa mini + sensores
+       Botón Editar → pantalla de configuración
+  ══════════════════════════════ -->
+  <div class="screen" id="screen-student" style="background:var(--bg-app);">
+
+    <!-- Topbar: ← Hijos | Nombre | Llamar | Editar -->
+    <div style="position:absolute;top:0;left:0;right:0;z-index:50;
+                display:flex;align-items:center;gap:10px;
+                padding:12px 16px 10px;
+                background:linear-gradient(180deg,rgba(10,22,40,0.92) 0%,transparent 100%);">
+      <button onclick="navigateTo('children')"
+        style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.12);
+               border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M11 4L7 9L11 14" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:16px;font-weight:700;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
+             id="student-hero-name">—</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.55);" id="student-hero-grade">—</div>
+      </div>
+      <button onclick="callStudent(currentStudentId)"
+        style="display:flex;align-items:center;gap:5px;background:rgba(15,191,122,0.22);
+               border:1px solid rgba(15,191,122,0.4);border-radius:20px;
+               padding:7px 14px;color:var(--safe);font-size:12px;font-weight:700;
+               cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;">
+        <svg width="13" height="13" viewBox="0 0 22 22" fill="none">
+          <path d="M20 14.4C18.8 14.4 17.6 14.2 16.5 13.8C16.2 13.7 15.8 13.8 15.6 14L13.9 15.7C11.6 14.5 9.5 12.5 8.3 10.1L10 8.4C10.2 8.2 10.3 7.8 10.2 7.5C9.8 6.4 9.6 5.2 9.6 4C9.6 3.4 9.2 3 8.6 3H5.4C4.8 3 4 3.3 4 4C4 13.1 10.9 20 20 20C20.7 20 21 19.2 21 18.6V15.4C21 14.8 20.6 14.4 20 14.4Z" fill="var(--safe)"/>
+        </svg>
+        Llamar
+      </button>
+      <button onclick="openEditStudent(currentStudentId)"
+        style="display:flex;align-items:center;gap:5px;background:rgba(41,121,255,0.22);
+               border:1px solid rgba(41,121,255,0.4);border-radius:20px;
+               padding:7px 14px;color:var(--blue-acc);font-size:12px;font-weight:700;
+               cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;">
+        <svg width="13" height="13" viewBox="0 0 18 18" fill="none">
+          <path d="M13 3L15 5L6 14H4V12L13 3Z" stroke="var(--blue-acc)" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+        </svg>
+        Editar
+      </button>
+    </div>
+
+    <!-- Mapa mini de Google Maps como hero fullwidth -->
+    <div style="position:relative;width:100%;height:240px;background:#0D1B2A;overflow:hidden;flex-shrink:0;">
+      <iframe id="student-mini-map"
+        style="width:100%;height:100%;border:none;pointer-events:none;opacity:0.85;"
+        loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+        src="about:blank">
+      </iframe>
+      <!-- Overlay: estado en vivo sobre el mapa -->
+      <div style="position:absolute;bottom:0;left:0;right:0;
+                  background:linear-gradient(0deg,rgba(10,22,40,0.95) 0%,transparent 100%);
+                  padding:20px 16px 14px;">
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;">
+          <div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+              <div class="status-pill status-safe" id="student-hero-status" style="margin:0;">
+                <div class="status-dot"></div> Seguro/a
+              </div>
+              <div style="font-size:11px;color:rgba(255,255,255,0.45);" id="student-last-seen">—</div>
+            </div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.5);" id="student-gps-text">📍 Obteniendo ubicación...</div>
+          </div>
+          <button onclick="switchTab('map')"
+            style="background:rgba(41,121,255,0.2);border:1px solid rgba(41,121,255,0.35);
+                   border-radius:10px;padding:7px 12px;color:var(--blue-acc);
+                   font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;
+                   white-space:nowrap;">
+            Mapa completo →
+          </button>
         </div>
       </div>
     </div>
 
-    <div class="scroll-content">
-      <!-- Info tiles -->
-      <div style="padding:16px 20px 0;">
+    <!-- Contenido scrollable -->
+    <div style="flex:1;overflow-y:auto;padding-bottom:100px;">
+
+      <!-- Tiles: batería · velocidad · sync · dispositivo -->
+      <div style="padding:14px 16px 0;">
         <div class="info-grid">
           <div class="card info-tile anim-item">
             <div class="info-tile-label">Batería</div>
-            <div class="info-tile-value">82%</div>
-            <div class="battery-bar">
-              <div class="battery-fill" style="width:82%; background:var(--safe);"></div>
-            </div>
+            <div class="info-tile-value" id="tile-battery">—</div>
+            <div class="battery-bar"><div class="battery-fill" id="tile-battery-fill" style="width:0%;background:var(--safe);"></div></div>
           </div>
-
           <div class="card info-tile anim-item">
-            <div class="info-tile-label">Señal</div>
-            <div class="info-tile-value">Fuerte</div>
-            <div style="display:flex; gap:3px; margin-top:6px; align-items:flex-end; height:14px;">
-              <div style="width:4px;height:40%;background:var(--safe);border-radius:2px;"></div>
-              <div style="width:4px;height:60%;background:var(--safe);border-radius:2px;"></div>
-              <div style="width:4px;height:80%;background:var(--safe);border-radius:2px;"></div>
-              <div style="width:4px;height:100%;background:var(--safe);border-radius:2px;"></div>
-            </div>
+            <div class="info-tile-label">Velocidad</div>
+            <div class="info-tile-value" id="tile-speed">—</div>
+            <div style="font-size:11px;color:var(--text-3);margin-top:4px;">km/h</div>
           </div>
-
-          <div class="card info-tile anim-item">
-            <div class="info-tile-label">Dispositivo</div>
-            <div class="info-tile-value" style="font-size:13px;">📱 Celular</div>
-            <div style="font-size:11px;color:var(--text-3);margin-top:4px;">Samsung A54</div>
-          </div>
-
           <div class="card info-tile anim-item">
             <div class="info-tile-label">Última Sync</div>
-            <div class="info-tile-value" style="font-size:15px;">hace 2 min</div>
-            <div style="font-size:11px;color:var(--text-3);margin-top:4px;">08:47 AM</div>
+            <div class="info-tile-value" id="tile-last-sync" style="font-size:15px;">—</div>
+            <div style="font-size:11px;color:var(--text-3);margin-top:4px;">vía app</div>
           </div>
-        </div>
-      </div>
-
-      <!-- Quick actions -->
-      <div style="padding:16px 20px 8px;">
-        <div class="quick-actions">
-          <button class="quick-action-btn anim-item" onclick="switchTab('map')">
-            <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-              <path d="M11 2C8.24 2 6 4.24 6 7C6 10.75 11 17 11 17C11 17 16 10.75 16 7C16 4.24 13.76 2 11 2ZM11 8.5C10.17 8.5 9.5 7.83 9.5 7C9.5 6.17 10.17 5.5 11 5.5C11.83 5.5 12.5 6.17 12.5 7C12.5 7.83 11.83 8.5 11 8.5Z" fill="var(--blue-acc)"/>
-            </svg>
-            Mapa en Vivo
-          </button>
-          <button class="quick-action-btn anim-item" onclick="startCall('Sofía García','S')">
-            <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-              <path d="M20 14.4C18.8 14.4 17.6 14.2 16.5 13.8C16.2 13.7 15.8 13.8 15.6 14L13.9 15.7C11.6 14.5 9.5 12.5 8.3 10.1L10 8.4C10.2 8.2 10.3 7.8 10.2 7.5C9.8 6.4 9.6 5.2 9.6 4C9.6 3.4 9.2 3 8.6 3H5.4C4.8 3 4 3.3 4 4C4 13.1 10.9 20 20 20C20.7 20 21 19.2 21 18.6V15.4C21 14.8 20.6 14.4 20 14.4Z" fill="var(--safe)"/>
-            </svg>
-            Llamar
-          </button>
-          <button class="quick-action-btn anim-item" onclick="switchTab('alerts')">
-            <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-              <path d="M4 4H20V16H4V4Z" rx="2" fill="none" stroke="var(--warn)" stroke-width="1.5"/>
-              <path d="M4 4L12 12L20 4" stroke="var(--warn)" stroke-width="1.5"/>
-            </svg>
-            Historial
-          </button>
-          <button class="quick-action-btn anim-item" onclick="showModal('zone')">
-            <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-              <path d="M3 11L11 3L19 11L11 19L3 11Z" fill="none" stroke="var(--navy)" stroke-width="1.5"/>
-              <circle cx="11" cy="11" r="3" fill="var(--navy)"/>
-            </svg>
-            Zonas
-          </button>
+          <div class="card info-tile anim-item">
+            <div class="info-tile-label">Dispositivo</div>
+            <div class="info-tile-value" style="font-size:13px;">📱</div>
+            <div style="font-size:11px;color:var(--text-3);margin-top:4px;">App alumno</div>
+          </div>
         </div>
       </div>
 
       <!-- Sensores en tiempo real -->
-      <div class="section-header">
+      <div class="section-header" style="padding-top:18px;">
         <div class="section-title">Sensores en Tiempo Real</div>
         <div class="sensor-pulse" style="color:var(--safe);">
           <div class="sensor-pulse-dot" style="background:var(--safe);"></div>
@@ -2161,18 +2214,15 @@
       </div>
 
       <div class="sensor-grid anim-item">
-        <!-- GPS -->
         <div class="sensor-card info">
           <div class="sensor-label">📍 GPS</div>
           <div class="sensor-value" id="sensor-gps-acc">±8m</div>
-          <div class="sensor-sub" id="sensor-gps-loc">14.0817, -87.2068</div>
+          <div class="sensor-sub" id="sensor-gps-loc">—</div>
           <div class="sensor-pulse" style="color:var(--blue-acc);margin-top:4px;">
             <div class="sensor-pulse-dot" style="background:var(--blue-acc);"></div>
             Señal buena
           </div>
         </div>
-
-        <!-- Acelerómetro -->
         <div class="sensor-card safe">
           <div class="sensor-label">📳 Movimiento</div>
           <div class="accel-bars" id="accel-bars">
@@ -2183,64 +2233,203 @@
             <div class="accel-bar" style="height:50%;"></div>
             <div class="accel-bar" style="height:70%;"></div>
           </div>
-          <div class="sensor-sub" id="sensor-motion">Normal · Caminando</div>
+          <div class="sensor-sub" id="sensor-motion">Normal</div>
         </div>
-
-        <!-- Batería -->
         <div class="sensor-card safe">
           <div class="sensor-label">🔋 Batería</div>
-          <div class="sensor-value" style="color:var(--safe);" id="sensor-battery">82%</div>
+          <div class="sensor-value" style="color:var(--safe);" id="sensor-battery">—</div>
           <div class="battery-bar" style="margin-top:4px;">
-            <div class="battery-fill" id="battery-fill-sensor" style="width:82%;background:var(--safe);"></div>
+            <div class="battery-fill" id="battery-fill-sensor" style="width:0%;background:var(--safe);"></div>
           </div>
-          <div class="sensor-sub" id="sensor-charging">Cargando ⚡</div>
+          <div class="sensor-sub" id="sensor-charging">—</div>
         </div>
-
-        <!-- Velocidad -->
         <div class="sensor-card info">
           <div class="sensor-label">🚶 Velocidad</div>
-          <div class="sensor-value" id="sensor-speed">2.1</div>
-          <div class="sensor-sub">km/h · A pie</div>
+          <div class="sensor-value" id="sensor-speed">—</div>
+          <div class="sensor-sub">km/h</div>
           <div class="sensor-pulse" style="color:var(--blue-acc);margin-top:4px;">
             <div class="sensor-pulse-dot" style="background:var(--blue-acc);"></div>
-            Actualiza c/5s
+            c/5s
           </div>
         </div>
       </div>
 
-      <div class="section-header" style="padding-top:20px;">
+      <!-- Actividad del día -->
+      <div class="section-header" style="padding-top:18px;">
         <div class="section-title">Actividad de Hoy</div>
+        <div style="font-size:12px;color:var(--blue-acc);cursor:pointer;font-weight:600;"
+             onclick="renderStudentHistory()">↻ Actualizar</div>
+      </div>
+      <div class="card" style="margin:0 20px 24px;" id="student-timeline">
+        <div style="text-align:center;padding:24px;color:var(--text-3);font-size:13px;">Cargando actividad...</div>
       </div>
 
-      <div class="card" style="margin:0 20px 24px;">
-        <div class="timeline-item">
-          <div class="timeline-dot" style="background:var(--safe-bg);">
-            <svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="5" fill="var(--safe)"/></svg>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       SCREEN: EDITAR / AGREGAR HIJO
+       Acceso: botón ✏️ en card o "Editar" en perfil
+       Contiene TODO de ese hijo:
+         nombre · colegio · grado
+         celular del alumno
+         contactos que el alumno puede llamar
+         horario de monitoreo
+  ══════════════════════════════ -->
+  <div class="screen" id="screen-edit-student" style="background:var(--bg-app);">
+    <div class="topbar" style="position:sticky;top:0;z-index:100;">
+      <button class="back-btn" onclick="goBack()">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M11 4L7 9L11 14" stroke="var(--text-h)" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <div class="topbar-title" id="edit-screen-title">Agregar Hijo</div>
+      <button onclick="saveStudentFull()" style="background:var(--blue-acc);border:none;border-radius:12px;padding:8px 18px;font-size:13px;font-weight:700;color:white;cursor:pointer;font-family:'DM Sans',sans-serif;">Guardar</button>
+    </div>
+
+    <div style="overflow-y:auto;height:calc(100% - 56px);padding:16px 16px 60px;display:flex;flex-direction:column;gap:18px;">
+
+      <!-- ① Info del alumno -->
+      <div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-3);margin-bottom:8px;padding:0 2px;">👤 Información del Alumno</div>
+        <div class="card" style="padding:16px;display:flex;flex-direction:column;gap:12px;">
+          <div class="input-group">
+            <label class="input-label">Nombre completo</label>
+            <input class="input-field" id="es-name" type="text" placeholder="Ej. Sofía García">
           </div>
-          <div class="timeline-content">
-            <div class="timeline-title">Entró al colegio</div>
-            <div class="timeline-time">07:52 AM · Colegio Lincoln</div>
-          </div>
-        </div>
-        <div class="timeline-item">
-          <div class="timeline-dot" style="background:var(--safe-bg);">
-            <svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="5" fill="var(--safe)"/></svg>
-          </div>
-          <div class="timeline-content">
-            <div class="timeline-title">Salió de casa</div>
-            <div class="timeline-time">07:40 AM · Col. Palmira, San Pedro Sula</div>
-          </div>
-        </div>
-        <div class="timeline-item">
-          <div class="timeline-dot" style="background:var(--safe-bg);">
-            <svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="5" fill="var(--safe)"/></svg>
-          </div>
-          <div class="timeline-content">
-            <div class="timeline-title">Dispositivo conectado</div>
-            <div class="timeline-time">07:08 AM · Batería completa</div>
+          <div style="display:flex;gap:10px;">
+            <div class="input-group" style="flex:1;">
+              <label class="input-label">Colegio</label>
+              <input class="input-field" id="es-school" type="text" placeholder="Nombre del colegio">
+            </div>
+            <div class="input-group" style="flex:1;">
+              <label class="input-label">Grado</label>
+              <input class="input-field" id="es-grade" type="text" placeholder="Ej. 9no Grado">
+            </div>
           </div>
         </div>
       </div>
+
+      <!-- ② Celular del alumno (para que el PADRE lo llame) -->
+      <div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-3);margin-bottom:8px;padding:0 2px;">📱 Celular del Alumno</div>
+        <div class="card" style="padding:16px;">
+          <div class="input-group" style="margin-bottom:8px;">
+            <label class="input-label">Número de celular</label>
+            <input class="input-field" id="es-phone" type="tel" placeholder="+504 9999-8888">
+          </div>
+          <div style="background:rgba(41,121,255,0.08);border:1px solid rgba(41,121,255,0.15);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--text-3);">
+            💡 Este es el número que <strong style="color:var(--text-2);">tú como padre</strong> llamas cuando presionas el botón "Llamar" en el perfil de tu hijo.
+          </div>
+        </div>
+      </div>
+
+      <!-- ③ Contactos que el ALUMNO puede llamar -->
+      <div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-3);margin-bottom:4px;padding:0 2px;">☎️ Contactos que el Alumno puede Llamar</div>
+        <div style="font-size:12px;color:var(--text-3);margin-bottom:8px;padding:0 2px;">Aparecen en el botón "Llamar" de la app de tu hijo. El 911 siempre está incluido.</div>
+        <div class="card" style="padding:14px;">
+          <div id="es-contacts-list" style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px;"></div>
+          <button onclick="addContactField()" style="width:100%;height:40px;border-radius:10px;border:1.5px dashed var(--border);background:transparent;color:var(--text-3);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">
+            + Agregar contacto
+          </button>
+        </div>
+      </div>
+
+      <!-- ④ Horario de monitoreo -->
+      <div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-3);margin-bottom:4px;padding:0 2px;">🕐 Horario de Monitoreo</div>
+        <div style="font-size:12px;color:var(--text-3);margin-bottom:8px;padding:0 2px;">¿De qué hora a qué hora quieres que los sensores de tu hijo te envíen información? Fuera de ese horario, el celular usa modo ahorro. El SOS siempre funciona.</div>
+        <div class="card" style="padding:16px;display:flex;flex-direction:column;gap:14px;">
+
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <div style="font-size:14px;font-weight:600;color:var(--text-h);">Activar horario específico</div>
+              <div style="font-size:12px;color:var(--text-3);">Sin horario = sensores activos 24/7</div>
+            </div>
+            <div class="toggle" id="es-sched-toggle" onclick="toggleEsSchedule(this)"><div class="toggle-thumb"></div></div>
+          </div>
+
+          <div id="es-sched-body" style="display:none;flex-direction:column;gap:14px;">
+            <div>
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-3);margin-bottom:8px;">Días de la semana</div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;" id="es-days-row">
+                <button class="day-chip on" data-day="1">Lun</button>
+                <button class="day-chip on" data-day="2">Mar</button>
+                <button class="day-chip on" data-day="3">Mié</button>
+                <button class="day-chip on" data-day="4">Jue</button>
+                <button class="day-chip on" data-day="5">Vie</button>
+                <button class="day-chip"    data-day="6">Sáb</button>
+                <button class="day-chip"    data-day="0">Dom</button>
+              </div>
+            </div>
+
+            <div style="display:flex;gap:10px;align-items:flex-end;">
+              <div style="flex:1;">
+                <div style="font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:6px;">⏰ Desde</div>
+                <input type="time" id="es-start" value="06:00"
+                  onchange="updateEsBatteryPreview()"
+                  style="width:100%;background:var(--bg-card);border:1.5px solid var(--border);border-radius:10px;padding:12px;font-size:16px;font-family:'DM Sans',sans-serif;color:var(--text-h);outline:none;text-align:center;">
+              </div>
+              <div style="font-size:22px;color:var(--text-3);margin-bottom:12px;">→</div>
+              <div style="flex:1;">
+                <div style="font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:6px;">🔔 Hasta</div>
+                <input type="time" id="es-end" value="16:00"
+                  onchange="updateEsBatteryPreview()"
+                  style="width:100%;background:var(--bg-card);border:1.5px solid var(--border);border-radius:10px;padding:12px;font-size:16px;font-family:'DM Sans',sans-serif;color:var(--text-h);outline:none;text-align:center;">
+              </div>
+            </div>
+
+            <div style="background:rgba(245,166,35,0.06);border:1px solid rgba(245,166,35,0.2);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:12px;">
+              <div style="font-size:20px;">🚶</div>
+              <div style="flex:1;">
+                <div style="font-size:13px;font-weight:600;color:var(--text-h);">Reactivar si se mueve fuera de horario</div>
+                <div style="font-size:11px;color:var(--text-3);">Si el alumno camina, activa sensores por 30 min extra</div>
+              </div>
+              <div class="toggle on" id="es-motion-toggle" onclick="this.classList.toggle('on')"><div class="toggle-thumb"></div></div>
+            </div>
+
+            <div style="background:rgba(232,54,74,0.05);border:1px solid rgba(232,54,74,0.15);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:12px;">
+              <div style="font-size:20px;">🆘</div>
+              <div style="flex:1;">
+                <div style="font-size:13px;font-weight:600;color:var(--text-h);">SOS siempre activo</div>
+                <div style="font-size:11px;color:var(--text-3);">Funciona 24/7 sin importar el horario</div>
+              </div>
+              <div style="font-size:11px;font-weight:700;color:var(--safe);background:var(--safe-bg);padding:4px 10px;border-radius:100px;">Siempre ✅</div>
+            </div>
+
+            <!-- Preview ahorro de batería -->
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:14px;">
+              <div style="font-size:12px;font-weight:700;color:var(--text-2);margin-bottom:8px;">⚡ Ahorro estimado de batería</div>
+              <div style="display:flex;border-radius:6px;overflow:hidden;height:12px;margin-bottom:8px;" id="es-battery-bar"></div>
+              <div style="display:flex;gap:16px;font-size:11px;color:var(--text-3);">
+                <span>🟢 Activo (GPS full)</span>
+                <span>⬜ Bajo consumo</span>
+              </div>
+              <div style="margin-top:8px;font-size:13px;font-weight:700;color:var(--safe);">Ahorro: ~<span id="es-saving-pct">—</span> vs monitoreo 24/7</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ⑤ Zona de peligro (solo al editar) -->
+      <div id="es-danger-zone" style="display:none;">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--danger);margin-bottom:8px;padding:0 2px;">Zona de Peligro</div>
+        <div class="card" style="padding:4px 0;">
+          <div class="settings-item" onclick="confirmDeleteStudent()" style="color:var(--danger);">
+            <div class="settings-item-icon" style="background:var(--danger-bg);">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <path d="M3 5H15M6 5V3H12V5M7 8V14M11 8V14M4 5L5 15H13L14 5H4Z" stroke="var(--danger)" stroke-width="1.4" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="settings-item-text">
+              <div class="settings-item-label" style="color:var(--danger);">Eliminar alumno</div>
+              <div class="settings-item-sub">Se eliminan todos sus datos y configuración</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -2261,23 +2450,34 @@
       </div>
     </div>
 
-    <div id="map-container">
-      <div id="leaflet-map"></div>
+    <div id="map-container" style="position:relative;flex:1;overflow:hidden;">
+      <!-- Google Maps iframe — se actualiza con GPS real del alumno -->
+      <div id="parent-map-loading" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:var(--bg-card);z-index:5;transition:opacity 0.4s;">
+        <div style="width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--blue-acc);border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+        <div style="font-size:12px;color:var(--text-3);" id="parent-map-loading-text">Esperando ubicación...</div>
+      </div>
+      <iframe id="parent-gmap" src="" style="width:100%;height:100%;border:none;display:block;" allowfullscreen loading="lazy"></iframe>
+
+      <!-- Info chip coords -->
+      <div id="parent-map-chip" style="position:absolute;bottom:10px;left:10px;background:var(--topbar-bg);backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:100px;padding:5px 12px;font-size:11px;color:var(--text-2);font-weight:600;z-index:10;display:none;align-items:center;gap:6px;">
+        <div style="width:6px;height:6px;border-radius:50%;background:var(--safe);animation:pulse-safe 1.5s infinite;"></div>
+        <span id="parent-map-coords">—</span>
+      </div>
 
       <div class="map-controls">
-        <button class="map-ctrl-btn" onclick="recenterMap()" title="Recenter">
+        <button class="map-ctrl-btn" onclick="recenterParentMap()" title="Centrar">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <circle cx="10" cy="10" r="7" stroke="#0A1628" stroke-width="1.5" fill="none"/>
-            <circle cx="10" cy="10" r="2" fill="#0A1628"/>
-            <line x1="10" y1="1" x2="10" y2="4" stroke="#0A1628" stroke-width="1.5"/>
-            <line x1="10" y1="16" x2="10" y2="19" stroke="#0A1628" stroke-width="1.5"/>
-            <line x1="1" y1="10" x2="4" y2="10" stroke="#0A1628" stroke-width="1.5"/>
-            <line x1="16" y1="10" x2="19" y2="10" stroke="#0A1628" stroke-width="1.5"/>
+            <circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5" fill="none"/>
+            <circle cx="10" cy="10" r="2" fill="currentColor"/>
+            <line x1="10" y1="1" x2="10" y2="4" stroke="currentColor" stroke-width="1.5"/>
+            <line x1="10" y1="16" x2="10" y2="19" stroke="currentColor" stroke-width="1.5"/>
+            <line x1="1" y1="10" x2="4" y2="10" stroke="currentColor" stroke-width="1.5"/>
+            <line x1="16" y1="10" x2="19" y2="10" stroke="currentColor" stroke-width="1.5"/>
           </svg>
         </button>
         <button class="map-ctrl-btn" onclick="showModal('zone')">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path d="M3 10L10 3L17 10L10 17L3 10Z" stroke="#0A1628" stroke-width="1.5" fill="none"/>
+            <path d="M3 10L10 3L17 10L10 17L3 10Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
           </svg>
         </button>
       </div>
@@ -2285,22 +2485,22 @@
 
     <div class="map-bottom-sheet">
       <div class="sheet-handle"></div>
-      <div class="map-student-row">
-        <div class="avatar avatar-ring-safe" style="width:48px;height:48px;font-size:17px;background:linear-gradient(135deg,#0D2E4F,#1A3358);">S</div>
+      <div class="map-student-row" id="map-student-info">
+        <div class="avatar avatar-ring-safe" style="width:48px;height:48px;font-size:17px;background:linear-gradient(135deg,#0D2E4F,#1A3358);" id="map-student-avatar">S</div>
         <div style="flex:1;">
-          <div style="font-family:'Sora',sans-serif;font-size:16px;font-weight:700;">Sofía García</div>
-          <div style="font-size:13px;color:var(--text-3);margin-top:2px;">📍 Colegio Lincoln · Bloque 3</div>
+          <div style="font-family:'Sora',sans-serif;font-size:16px;font-weight:700;" id="map-student-name">Sofía García</div>
+          <div style="font-size:13px;color:var(--text-3);margin-top:2px;" id="map-student-location">📍 Obteniendo ubicación...</div>
         </div>
-        <div class="status-pill status-safe"><div class="status-dot"></div>Segura</div>
+        <div class="status-pill status-safe" id="map-student-status"><div class="status-dot"></div>Segura</div>
       </div>
       <div style="display:flex;gap:8px;margin-top:14px;">
-        <button class="btn btn-ghost" style="flex:1;height:44px;" onclick="startCall('Sofía García','S')">
+        <button class="btn btn-ghost" style="flex:1;height:44px;" id="map-call-btn" onclick="callStudent(activeMapStudent)">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
             <path d="M14 10.4C13.1 10.4 12.2 10.2 11.4 9.9C11.2 9.8 10.9 9.9 10.8 10L9.6 11.2C7.9 10.3 6.7 9.1 5.8 7.4L7 6.2C7.1 6.1 7.2 5.8 7.1 5.6C6.8 4.8 6.6 3.9 6.6 3C6.6 2.7 6.4 2.5 6.1 2.5H3.9C3.6 2.5 3 2.7 3 3C3 9.8 8.2 15 15 15C15.3 15 15.5 14.4 15.5 14.1V11.9C15.5 11.6 15.3 10.4 14 10.4Z" fill="var(--navy)"/>
           </svg>
           Llamar
         </button>
-        <button class="btn btn-primary" style="flex:2;height:44px;" onclick="switchTab('map');setTimeout(recenterMap,300)">
+        <button class="btn btn-primary" style="flex:2;height:44px;" onclick="recenterParentMap()">
           Centrar en Mapa
         </button>
       </div>
@@ -2443,32 +2643,126 @@
 
       <div class="settings-section">
         <div class="settings-section-title">Hijos</div>
-        <div class="card">
-          <div class="settings-item" onclick="navigateTo('student',{id:1})">
+        <div class="card" id="settings-students-list">
+          <div class="settings-item" onclick="openEditStudent(1)">
             <div class="avatar" style="width:38px;height:38px;font-size:14px;background:linear-gradient(135deg,#0D2E4F,#1A3358);">S</div>
             <div class="settings-item-text">
               <div class="settings-item-label">Sofía García</div>
-              <div class="settings-item-sub">9no Grado · Celular conectado</div>
+              <div class="settings-item-sub" id="sofia-phone-sub">9no Grado · Sin número</div>
             </div>
-            <div class="status-pill status-safe" style="font-size:11px;padding:3px 8px;"><div class="status-dot"></div>Segura</div>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="opacity:0.4;flex-shrink:0;"><path d="M6 4L10 8L6 12" stroke="var(--text-h)" stroke-width="1.5" stroke-linecap="round"/></svg>
           </div>
-          <div class="settings-item" onclick="navigateTo('emergency')">
+          <div class="settings-item" onclick="openEditStudent(2)">
             <div class="avatar" style="width:38px;height:38px;font-size:14px;background:linear-gradient(135deg,#4A1520,#7A1E2E);">M</div>
             <div class="settings-item-text">
               <div class="settings-item-label">Mateo García</div>
-              <div class="settings-item-sub">7mo Grado · SOS activo</div>
+              <div class="settings-item-sub" id="mateo-phone-sub">7mo Grado · Sin número</div>
             </div>
-            <div class="status-pill status-danger" style="font-size:11px;padding:3px 8px;"><div class="status-dot"></div>Alerta</div>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="opacity:0.4;flex-shrink:0;"><path d="M6 4L10 8L6 12" stroke="var(--text-h)" stroke-width="1.5" stroke-linecap="round"/></svg>
           </div>
-          <div class="settings-item" onclick="showModal('add-student')">
+        </div>
+        <button class="btn btn-ghost btn-full" style="margin-top:8px;height:44px;" onclick="openEditStudent(null)">
+          + Agregar nuevo hijo
+        </button>
+      </div>
+
+      <!-- ══ HORARIO DE MONITOREO ══ -->
+      <div class="settings-section">
+        <div class="settings-section-title">Horario de Monitoreo</div>
+
+        <!-- Card principal: toggle + resumen visual -->
+        <div class="card" style="margin-bottom:10px;">
+          <div class="settings-item" style="align-items:flex-start;padding-bottom:14px;border-bottom:1px solid var(--border);">
             <div class="settings-item-icon" style="background:rgba(41,121,255,0.1);">
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                <path d="M9 4V14M4 9H14" stroke="var(--blue-acc)" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="9" cy="9" r="7" stroke="var(--blue-acc)" stroke-width="1.5" fill="none"/>
+                <path d="M9 5V9.5L12 11.5" stroke="var(--blue-acc)" stroke-width="1.5" stroke-linecap="round"/>
               </svg>
             </div>
             <div class="settings-item-text">
-              <div class="settings-item-label" style="color:var(--blue-acc);">Agregar hijo</div>
+              <div class="settings-item-label">Horario activo</div>
+              <div class="settings-item-sub" id="sched-summary-sub">Monitoreo 24/7 activo</div>
             </div>
+            <div class="toggle" id="sched-master-toggle" onclick="toggleSchedule(this)">
+              <div class="toggle-thumb"></div>
+            </div>
+          </div>
+
+          <!-- Panel expandible de configuración -->
+          <div id="sched-config-panel" style="display:none;padding-top:14px;">
+
+            <!-- Días de la semana -->
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-3);margin-bottom:8px;">Días activos</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;" id="sched-days-row">
+              <button class="day-chip on" data-day="1" onclick="toggleDay(this)">Lun</button>
+              <button class="day-chip on" data-day="2" onclick="toggleDay(this)">Mar</button>
+              <button class="day-chip on" data-day="3" onclick="toggleDay(this)">Mié</button>
+              <button class="day-chip on" data-day="4" onclick="toggleDay(this)">Jue</button>
+              <button class="day-chip on" data-day="5" onclick="toggleDay(this)">Vie</button>
+              <button class="day-chip" data-day="6" onclick="toggleDay(this)">Sáb</button>
+              <button class="day-chip" data-day="0" onclick="toggleDay(this)">Dom</button>
+            </div>
+
+            <!-- Rango de horas -->
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-3);margin-bottom:8px;">Rango de horas</div>
+            <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px;">
+              <div style="flex:1;">
+                <div style="font-size:11px;color:var(--text-3);margin-bottom:4px;">Inicio</div>
+                <input type="time" id="sched-start" value="06:00"
+                  style="width:100%;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text-h);outline:none;"
+                  onchange="saveScheduleFromUI()">
+              </div>
+              <div style="font-size:18px;color:var(--text-3);margin-top:16px;">→</div>
+              <div style="flex:1;">
+                <div style="font-size:11px;color:var(--text-3);margin-bottom:4px;">Fin</div>
+                <input type="time" id="sched-end" value="16:00"
+                  style="width:100%;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text-h);outline:none;"
+                  onchange="saveScheduleFromUI()">
+              </div>
+            </div>
+
+            <!-- Opciones inteligentes -->
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-3);margin-bottom:8px;">Opciones inteligentes</div>
+            <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:4px;">
+
+              <div style="display:flex;align-items:center;gap:12px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;">
+                <div style="font-size:20px;">🚶</div>
+                <div style="flex:1;">
+                  <div style="font-size:13px;font-weight:600;color:var(--text-h);">Reactivar por movimiento</div>
+                  <div style="font-size:11px;color:var(--text-3);margin-top:2px;">Si el alumno se mueve fuera del horario, activa monitoreo completo 30 min</div>
+                </div>
+                <div class="toggle on" id="sched-motion-toggle" onclick="this.classList.toggle('on');saveScheduleFromUI();"><div class="toggle-thumb"></div></div>
+              </div>
+
+              <div style="display:flex;align-items:center;gap:12px;background:rgba(232,54,74,0.06);border:1px solid rgba(232,54,74,0.15);border-radius:12px;padding:12px 14px;">
+                <div style="font-size:20px;">🆘</div>
+                <div style="flex:1;">
+                  <div style="font-size:13px;font-weight:600;color:var(--text-h);">SOS siempre activo</div>
+                  <div style="font-size:11px;color:var(--text-3);margin-top:2px;">El botón SOS y detección de impactos funcionan 24/7, sin excepción</div>
+                </div>
+                <div style="font-size:11px;font-weight:700;color:var(--safe);background:var(--safe-bg);padding:4px 10px;border-radius:100px;white-space:nowrap;">Siempre ✅</div>
+              </div>
+
+              <div style="display:flex;align-items:center;gap:12px;background:rgba(245,166,35,0.06);border:1px solid rgba(245,166,35,0.15);border-radius:12px;padding:12px 14px;">
+                <div style="font-size:20px;">🔋</div>
+                <div style="flex:1;">
+                  <div style="font-size:13px;font-weight:600;color:var(--text-h);">Batería baja → modo ahorro</div>
+                  <div style="font-size:11px;color:var(--text-3);margin-top:2px;">Si la batería baja de 15%, reduce el GPS para que el celular no se apague</div>
+                </div>
+                <div style="font-size:11px;font-weight:700;color:var(--warn);background:var(--warn-bg);padding:4px 10px;border-radius:100px;white-space:nowrap;">Auto ⚡</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Previsualización del ahorro de batería -->
+        <div id="sched-battery-preview" style="display:none;background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:0;">
+          <div style="font-size:12px;font-weight:700;color:var(--text-2);margin-bottom:10px;">📊 Estimado de batería hoy</div>
+          <div style="display:flex;gap:0;border-radius:8px;overflow:hidden;height:12px;margin-bottom:8px;" id="battery-timeline-bar"></div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-3);" id="battery-timeline-labels"></div>
+          <div style="margin-top:10px;display:flex;gap:16px;flex-wrap:wrap;">
+            <div style="font-size:12px;color:var(--safe);">●&nbsp;<span id="bat-saving-pct">—</span> ahorro estimado</div>
+            <div style="font-size:12px;color:var(--text-3);">⬛ Bajo consumo &nbsp; 🟩 Activo</div>
           </div>
         </div>
       </div>
@@ -2632,12 +2926,15 @@
       </div>
     </div>
 
-    <div class="emergency-map-preview" style="z-index:10;">
-      <div id="emergency-map"></div>
+    <div class="emergency-map-preview" style="z-index:10;position:relative;">
+      <div id="em-map-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(26,5,8,0.7);z-index:2;border-radius:16px;">
+        <div style="font-size:12px;color:rgba(255,255,255,0.5);">📍 Cargando mapa...</div>
+      </div>
+      <iframe id="em-gmap" src="" style="width:100%;height:100%;border:none;border-radius:16px;" allowfullscreen></iframe>
     </div>
 
     <div class="emergency-actions" style="z-index:10;">
-      <button class="btn btn-ghost" style="flex:1;height:52px;border:1.5px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:white;" onclick="startCall('Mateo García','M')">
+      <button class="btn btn-ghost" style="flex:1;height:52px;border:1.5px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:white;" onclick="callStudent(2)">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
           <path d="M16 11.6C15.1 11.6 14.2 11.4 13.4 11.1C13.2 11 12.9 11.1 12.8 11.2L11.3 12.7C9.6 11.8 8.2 10.4 7.3 8.7L8.8 7.2C8.9 7.1 9 6.8 8.9 6.6C8.6 5.8 8.4 4.9 8.4 4C8.4 3.7 8.2 3.5 7.9 3.5H5.7C5.4 3.5 5 3.7 5 4C5 10.8 10.2 16 17 16C17.3 16 17.5 15.6 17.5 15.3V13.1C17.5 12.8 17.3 11.6 16 11.6Z" fill="white"/>
         </svg>
@@ -2669,7 +2966,7 @@
       <span class="nav-label">Inicio</span>
     </button>
 
-    <button class="nav-item" data-tab="student" onclick="navigateTo('student',{id:1})">
+    <button class="nav-item" data-tab="children" onclick="switchTab('children')">
       <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
         <circle cx="11" cy="8" r="4" fill="#94A3B8"/>
         <path d="M3 20C3 16.13 6.13 13 10 13H12C15.87 13 19 16.13 19 20" stroke="#94A3B8" stroke-width="1.8" stroke-linecap="round" fill="none"/>
@@ -2771,13 +3068,13 @@ function renderNotifications() {
 
 function openNotifPanel() {
   renderNotifications();
-  document.getElementById('notif-panel').classList.add('open');
-  document.getElementById('notif-backdrop').classList.add('open');
+  document.getElementById('notif-panel')?.classList.add('open');
+  document.getElementById('notif-backdrop')?.classList.add('open');
 }
 
 function closeNotifPanel() {
-  document.getElementById('notif-panel').classList.remove('open');
-  document.getElementById('notif-backdrop').classList.remove('open');
+  document.getElementById('notif-panel')?.classList.remove('open');
+  document.getElementById('notif-backdrop')?.classList.remove('open');
 }
 
 function handleNotifTap(id) {
@@ -2787,7 +3084,7 @@ function handleNotifTap(id) {
   closeNotifPanel();
   if (n.action === 'emergency') navigateTo('emergency');
   else if (n.action === 'map') switchTab('map');
-  else if (n.action === 'student') navigateTo('student', {id:1});
+  else if (n.action === 'student') navigateTo('children');
   renderNotifications();
 }
 
@@ -2818,29 +3115,37 @@ function navigateTo(screen, data = {}) {
   screenEl.classList.add('active');
 
   const nav = document.getElementById('bottom-nav');
-  const mainScreens = ['home','map','alerts','settings'];
+  const mainScreens = ['home','children','map','alerts','settings'];
+
   if (mainScreens.includes(screen)) {
-    nav.style.display = 'flex';
+    if (nav) nav.style.display = 'flex';
     updateNavActive(screen);
-  } else if (screen === 'student') {
-    nav.style.display = 'flex';
-    updateNavActive('student');
   } else {
-    nav.style.display = 'none';
+    if (nav) nav.style.display = 'none';
   }
 
-  if (screen === 'map' && !map) setTimeout(initMap, 100);
-
+  // Acciones por pantalla
+  if (screen === 'children') {
+    renderChildrenList();
+  }
+  if (screen === 'student') {
+    if (data.id) currentStudentId = data.id;
+    loadStudentProfile(currentStudentId);
+    startSensorSimulation();
+    renderStudentHistory();
+  } else {
+    stopSensorSimulation();
+  }
+  if (screen === 'map') {
+    setTimeout(loadParentMap, 100);
+  }
   if (screen === 'emergency') {
-    nav.style.display = 'none';
+    if (nav) nav.style.display = 'none';
     startEmTimer();
     setTimeout(initEmergencyMap, 100);
   }
-
-  if (screen === 'student') {
-    startSensorSimulation();
-  } else {
-    stopSensorSimulation();
+  if (screen === 'settings') {
+    onSettingsEnter();
   }
 
   // Re-trigger animations
@@ -2869,70 +3174,931 @@ function goBack() {
 }
 
 /* ═══════════════════════════════════════
-   SENSOR SIMULATION
+   HORARIO DE MONITOREO — App del Padre
+   Guarda en ss_schedule_v1 (leído por app del alumno)
+═══════════════════════════════════════ */
+const LS_SCHEDULE = 'ss_schedule_v1';
+
+function loadScheduleUI() {
+  const raw = localStorage.getItem(LS_SCHEDULE);
+  if (!raw) return;
+  try {
+    const s = JSON.parse(raw);
+    const toggle = document.getElementById('sched-master-toggle');
+    const panel  = document.getElementById('sched-config-panel');
+    const preview= document.getElementById('sched-battery-preview');
+
+    if (s.enabled) {
+      toggle?.classList.add('on');
+      if (panel)   panel.style.display   = 'block';
+      if (preview) preview.style.display = 'block';
+    }
+
+    // Días
+    document.querySelectorAll('.day-chip').forEach(chip => {
+      const d = parseInt(chip.dataset.day);
+      chip.classList.toggle('on', (s.days || [1,2,3,4,5]).includes(d));
+    });
+
+    // Horas
+    const startEl = document.getElementById('sched-start');
+    const endEl   = document.getElementById('sched-end');
+    if (startEl) startEl.value = s.start || '06:00';
+    if (endEl)   endEl.value   = s.end   || '16:00';
+
+    // Motion toggle
+    const motionT = document.getElementById('sched-motion-toggle');
+    if (motionT) motionT.classList.toggle('on', s.motionReactivate !== false);
+
+    updateSchedSummary(s);
+    renderBatteryTimeline(s);
+  } catch {}
+}
+
+function toggleSchedule(el) {
+  el.classList.toggle('on');
+  const enabled = el.classList.contains('on');
+  const panel   = document.getElementById('sched-config-panel');
+  const preview = document.getElementById('sched-battery-preview');
+  if (panel)   panel.style.display   = enabled ? 'block' : 'none';
+  if (preview) preview.style.display = enabled ? 'block' : 'none';
+  saveScheduleFromUI();
+}
+
+function toggleDay(chip) {
+  chip.classList.toggle('on');
+  saveScheduleFromUI();
+}
+
+function saveScheduleFromUI() {
+  const toggle  = document.getElementById('sched-master-toggle');
+  const enabled = toggle?.classList.contains('on') || false;
+  const days    = [...document.querySelectorAll('.day-chip.on')].map(c => parseInt(c.dataset.day));
+  const start   = document.getElementById('sched-start')?.value  || '06:00';
+  const end     = document.getElementById('sched-end')?.value    || '16:00';
+  const motion  = document.getElementById('sched-motion-toggle')?.classList.contains('on') !== false;
+
+  const s = { enabled, days, start, end, motionReactivate: motion };
+  localStorage.setItem(LS_SCHEDULE, JSON.stringify(s));
+
+  updateSchedSummary(s);
+  renderBatteryTimeline(s);
+
+  showToast(enabled
+    ? `✅ Horario guardado · ${start} – ${end}`
+    : '⏸ Monitoreo 24/7 activado (sin horario)');
+}
+
+function updateSchedSummary(s) {
+  const sub = document.getElementById('sched-summary-sub');
+  if (!sub) return;
+  if (!s.enabled) {
+    sub.textContent = 'Monitoreo 24/7 activo';
+    return;
+  }
+  const DAY_NAMES = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  const dayStr = (s.days || []).map(d => DAY_NAMES[d]).join(', ') || 'Sin días';
+  sub.textContent = `${dayStr} · ${s.start} – ${s.end}`;
+}
+
+function renderBatteryTimeline(s) {
+  const bar    = document.getElementById('battery-timeline-bar');
+  const labels = document.getElementById('battery-timeline-labels');
+  const saving = document.getElementById('bat-saving-pct');
+  if (!bar || !s.enabled) return;
+
+  const [sh, sm] = s.start.split(':').map(Number);
+  const [eh, em] = s.end.split(':').map(Number);
+  const startMin = sh * 60 + sm;
+  const endMin   = eh * 60 + em;
+  const totalMin = 24 * 60;
+
+  // Calcular segmentos: bajo-consumo / activo / bajo-consumo
+  const seg1 = startMin;                    // 0 → inicio: bajo consumo
+  const seg2 = endMin - startMin;           // inicio → fin: activo
+  const seg3 = totalMin - endMin;           // fin → 24h: bajo consumo
+
+  const pct1 = (seg1 / totalMin * 100).toFixed(1);
+  const pct2 = (seg2 / totalMin * 100).toFixed(1);
+  const pct3 = (seg3 / totalMin * 100).toFixed(1);
+
+  bar.innerHTML = `
+    <div style="width:${pct1}%;background:rgba(148,163,184,0.3);"></div>
+    <div style="width:${pct2}%;background:var(--safe);"></div>
+    <div style="width:${pct3}%;background:rgba(148,163,184,0.3);"></div>`;
+
+  labels.innerHTML = `
+    <span>12 AM</span>
+    <span>${s.start}</span>
+    <span>${s.end}</span>
+    <span>12 AM</span>`;
+
+  // Ahorro estimado: GPS activo gasta ~15%/h, low gasta ~2%/h
+  const activeH  = seg2 / 60;
+  const lowH     = (seg1 + seg3) / 60;
+  const withSched    = activeH * 15 + lowH * 2;
+  const without      = 24 * 15;
+  const savedPct = Math.round((1 - withSched / without) * 100);
+  if (saving) saving.textContent = `~${Math.max(0, savedPct)}%`;
+}
+
+// Carga el UI del horario cuando se entra a Ajustes
+function onSettingsEnter() {
+  loadScheduleUI();
+  updatePhoneSubs();
+}
+
+
+/* ═══════════════════════════════════════
+   Cuando llegue Firebase, solo se cambia esta capa.
+═══════════════════════════════════════ */
+const LS_HISTORY   = 'ss_history_v1';    // historial de eventos del alumno
+const LS_STUDENT   = 'ss_student_v1';   // snapshot de sensores en vivo
+const LS_CONTACTS  = 'ss_contacts_v1';  // contactos configurados por el padre
+const LS_PHONES    = 'ss_phones_v1';    // números de celular de cada alumno
+
+/* ── Leer datos del alumno ─────────── */
+function getStudentLive() {
+  try {
+    const raw = localStorage.getItem(LS_STUDENT);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+function getStudentHistory(limit = 30) {
+  try {
+    const raw = localStorage.getItem(LS_HISTORY);
+    const arr = raw ? JSON.parse(raw) : [];
+    return arr.slice(-limit).reverse();
+  } catch { return []; }
+}
+
+function getStudentPhone(studentId) {
+  try {
+    const raw = localStorage.getItem(LS_PHONES);
+    const phones = raw ? JSON.parse(raw) : {};
+    return phones[studentId] || null;
+  } catch { return null; }
+}
+
+function saveStudentPhone(studentId, number) {
+  try {
+    const raw = localStorage.getItem(LS_PHONES);
+    const phones = raw ? JSON.parse(raw) : {};
+    phones[studentId] = number;
+    localStorage.setItem(LS_PHONES, JSON.stringify(phones));
+  } catch {}
+}
+
+/* ═══════════════════════════════════════
+   SENSORES — Lee del localStorage del alumno
+   (antes era simulación random — ahora son datos reales)
 ═══════════════════════════════════════ */
 function startSensorSimulation() {
   stopSensorSimulation();
-  sensorInterval = setInterval(updateSensors, 2000);
   updateSensors();
+  sensorInterval = setInterval(updateSensors, 3000);
 }
 
 function stopSensorSimulation() {
   if (sensorInterval) { clearInterval(sensorInterval); sensorInterval = null; }
 }
 
-const motionStates = ['Normal · Caminando', 'Quieto · Sentado', 'Rápido · Corriendo', 'Normal · Caminando', 'Quieto · En clase'];
-
 function updateSensors() {
-  // GPS - small drift
-  const baseLat = 14.0817, baseLng = -87.2068;
-  const dLat = (Math.random() - 0.5) * 0.0002;
-  const dLng = (Math.random() - 0.5) * 0.0002;
-  const acc = Math.floor(Math.random() * 10) + 4;
-  const gpsEl = document.getElementById('sensor-gps-acc');
+  const data = getStudentLive();
+
+  // GPS
+  const gpsEl  = document.getElementById('sensor-gps-acc');
   const gpsLoc = document.getElementById('sensor-gps-loc');
-  if (gpsEl) gpsEl.textContent = `±${acc}m`;
-  if (gpsLoc) gpsLoc.textContent = `${(baseLat + dLat).toFixed(4)}, ${(baseLng + dLng).toFixed(4)}`;
-
-  // Accelerometer bars
-  const bars = document.querySelectorAll('#accel-bars .accel-bar');
-  bars.forEach(bar => {
-    const h = Math.floor(Math.random() * 80) + 15;
-    bar.style.height = h + '%';
-  });
-
-  // Motion state (changes slowly)
-  const motionEl = document.getElementById('sensor-motion');
-  if (motionEl && Math.random() > 0.8) {
-    motionEl.textContent = motionStates[Math.floor(Math.random() * motionStates.length)];
+  if (data && data.lat != null) {
+    if (gpsEl)  gpsEl.textContent  = data.accuracy ? `±${Math.round(data.accuracy)}m` : '±?m';
+    if (gpsLoc) gpsLoc.textContent = `${parseFloat(data.lat).toFixed(4)}, ${parseFloat(data.lng).toFixed(4)}`;
+  } else {
+    if (gpsEl)  gpsEl.textContent  = 'Sin señal';
+    if (gpsLoc) gpsLoc.textContent = 'Sin datos del alumno';
   }
 
-  // Battery - slow drain
-  const battEl = document.getElementById('sensor-battery');
-  const fillEl = document.getElementById('battery-fill-sensor');
+  // Acelerómetro — visualiza con barras proporcionales a los valores reales
+  const bars = document.querySelectorAll('#accel-bars .accel-bar');
+  if (data && data.accel_x != null) {
+    const vals = [
+      Math.min(100, Math.abs(data.accel_x) * 10),
+      Math.min(100, Math.abs(data.accel_y) * 10),
+      Math.min(100, Math.abs(data.accel_z) * 10),
+      Math.min(100, Math.abs(data.accel_x + data.accel_y) * 6),
+      Math.min(100, Math.abs(data.accel_z - data.accel_x) * 6),
+      Math.min(100, (Math.abs(data.accel_x) + Math.abs(data.accel_y) + Math.abs(data.accel_z)) * 3),
+    ];
+    bars.forEach((bar, i) => { bar.style.height = (vals[i] || 15) + '%'; });
+  } else {
+    bars.forEach(bar => { bar.style.height = '15%'; });
+  }
+
+  // Estado de movimiento
+  const motionEl = document.getElementById('sensor-motion');
+  if (motionEl) {
+    motionEl.textContent = (data && data.motion) ? data.motion : 'Sin datos';
+  }
+
+  // Batería
+  const battEl  = document.getElementById('sensor-battery');
+  const fillEl  = document.getElementById('battery-fill-sensor');
   const chargEl = document.getElementById('sensor-charging');
-  if (battEl) {
-    let batt = parseInt(battEl.textContent) || 82;
-    batt = Math.max(10, Math.min(100, batt + (Math.random() > 0.7 ? 1 : -1)));
-    battEl.textContent = batt + '%';
-    battEl.style.color = batt > 30 ? 'var(--safe)' : batt > 15 ? 'var(--warn)' : 'var(--danger)';
+  const batt    = (data && data.battery != null) ? Math.round(data.battery * 100) : null;
+  if (battEl && batt != null) {
+    battEl.textContent  = batt + '%';
+    battEl.style.color  = batt > 30 ? 'var(--safe)' : batt > 15 ? 'var(--warn)' : 'var(--danger)';
     if (fillEl) {
-      fillEl.style.width = batt + '%';
+      fillEl.style.width      = batt + '%';
       fillEl.style.background = batt > 30 ? 'var(--safe)' : batt > 15 ? 'var(--warn)' : 'var(--danger)';
     }
-    if (chargEl) chargEl.textContent = batt > 90 ? 'Cargado ✅' : Math.random() > 0.5 ? 'Cargando ⚡' : 'Sin cargador';
+    if (chargEl) chargEl.textContent = data.charging ? 'Cargando ⚡' : (batt >= 100 ? 'Cargado ✅' : 'Sin cargador');
+  } else {
+    if (battEl)  battEl.textContent  = '—';
+    if (chargEl) chargEl.textContent = 'Sin datos';
   }
 
-  // Speed
+  // Velocidad
   const speedEl = document.getElementById('sensor-speed');
   if (speedEl) {
-    const speed = (Math.random() * 4).toFixed(1);
-    speedEl.textContent = speed;
+    speedEl.textContent = (data && data.speed != null) ? parseFloat(data.speed).toFixed(1) : '—';
+  }
+
+  // Info tiles en pantalla de perfil de alumno
+  const tileSync = document.getElementById('tile-last-sync');
+  if (tileSync && data && data.ts) {
+    const mins = Math.round((Date.now() - data.ts) / 60000);
+    tileSync.textContent = mins < 1 ? 'Ahora' : `hace ${mins} min`;
+  }
+  const tileBatt = document.getElementById('tile-battery');
+  if (tileBatt && batt != null) {
+    tileBatt.textContent = batt + '%';
+    const fill = document.getElementById('tile-battery-fill');
+    if (fill) { fill.style.width = batt + '%'; fill.style.background = batt > 30 ? 'var(--safe)' : batt > 15 ? 'var(--warn)' : 'var(--danger)'; }
+  }
+
+  // tile-speed (nuevo tile en perfil)
+  const tileSpeed = document.getElementById('tile-speed');
+  if (tileSpeed) {
+    tileSpeed.textContent = (data && data.speed != null) ? parseFloat(data.speed).toFixed(1) : '—';
+  }
+
+  // Estado en vivo sobre el mapa mini
+  if (data && data.lat != null) {
+    const gpsTextEl = document.getElementById('student-gps-text');
+    if (gpsTextEl) gpsTextEl.textContent = `📍 ${parseFloat(data.lat).toFixed(5)}, ${parseFloat(data.lng).toFixed(5)}`;
+    const lastSeenEl = document.getElementById('student-last-seen');
+    if (lastSeenEl && data.ts) {
+      const ago = Math.round((Date.now() - data.ts) / 1000);
+      lastSeenEl.textContent = ago < 60 ? `hace ${ago}s` : `hace ${Math.round(ago/60)}min`;
+    }
+  }
+
+  // Refresca mapa mini si el alumno se movió
+  if (data && data.lat != null && currentScreen === 'student') {
+    const miniMap = document.getElementById('student-mini-map');
+    if (miniMap) refreshParentMap(data.lat, data.lng, false);
+  }
+
+  // También actualiza la localización en el mapa completo si está abierto
+  if (data && data.lat != null && currentScreen === 'map') {
+    refreshParentMap(data.lat, data.lng, false);
   }
 }
 
 /* ═══════════════════════════════════════
-   CALL OVERLAY
+   HISTORIAL — Lee del localStorage del alumno
+   y renderiza en la pantalla de perfil
+═══════════════════════════════════════ */
+function renderStudentHistory() {
+  const container = document.getElementById('student-timeline');
+  if (!container) return;
+
+  const events = getStudentHistory(15);
+
+  if (events.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center;padding:24px;color:var(--text-3);font-size:13px;">
+        Sin actividad registrada aún.<br>La app del alumno debe estar abierta.
+      </div>`;
+    return;
+  }
+
+  const TYPE_ICON = {
+    gps: '📍', motion: '🚶', sos: '🆘', safe: '✅', battery: '🔋',
+    charging: '⚡', network: '📶', checkin: '📌', app: '📱', impact: '💥',
+    info: 'ℹ️'
+  };
+
+  container.innerHTML = events.map(ev => {
+    const icon  = TYPE_ICON[ev.type] || 'ℹ️';
+    const time  = ev.ts ? new Date(ev.ts).toLocaleTimeString('es-HN', { hour:'2-digit', minute:'2-digit' }) : '';
+    const color = ev.type === 'sos' ? 'var(--danger)' : ev.type === 'safe' ? 'var(--safe)' : ev.type === 'impact' ? 'var(--warn)' : 'var(--blue-acc)';
+    const dotBg = ev.type === 'sos' ? 'var(--danger-bg)' : ev.type === 'safe' ? 'var(--safe-bg)' : ev.type === 'impact' ? 'var(--warn-bg)' : 'rgba(41,121,255,0.1)';
+    return `
+      <div class="timeline-item">
+        <div class="timeline-dot" style="background:${dotBg};">
+          <svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="5" fill="${color}"/></svg>
+        </div>
+        <div class="timeline-content">
+          <div class="timeline-title">${icon} ${ev.label || ev.type}</div>
+          <div class="timeline-time">${time}${ev.placeName ? ' · ' + ev.placeName : ''}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+/* ═══════════════════════════════════════
+   GOOGLE MAPS — Padre (igual que alumno)
+═══════════════════════════════════════ */
+let activeMapStudent = 1;
+let lastParentMapLat = null;
+let lastParentMapLng = null;
+
+function refreshParentMap(lat, lng, force = true) {
+  const iframe  = document.getElementById('parent-gmap');
+  const loading = document.getElementById('parent-map-loading');
+  const chip    = document.getElementById('parent-map-chip');
+  const coords  = document.getElementById('parent-map-coords');
+  if (!iframe) return;
+
+  // Solo recarga si se movió más de 30m o es forzado
+  if (!force && lastParentMapLat != null) {
+    const dist = haversine(lastParentMapLat, lastParentMapLng, lat, lng);
+    if (dist < 30) return;
+  }
+
+  lastParentMapLat = lat;
+  lastParentMapLng = lng;
+
+  const url = `https://maps.google.com/maps?q=${lat},${lng}&z=17&output=embed&hl=es`;
+  iframe.src = url;
+
+  if (loading) loading.style.opacity = '0';
+  if (chip)   { chip.style.display = 'flex'; }
+  if (coords) coords.textContent = `${parseFloat(lat).toFixed(4)}, ${parseFloat(lng).toFixed(4)}`;
+}
+
+function recenterParentMap() {
+  const data = getStudentLive();
+  if (data && data.lat != null) {
+    refreshParentMap(data.lat, data.lng, true);
+    showToast('📍 Mapa centrado en ubicación actual');
+  } else {
+    showToast('Sin datos de ubicación del alumno aún');
+  }
+}
+
+function loadParentMap() {
+  const data = getStudentLive();
+  const loadingText = document.getElementById('parent-map-loading-text');
+  if (data && data.lat != null) {
+    refreshParentMap(data.lat, data.lng, true);
+  } else {
+    if (loadingText) loadingText.textContent = 'Abre la app del alumno primero';
+  }
+  // Info del alumno en el bottom sheet
+  const nameEl   = document.getElementById('map-student-name');
+  const locEl    = document.getElementById('map-student-location');
+  if (nameEl) nameEl.textContent = students[activeMapStudent]?.name || 'Alumno';
+  if (locEl)  locEl.textContent  = data?.placeName ? '📍 ' + data.placeName : '📍 Obteniendo ubicación...';
+}
+
+function filterMapStudent(id, btn) {
+  activeMapStudent = id;
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  lastParentMapLat = null; // forzar recarga
+  loadParentMap();
+}
+
+/* ═══════════════════════════════════════
+   MAPA DE EMERGENCIA — Google Maps iframe
+═══════════════════════════════════════ */
+function initEmergencyMap() {
+  const data = getStudentLive();
+  const iframe  = document.getElementById('em-gmap');
+  const loading = document.getElementById('em-map-loading');
+  if (!iframe) return;
+
+  if (data && data.lat != null) {
+    iframe.src = `https://maps.google.com/maps?q=${data.lat},${data.lng}&z=17&output=embed&hl=es`;
+    if (loading) setTimeout(() => { loading.style.display = 'none'; }, 1500);
+    // Actualiza chips de ubicación en pantalla emergencia
+    const locEl  = document.querySelector('.emergency-location-text');
+    const battEl = document.querySelector('#em-batt-chip');
+    if (locEl)  locEl.textContent = `📍 ${data.placeName || `${parseFloat(data.lat).toFixed(4)}, ${parseFloat(data.lng).toFixed(4)}`} · Vivo`;
+    if (battEl) battEl.textContent = `🔋 ${Math.round((data.battery||0)*100)}% batería`;
+  } else {
+    if (loading) loading.querySelector('div').textContent = '📍 Sin ubicación del alumno';
+  }
+}
+
+/* ═══════════════════════════════════════
+   LLAMAR AL ALUMNO — Usa número guardado
+═══════════════════════════════════════ */
+function callStudent(studentId) {
+  const phone = getStudentPhone(studentId);
+  const student = students[studentId];
+  if (!phone) {
+    showToast(`📱 Guarda primero el número de ${student?.name || 'el alumno'} en Ajustes`);
+    // Abre directamente el modal de configurar número
+    setTimeout(() => openEditPhone(studentId), 800);
+    return;
+  }
+  // Muestra confirmación antes de llamar (igual que en app del alumno)
+  showCallConfirm(student?.name || 'Alumno', phone, student?.initial || '?');
+}
+
+/* ── Confirmación visual antes de llamar ─ */
+function showCallConfirm(name, phone, initial) {
+  const overlay = document.getElementById('call-overlay');
+  const nameEl  = document.getElementById('call-name');
+  const avatarEl= document.getElementById('call-avatar');
+  const statusEl= document.getElementById('call-status-text');
+
+  if (nameEl)   nameEl.textContent   = name;
+  if (avatarEl) avatarEl.textContent = initial;
+  if (statusEl) {
+    statusEl.innerHTML = `
+      <div style="font-size:14px;color:rgba(255,255,255,0.6);margin-bottom:16px;">${formatPhoneParent(phone)}</div>
+      <div style="display:flex;gap:10px;width:100%;max-width:280px;">
+        <button onclick="endCall()" style="flex:1;height:48px;border-radius:14px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);color:white;font-size:14px;font-weight:600;cursor:pointer;">Cancelar</button>
+        <button onclick="doCall('${phone}')" style="flex:2;height:48px;border-radius:14px;background:var(--safe);border:none;color:white;font-size:14px;font-weight:700;cursor:pointer;">📞 Llamar ahora</button>
+      </div>`;
+  }
+  overlay.classList.add('active');
+}
+
+function doCall(phone) {
+  endCall();
+  setTimeout(() => { window.location.href = `tel:${phone}`; }, 200);
+}
+
+function formatPhoneParent(number) {
+  const clean = number.replace(/\D/g, '');
+  if (clean.length === 11 && clean.startsWith('504')) return `+504 ${clean.slice(3,7)}-${clean.slice(7)}`;
+  if (clean.length === 8) return `${clean.slice(0,4)}-${clean.slice(4)}`;
+  return number;
+}
+
+let currentStudentId = 1;
+
+/* ═══════════════════════════════════════
+   GESTIÓN DE ALUMNOS — Sistema unificado
+   Cada alumno tiene su propia clave:
+     ss_student_{id}  → info completa
+   Y comparte con el alumno:
+     ss_contacts_v1   → contactos que el alumno puede llamar
+     ss_schedule_v1   → horario de monitoreo
+     ss_phones_v1     → celular del alumno (para que el padre llame)
+═══════════════════════════════════════ */
+const LS_STUDENTS = 'ss_students_v1';
+
+// Carga todos los alumnos guardados
+function getStudents() {
+  try {
+    const raw = localStorage.getItem(LS_STUDENTS);
+    return raw ? JSON.parse(raw) : {};
+  } catch { return {}; }
+}
+
+function saveStudents(obj) {
+  try { localStorage.setItem(LS_STUDENTS, JSON.stringify(obj)); } catch {}
+}
+
+// Genera ID único para nuevo alumno
+function nextStudentId() {
+  const s = getStudents();
+  const ids = Object.keys(s).map(Number);
+  return ids.length ? Math.max(...ids) + 1 : 1;
+}
+
+/* ── Renderiza la lista de hijos en la tab ── */
+function renderChildrenList() {
+  const container = document.getElementById('children-list');
+  if (!container) return;
+
+  // Hijos del objeto en memoria + localStorage
+  const saved = getStudents();
+  // Fusiona con students hardcoded iniciales
+  const all = { ...students, ...saved };
+  const ids = Object.keys(all);
+
+  if (ids.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center;padding:60px 20px;color:var(--text-3);">
+        <div style="font-size:52px;margin-bottom:16px;">👨‍👩‍👧</div>
+        <div style="font-size:16px;font-weight:700;color:var(--text-2);margin-bottom:8px;">Sin hijos agregados</div>
+        <div style="font-size:13px;margin-bottom:24px;">Agrega a tu primer hijo para empezar a monitorearle</div>
+        <button onclick="openEditStudent(null)" style="background:var(--blue-acc);border:none;border-radius:14px;padding:14px 28px;font-size:14px;font-weight:700;color:white;cursor:pointer;font-family:'DM Sans',sans-serif;">+ Agregar primer hijo</button>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = ids.map(id => {
+    const s         = all[id];
+    const isSafe    = s.status !== 'danger';
+    const ring      = isSafe ? 'avatar-ring-safe' : 'avatar-ring-danger';
+    const pillClass = isSafe ? 'status-pill status-safe' : 'status-pill status-danger';
+    const pillText  = isSafe ? '● Seguro/a' : '🆘 SOS Activo';
+    const sched     = getStudentSchedule(parseInt(id));
+    const schedText = sched?.enabled ? `⏰ ${sched.start} – ${sched.end}` : '⏰ Monitoreo 24/7';
+    const metaText  = [s.grade, s.school].filter(Boolean).join(' · ') || 'Sin información';
+
+    return `
+      <div class="card card-pressable student-card anim-item"
+           onclick="navigateTo('student',{id:${id}})">
+        <div class="avatar ${ring}"
+             style="width:52px;height:52px;font-size:18px;background:linear-gradient(135deg,#0D2E4F,#1A3358);">
+          ${s.initial || s.name?.[0] || '?'}
+        </div>
+        <div class="student-info">
+          <div class="student-name">${s.name}</div>
+          <div class="student-meta">${metaText}</div>
+          <div class="student-status-row">
+            <div class="${pillClass}"><div class="status-dot"></div>${pillText}</div>
+            <div style="font-size:11px;color:var(--text-3);">${schedText}</div>
+          </div>
+        </div>
+        <svg class="student-card-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M8 6L12 10L8 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>`
+  }).join('');
+}
+
+/* ── Helper: leer horario del alumno ── */
+function getStudentSchedule(studentId) {
+  try {
+    const byId = localStorage.getItem(`ss_schedule_${studentId}`);
+    if (byId) return JSON.parse(byId);
+    const raw = localStorage.getItem('ss_schedule_v1');
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+/* ── Carga datos dinámicos en pantalla de perfil ── */
+function loadStudentProfile(id) {
+  const all = { ...students, ...getStudents() };
+  const s = all[id];
+  if (!s) return;
+
+  const isSafe = s.status !== 'danger';
+
+  // Topbar: nombre y grado
+  const nameEl  = document.getElementById('student-hero-name');
+  const gradeEl = document.getElementById('student-hero-grade');
+  if (nameEl)  nameEl.textContent  = s.name || '—';
+  if (gradeEl) gradeEl.textContent = [s.grade, s.school].filter(Boolean).join(' · ') || '—';
+
+  // Estado sobre el mapa
+  const statEl = document.getElementById('student-hero-status');
+  if (statEl) {
+    statEl.className = `status-pill ${isSafe ? 'status-safe' : 'status-danger'}`;
+    statEl.innerHTML = `<div class="status-dot"></div> ${isSafe ? 'Seguro/a' : 'SOS Activo'}`;
+  }
+
+  // Carga mapa mini con la última posición conocida del alumno
+  const live = getStudentLive();
+  const lat  = live?.lat ?? s.lat ?? 14.0817;
+  const lng  = live?.lng ?? s.lng ?? -87.2068;
+  const miniMap = document.getElementById('student-mini-map');
+  if (miniMap) {
+    miniMap.src = `https://maps.google.com/maps?q=${lat},${lng}&z=16&output=embed&hl=es`;
+  }
+
+  // GPS text
+  const gpsEl = document.getElementById('student-gps-text');
+  const syncEl = document.getElementById('student-last-seen');
+  if (gpsEl) {
+    if (live?.lat) {
+      gpsEl.textContent = `📍 ${live.lat.toFixed(5)}, ${live.lng.toFixed(5)}`;
+    } else {
+      gpsEl.textContent = '📍 Esperando señal GPS...';
+    }
+  }
+  if (syncEl && live?.ts) {
+    const ago = Math.round((Date.now() - live.ts) / 1000);
+    syncEl.textContent = ago < 60 ? `hace ${ago}s` : `hace ${Math.round(ago/60)}min`;
+  }
+}
+
+
+/* ── Estado de la pantalla de edición ── */
+let editingStudentId = null; // null = nuevo alumno
+let contactFields = [];      // arreglo de {id, name, role, number, emoji}
+
+/* ── Abrir pantalla de edición ──────── */
+function openEditStudent(studentId) {
+  editingStudentId = studentId || null;
+
+  const titleEl  = document.getElementById('edit-screen-title');
+  const dangerEl = document.getElementById('es-danger-zone');
+
+  if (studentId) {
+    if (titleEl)  titleEl.textContent   = 'Editar Hijo';
+    if (dangerEl) dangerEl.style.display = 'block';
+    loadStudentIntoForm(studentId);
+  } else {
+    if (titleEl)  titleEl.textContent   = 'Agregar Hijo';
+    if (dangerEl) dangerEl.style.display = 'none';
+    clearStudentForm();
+  }
+
+  navigateTo('edit-student');
+}
+
+/* ── Carga datos existentes en el form ─ */
+function loadStudentIntoForm(id) {
+  const all = getStudents();
+  const s   = all[id] || {};
+
+  document.getElementById('es-name')?.setAttribute('value', s.name || '');
+  document.getElementById('es-school')?.setAttribute('value', s.school || '');
+  document.getElementById('es-grade')?.setAttribute('value', s.grade || '');
+  document.getElementById('es-phone')?.setAttribute('value', s.phone || '');
+
+  // value necesita asignarse como propiedad, no atributo, después del render
+  setTimeout(() => {
+    const n = document.getElementById('es-name');
+    const sc = document.getElementById('es-school');
+    const gr = document.getElementById('es-grade');
+    const ph = document.getElementById('es-phone');
+    if (n)  n.value  = s.name   || '';
+    if (sc) sc.value = s.school || '';
+    if (gr) gr.value = s.grade  || '';
+    if (ph) ph.value = s.phone  || '';
+  }, 50);
+
+  // Contactos que el alumno puede llamar
+  loadContactsIntoForm(id);
+
+  // Horario
+  loadScheduleIntoForm(id);
+}
+
+/* ── Limpia el form para nuevo alumno ── */
+function clearStudentForm() {
+  setTimeout(() => {
+    ['es-name','es-school','es-grade','es-phone'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+  }, 50);
+
+  contactFields = [
+    { id: 'mama', name: 'Mamá', role: 'Contacto principal', number: '', emoji: '👩' },
+    { id: 'papa', name: 'Papá', role: 'Contacto secundario', number: '', emoji: '👨' }
+  ];
+  renderContactFields();
+
+  // Resetea horario
+  const toggleEl = document.getElementById('es-sched-toggle');
+  const bodyEl   = document.getElementById('es-sched-body');
+  if (toggleEl) toggleEl.classList.remove('on');
+  if (bodyEl)   bodyEl.style.display = 'none';
+  setTimeout(() => {
+    const s = document.getElementById('es-start');
+    const e = document.getElementById('es-end');
+    if (s) s.value = '06:00';
+    if (e) e.value = '16:00';
+    document.querySelectorAll('#es-days-row .day-chip').forEach(c => {
+      c.classList.toggle('on', [1,2,3,4,5].includes(parseInt(c.dataset.day)));
+    });
+  }, 50);
+}
+
+/* ── Contactos en el form ─────────────── */
+function loadContactsIntoForm(studentId) {
+  try {
+    const key = `ss_contacts_${studentId}`;
+    const raw = localStorage.getItem(key);
+    const saved = raw ? JSON.parse(raw) : null;
+    contactFields = saved
+      ? saved.filter(c => !c.emergency) // excluye 911 — siempre está
+      : [
+          { id: 'mama', name: 'Mamá',  role: 'Contacto principal',   number: '', emoji: '👩' },
+          { id: 'papa', name: 'Papá',  role: 'Contacto secundario',  number: '', emoji: '👨' }
+        ];
+  } catch {
+    contactFields = [];
+  }
+  renderContactFields();
+}
+
+function renderContactFields() {
+  const container = document.getElementById('es-contacts-list');
+  if (!container) return;
+
+  container.innerHTML = contactFields.map((c, i) => `
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+        <span style="font-size:20px;">${c.emoji}</span>
+        <input value="${c.name}" placeholder="Nombre (Mamá, Tío, etc.)"
+          style="flex:1;background:transparent;border:none;font-size:14px;font-weight:600;color:var(--text-h);outline:none;font-family:'DM Sans',sans-serif;"
+          oninput="contactFields[${i}].name = this.value">
+        <button onclick="removeContactField(${i})" style="background:var(--danger-bg);border:none;border-radius:8px;width:28px;height:28px;cursor:pointer;font-size:14px;color:var(--danger);">✕</button>
+      </div>
+      <div class="input-group" style="margin-bottom:0;">
+        <input class="input-field" value="${c.number}" type="tel" placeholder="+504 9999-8888"
+          style="background:var(--bg-app);"
+          oninput="contactFields[${i}].number = this.value">
+      </div>
+    </div>
+  `).join('');
+}
+
+function addContactField() {
+  const emojis = ['👩','👨','👴','👵','👩‍⚕️','🧑','👮','🚒'];
+  contactFields.push({
+    id: 'contact_' + Date.now(),
+    name: '',
+    role: 'Contacto',
+    number: '',
+    emoji: emojis[contactFields.length % emojis.length]
+  });
+  renderContactFields();
+}
+
+function removeContactField(i) {
+  contactFields.splice(i, 1);
+  renderContactFields();
+}
+
+/* ── Horario en el form ─────────────── */
+function loadScheduleIntoForm(studentId) {
+  try {
+    const key = `ss_schedule_${studentId}`;
+    const raw = localStorage.getItem(key);
+    const s   = raw ? JSON.parse(raw) : null;
+    if (!s) return;
+
+    const toggleEl = document.getElementById('es-sched-toggle');
+    const bodyEl   = document.getElementById('es-sched-body');
+
+    setTimeout(() => {
+      if (s.enabled) {
+        toggleEl?.classList.add('on');
+        if (bodyEl) bodyEl.style.display = 'flex';
+      }
+      const start = document.getElementById('es-start');
+      const end   = document.getElementById('es-end');
+      if (start) start.value = s.start || '06:00';
+      if (end)   end.value   = s.end   || '16:00';
+      document.querySelectorAll('#es-days-row .day-chip').forEach(c => {
+        c.classList.toggle('on', (s.days || [1,2,3,4,5]).includes(parseInt(c.dataset.day)));
+      });
+      const motionT = document.getElementById('es-motion-toggle');
+      if (motionT) motionT.classList.toggle('on', s.motionReactivate !== false);
+      updateEsBatteryPreview();
+    }, 80);
+  } catch {}
+}
+
+function toggleEsSchedule(el) {
+  el.classList.toggle('on');
+  const body = document.getElementById('es-sched-body');
+  if (body) body.style.display = el.classList.contains('on') ? 'flex' : 'none';
+  updateEsBatteryPreview();
+}
+
+function updateEsBatteryPreview() {
+  const bar    = document.getElementById('es-battery-bar');
+  const saving = document.getElementById('es-saving-pct');
+  const startV = document.getElementById('es-start')?.value || '06:00';
+  const endV   = document.getElementById('es-end')?.value   || '16:00';
+  if (!bar) return;
+
+  const [sh] = startV.split(':').map(Number);
+  const [eh] = endV.split(':').map(Number);
+  const activeH = Math.max(0, eh - sh);
+  const lowH    = 24 - activeH;
+  const pctA    = (activeH / 24 * 100).toFixed(0);
+  const pctL    = (lowH    / 24 * 100).toFixed(0);
+
+  bar.innerHTML = `
+    <div style="width:${(sh/24*100).toFixed(0)}%;background:rgba(148,163,184,0.3);"></div>
+    <div style="width:${pctA}%;background:var(--safe);"></div>
+    <div style="width:${pctL}%;background:rgba(148,163,184,0.3);"></div>`;
+
+  const savedPct = Math.round((1 - (activeH * 15 + lowH * 2) / (24 * 15)) * 100);
+  if (saving) saving.textContent = `~${Math.max(0, savedPct)}%`;
+}
+
+/* ── Guardar todo del alumno ──────────── */
+function saveStudentFull() {
+  const name   = document.getElementById('es-name')?.value.trim();
+  const school = document.getElementById('es-school')?.value.trim();
+  const grade  = document.getElementById('es-grade')?.value.trim();
+  const phone  = document.getElementById('es-phone')?.value.trim().replace(/[\s\-\(\)]/g,'');
+
+  if (!name) { showToast('⚠️ Ingresa el nombre del alumno'); return; }
+
+  const id = editingStudentId || nextStudentId();
+
+  // 1. Guarda info del alumno
+  const all = getStudents();
+  all[id] = { id, name, school, grade, phone,
+    initial: name.trim()[0]?.toUpperCase() || '?',
+    status: all[id]?.status || 'safe'
+  };
+  saveStudents(all);
+  students[id] = all[id]; // sincroniza objeto en memoria
+
+  // 2. Guarda número del alumno (para que el padre llame)
+  if (phone) saveStudentPhone(id, phone);
+
+  // 3. Guarda contactos del alumno (los que él puede llamar)
+  const contacts = [
+    ...contactFields.filter(c => c.number && c.name),
+    { id: '911', name: 'Emergencias 911', role: 'Policía · Bomberos · Cruz Roja',
+      number: '911', emoji: '🚨', color: 'var(--danger-bg)', emergency: true }
+  ];
+  try { localStorage.setItem(`ss_contacts_${id}`, JSON.stringify(contacts)); } catch {}
+
+  // También actualiza la clave compartida ss_contacts_v1 para que la app alumno la lea
+  try { localStorage.setItem('ss_contacts_v1', JSON.stringify(contacts)); } catch {}
+
+  // 4. Guarda horario del alumno
+  const schedEnabled = document.getElementById('es-sched-toggle')?.classList.contains('on') || false;
+  const days = [...document.querySelectorAll('#es-days-row .day-chip.on')].map(c => parseInt(c.dataset.day));
+  const start = document.getElementById('es-start')?.value || '06:00';
+  const end   = document.getElementById('es-end')?.value   || '16:00';
+  const motion = document.getElementById('es-motion-toggle')?.classList.contains('on') !== false;
+  const sched = { enabled: schedEnabled, days, start, end, motionReactivate: motion };
+  try { localStorage.setItem(`ss_schedule_${id}`, JSON.stringify(sched)); } catch {}
+  // También actualiza ss_schedule_v1 compartida
+  try { localStorage.setItem('ss_schedule_v1', JSON.stringify(sched)); } catch {}
+
+  showToast(`✅ ${editingStudentId ? 'Cambios guardados' : '¡Hijo agregado!'} — ${name}`);
+  navigateTo('children');
+}
+
+/* ── Eliminar alumno ─────────────────── */
+function confirmDeleteStudent() {
+  if (!editingStudentId) return;
+  const all = { ...students, ...getStudents() };
+  const s   = all[editingStudentId];
+  if (!confirm(`¿Eliminar a ${s?.name || 'este hijo'}? Esta acción no se puede deshacer.`)) return;
+
+  const saved = getStudents();
+  delete saved[editingStudentId];
+  saveStudents(saved);
+  delete students[editingStudentId];
+
+  try { localStorage.removeItem(`ss_contacts_${editingStudentId}`); } catch {}
+  try { localStorage.removeItem(`ss_schedule_${editingStudentId}`); } catch {}
+
+  showToast('🗑️ Hijo eliminado');
+  navigateTo('children');
+}
+
+/* ── Actualiza la lista de hijos en Ajustes ─ */
+function updateSettingsStudentList() {
+  const container = document.getElementById('settings-students-list');
+  if (!container) return;
+  const all = getStudents();
+  const ids = Object.keys(all);
+  if (ids.length === 0) {
+    container.innerHTML = `<div style="padding:16px;text-align:center;color:var(--text-3);font-size:13px;">Sin alumnos agregados</div>`;
+    return;
+  }
+  container.innerHTML = ids.map(id => {
+    const s = all[id];
+    const phone = getStudentPhone(parseInt(id));
+    return `
+      <div class="settings-item" onclick="openEditStudent(${id})">
+        <div class="avatar" style="width:38px;height:38px;font-size:14px;background:linear-gradient(135deg,#0D2E4F,#1A3358);">${s.initial || '?'}</div>
+        <div class="settings-item-text">
+          <div class="settings-item-label">${s.name}</div>
+          <div class="settings-item-sub">${s.grade || ''}${phone ? ' · 📱 ' + formatPhoneParent(phone) : ' · Sin número'}</div>
+        </div>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="opacity:0.4;flex-shrink:0;">
+          <path d="M6 4L10 8L6 12" stroke="var(--text-h)" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>`;
+  }).join('');
+}
+
+/* ── Actualiza subtítulos en ajustes (legacy) ─ */
+function updatePhoneSubs() {
+  updateSettingsStudentList();
+}
+
+function openEditPhone(studentId) {
+  // Ahora redirige a la pantalla completa de edición
+  openEditStudent(studentId);
+}
+
+function saveNewStudent() {
+  // Ahora redirige a la pantalla completa
+  closeModal();
+  openEditStudent(null);
+}
+
+/* ═══════════════════════════════════════
+   CALL OVERLAY — confirmación antes de llamar
 ═══════════════════════════════════════ */
 function startCall(name, initial) {
   const overlay = document.getElementById('call-overlay');
@@ -2967,58 +4133,17 @@ function endCall() {
 }
 
 /* ═══════════════════════════════════════
-   LEAFLET MAP
+   UTILIDADES
 ═══════════════════════════════════════ */
-function initMap() {
-  if (map) return;
-  const center = [14.0817, -87.2068];
-  map = L.map('leaflet-map', { center, zoom: 15, zoomControl: false, attributionControl: false });
-
-  const tiles = isDark
-    ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-    : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
-  L.tileLayer(tiles, { maxZoom: 19 }).addTo(map);
-
-  L.circle(center, { radius: 150, color: '#2979FF', fillColor: '#2979FF', fillOpacity: 0.08, weight: 2, dashArray: '6 4' }).addTo(map);
-  L.marker(center, { icon: L.divIcon({ className: '', html: '<div class="zone-label">🏫 Colegio Lincoln</div>', iconAnchor: [70, -10] }) }).addTo(map);
-
-  addStudentMarker(map, students[1], '#0FBF7A');
-  addStudentMarker(map, students[2], '#E8364A', [14.0900, -87.2150]);
-
-  L.circle([14.075, -87.21], { radius: 100, color: '#0FBF7A', fillColor: '#0FBF7A', fillOpacity: 0.06, weight: 1.5, dashArray: '4 3' }).addTo(map);
-  L.marker([14.075, -87.21], { icon: L.divIcon({ className: '', html: '<div class="zone-label" style="background:rgba(15,191,122,0.9)">🏠 Casa</div>', iconAnchor: [30, -10] }) }).addTo(map);
+function haversine(lat1, lng1, lat2, lng2) {
+  const R = 6371000;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) ** 2 + Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) * Math.sin(dLng/2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
-function addStudentMarker(mapInst, student, color, customPos = null) {
-  const pos = customPos || [student.lat, student.lng];
-  const icon = L.divIcon({
-    className: '',
-    html: `<div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#0D2E4F,#1A3358);border:3px solid ${color};display:flex;align-items:center;justify-content:center;font-family:'Sora',sans-serif;font-weight:700;color:white;font-size:16px;box-shadow:0 4px 20px ${color}66;">${student.initial}</div>`,
-    iconSize: [44, 44], iconAnchor: [22, 22]
-  });
-  return L.marker(pos, { icon }).addTo(mapInst).bindPopup(`<b>${student.name}</b><br>${student.grade}`);
-}
 
-function recenterMap() {
-  if (map) map.setView([students[1].lat, students[1].lng], 15, { animate: true });
-}
-
-function filterMapStudent(id, btn) {
-  document.querySelectorAll('#screen-map .filter-tab').forEach(t => t.classList.remove('active'));
-  btn.classList.add('active');
-  const s = students[id];
-  if (map) map.setView([s.lat, s.lng], 16, { animate: true });
-}
-
-function initEmergencyMap() {
-  if (emergencyMap) return;
-  const pos = [14.0900, -87.2150];
-  emergencyMap = L.map('emergency-map', { center: pos, zoom: 16, zoomControl: false, attributionControl: false, dragging: false, scrollWheelZoom: false });
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(emergencyMap);
-  L.circle(pos, { radius: 80, color: '#E8364A', fillColor: '#E8364A', fillOpacity: 0.2, weight: 2 }).addTo(emergencyMap);
-  const icon = L.divIcon({ className: '', html: `<div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#7A1E2E,#4A1520);border:3px solid #E8364A;display:flex;align-items:center;justify-content:center;font-family:'Sora',sans-serif;font-weight:700;color:white;font-size:14px;box-shadow:0 0 20px #E8364A88;">M</div>`, iconSize: [36, 36], iconAnchor: [18, 18] });
-  L.marker(pos, { icon }).addTo(emergencyMap);
-}
 
 /* ═══════════════════════════════════════
    EMERGENCY TIMER
@@ -3075,16 +4200,7 @@ function toggleDarkMode() {
   if (sunIcon)  sunIcon.style.display  = isDark ? 'block' : 'none';
   if (iconBg)   iconBg.style.background = isDark ? 'rgba(245,166,35,0.12)' : 'rgba(10,22,40,0.07)';
 
-  // Rebuild map with correct tile theme
-  if (map) {
-    map.eachLayer(layer => { if (layer._url) map.removeLayer(layer); });
-    const tiles = isDark
-      ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-      : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
-    L.tileLayer(tiles, { maxZoom: 19 }).addTo(map);
-    setTimeout(() => map.invalidateSize(), 350);
-  }
-
+  // El iframe de Google Maps no necesita rebuild — siempre se ve bien
   showToast(isDark ? '🌙 Modo oscuro activado' : '☀️ Modo claro activado');
 }
 
@@ -3111,13 +4227,19 @@ function setFilter(el) {
 const modals = {
   'add-student': {
     title: 'Agregar un Hijo',
-    sub: 'Vincula el celular o pulsera de tu hijo para comenzar a monitorear su seguridad.',
+    sub: 'Ingresa los datos de tu hijo y su número de celular para poder llamarle en emergencias.',
     content: `
-      <div class="input-group"><label class="input-label">Nombre Completo</label><input class="input-field" placeholder="Ej. Carlos García" type="text"></div>
-      <div class="input-group"><label class="input-label">Colegio</label><input class="input-field" placeholder="Nombre del colegio" type="text"></div>
-      <div class="input-group"><label class="input-label">Grado</label><input class="input-field" placeholder="Ej. 8vo Grado" type="text"></div>
-      <button class="btn btn-primary btn-full" style="margin-top:8px;height:52px;" onclick="closeModal();showToast('👶 ¡Hijo agregado! Comparte el enlace a su celular.')">Continuar</button>
+      <div class="input-group"><label class="input-label">Nombre Completo</label><input class="input-field" id="new-student-name" placeholder="Ej. Carlos García" type="text"></div>
+      <div class="input-group"><label class="input-label">Colegio</label><input class="input-field" id="new-student-school" placeholder="Nombre del colegio" type="text"></div>
+      <div class="input-group"><label class="input-label">Grado</label><input class="input-field" id="new-student-grade" placeholder="Ej. 8vo Grado" type="text"></div>
+      <div class="input-group"><label class="input-label">📱 Número de celular del alumno</label><input class="input-field" id="new-student-phone" placeholder="+504 9999-8888" type="tel"></div>
+      <button class="btn btn-primary btn-full" style="margin-top:8px;height:52px;" onclick="saveNewStudent()">Continuar</button>
       <button class="btn btn-ghost btn-full" style="margin-top:10px;height:44px;" onclick="closeModal()">Cancelar</button>`
+  },
+  'edit-phone': {
+    title: '📱 Número del Alumno',
+    sub: '',
+    content: `<div id="edit-phone-content"></div>`
   },
   'zone': {
     title: 'Zonas Seguras',
@@ -3205,29 +4327,33 @@ function showModal(key) {
   const m = modals[key];
   if (!m) return;
   const sheet = document.getElementById('modal-sheet');
+  if (!sheet) return;
   sheet.innerHTML = `
     <div class="sheet-handle"></div>
     <div class="modal-title">${m.title}</div>
     <div class="modal-sub">${m.sub}</div>
     ${m.content}
   `;
-  document.getElementById('modal-overlay').classList.add('open');
+  document.getElementById('modal-overlay')?.classList.add('open');
 }
 
 function closeModal() {
-  document.getElementById('modal-overlay').classList.remove('open');
+  document.getElementById('modal-overlay')?.classList.remove('open');
 }
-
-document.getElementById('modal-overlay').addEventListener('click', function(e) {
-  if (e.target === this) closeModal();
-});
 
 /* ═══════════════════════════════════════
    INIT
 ═══════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', () => {
+  // El addEventListener del overlay va aquí — garantiza que el elemento existe
+  document.getElementById('modal-overlay')?.addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+
+  const nav = document.getElementById('bottom-nav');
+  if (nav) nav.style.display = 'none';
+
   navigateTo('login');
-  document.getElementById('bottom-nav').style.display = 'none';
   renderNotifications();
 });
 </script>
