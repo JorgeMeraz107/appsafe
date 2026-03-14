@@ -591,6 +591,29 @@
     background: white;
   }
 
+  .input-field.is-error {
+    border-color: var(--danger);
+    box-shadow: 0 0 0 3px rgba(232,54,74,0.12);
+    animation: shake 0.3s ease;
+  }
+
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20%      { transform: translateX(-6px); }
+    40%      { transform: translateX(6px); }
+    60%      { transform: translateX(-4px); }
+    80%      { transform: translateX(4px); }
+  }
+
+  .input-error-msg {
+    font-size: 12px;
+    color: var(--danger);
+    margin-top: 4px;
+    padding: 0 2px;
+    display: none;
+  }
+  .input-error-msg.show { display: block; }
+
   .forgot-link {
     font-size: 13px;
     color: var(--blue-acc);
@@ -1886,17 +1909,21 @@
 
       <div class="input-group">
         <label class="input-label">Correo electrónico</label>
-        <input type="email" class="input-field" placeholder="padre@correo.com" value="maria.garcia@gmail.com">
+        <input type="email" id="login-email" class="input-field" placeholder="padre@correo.com"
+               value="maria.garcia@gmail.com" required autocomplete="email">
+        <div class="input-error-msg" id="login-email-err">Ingresa un correo válido</div>
       </div>
 
       <div class="input-group">
         <label class="input-label">Contraseña</label>
-        <input type="password" class="input-field" placeholder="••••••••" value="password123">
+        <input type="password" id="login-password" class="input-field" placeholder="••••••••"
+               value="password123" required autocomplete="current-password" minlength="6">
+        <div class="input-error-msg" id="login-pass-err">La contraseña debe tener al menos 6 caracteres</div>
       </div>
 
       <button class="forgot-link" style="text-align:right">¿Olvidaste tu contraseña?</button>
 
-      <button class="btn btn-primary btn-full" style="border-radius:var(--radius-sm); font-size:16px; height:54px;" onclick="navigateTo('home')">
+      <button class="btn btn-primary btn-full" style="border-radius:var(--radius-sm); font-size:16px; height:54px;" onclick="validateLogin()">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
           <path d="M9 2L10.5 7H16L11.5 10.5L13 15.5L9 12L5 15.5L6.5 10.5L2 7H7.5L9 2Z" fill="white"/>
         </svg>
@@ -3643,7 +3670,75 @@ function formatPhoneParent(number) {
 let currentStudentId = 1;
 
 /* ═══════════════════════════════════════
-   GESTIÓN DE ALUMNOS — Sistema unificado
+   VALIDACIONES — helpers reutilizables
+═══════════════════════════════════════ */
+
+/* Marca un input como error y muestra mensaje */
+function markError(inputId, msgId) {
+  const el  = document.getElementById(inputId);
+  const msg = document.getElementById(msgId);
+  if (el)  { el.classList.add('is-error'); el.focus(); }
+  if (msg) msg.classList.add('show');
+  // Limpia el error cuando el usuario empieza a escribir
+  el?.addEventListener('input', () => clearError(inputId, msgId), { once: true });
+}
+
+function clearError(inputId, msgId) {
+  document.getElementById(inputId)?.classList.remove('is-error');
+  document.getElementById(msgId)?.classList.remove('show');
+}
+
+/* Valida formato email */
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+}
+
+/* Valida teléfono Honduras: 8 dígitos después de quitar todo lo que no sea número */
+function isValidPhone(phone) {
+  if (!phone) return true; // opcional — solo valida si se ingresó algo
+  const digits = phone.replace(/\D/g, '');
+  // Honduras: 8 dígitos locales, o +504 + 8 dígitos = 12 dígitos totales
+  return digits.length === 8 || digits.length === 11 || digits.length === 12;
+}
+
+/* ── Validación del Login ──────────────── */
+function validateLogin() {
+  const emailEl = document.getElementById('login-email');
+  const passEl  = document.getElementById('login-password');
+  let valid = true;
+
+  clearError('login-email', 'login-email-err');
+  clearError('login-password', 'login-pass-err');
+
+  const email = emailEl?.value.trim() || '';
+  const pass  = passEl?.value || '';
+
+  if (!email || !isValidEmail(email)) {
+    markError('login-email', 'login-email-err');
+    valid = false;
+  }
+  if (!pass || pass.length < 6) {
+    markError('login-password', 'login-pass-err');
+    valid = false;
+  }
+
+  if (!valid) return;
+
+  // Demo: cualquier email+contraseña válidos pasan
+  // En producción: llamada a Firebase Auth aquí
+  navigateTo('home');
+
+  // Pide permiso de notificaciones después del login
+  // (el clic en Ingresar satisface el requisito de gesto del usuario)
+  requestNotifPermission().then(() => {
+    // Demo automático — simula eventos reales de Firebase
+    // En producción: estos llamados vienen de onSnapshot() de Firestore
+    runNotificationDemo();
+  });
+}
+
+
+/* ═══════════════════════════════════════
    Cada alumno tiene su propia clave:
      ss_student_{id}  → info completa
    Y comparte con el alumno:
@@ -4000,9 +4095,75 @@ function saveStudentFull() {
   const name   = document.getElementById('es-name')?.value.trim();
   const school = document.getElementById('es-school')?.value.trim();
   const grade  = document.getElementById('es-grade')?.value.trim();
-  const phone  = document.getElementById('es-phone')?.value.trim().replace(/[\s\-\(\)]/g,'');
+  const rawPhone = document.getElementById('es-phone')?.value.trim();
+  const phone  = rawPhone?.replace(/[\s\-\(\)\+]/g, '');
 
-  if (!name) { showToast('Ingresa el nombre del alumno'); return; }
+  // Limpiar errores anteriores
+  ['es-name','es-school','es-phone'].forEach(id => {
+    document.getElementById(id)?.classList.remove('is-error');
+  });
+
+  let valid = true;
+
+  // ① Nombre obligatorio
+  if (!name) {
+    markError('es-name', null);
+    showToast('Ingresa el nombre del alumno');
+    valid = false;
+  }
+
+  // ② Teléfono: si se ingresó, debe tener formato válido
+  if (rawPhone && !isValidPhone(rawPhone)) {
+    markError('es-phone', null);
+    showToast('Teléfono inválido — ingresa 8 dígitos');
+    valid = false;
+  }
+
+  // ③ Horario: si está activo, start debe ser antes que end
+  const schedEnabled = document.getElementById('es-sched-toggle')?.classList.contains('on');
+  const startVal = document.getElementById('es-start')?.value || '06:00';
+  const endVal   = document.getElementById('es-end')?.value   || '16:00';
+
+  if (schedEnabled) {
+    const [sh, sm] = startVal.split(':').map(Number);
+    const [eh, em] = endVal.split(':').map(Number);
+    const startMins = sh * 60 + sm;
+    const endMins   = eh * 60 + em;
+
+    if (startMins >= endMins) {
+      document.getElementById('es-start')?.classList.add('is-error');
+      document.getElementById('es-end')?.classList.add('is-error');
+      showToast('La hora de inicio debe ser antes que la hora de fin');
+      valid = false;
+    }
+
+    // Al menos un día debe estar seleccionado
+    const days = [...document.querySelectorAll('#es-days-row .day-chip.on')];
+    if (days.length === 0) {
+      showToast('Selecciona al menos un día de la semana');
+      valid = false;
+    }
+  }
+
+  // ④ Contactos: los que tengan nombre deben tener número y viceversa
+  const invalidContacts = contactFields.filter(c =>
+    (c.name && !c.number) || (!c.name && c.number)
+  );
+  if (invalidContacts.length > 0) {
+    showToast('Cada contacto debe tener nombre y número');
+    valid = false;
+  }
+
+  // ⑤ Teléfonos de contactos con formato válido
+  const badContactPhone = contactFields.find(c =>
+    c.number && !isValidPhone(c.number)
+  );
+  if (badContactPhone) {
+    showToast(`Teléfono inválido en contacto "${badContactPhone.name || 'sin nombre'}"`)
+    valid = false;
+  }
+
+  if (!valid) return;
 
   const id = editingStudentId || nextStudentId();
 
@@ -4013,31 +4174,25 @@ function saveStudentFull() {
     status: all[id]?.status || 'safe'
   };
   saveStudents(all);
-  students[id] = all[id]; // sincroniza objeto en memoria
+  students[id] = all[id];
 
-  // 2. Guarda número del alumno (para que el padre llame)
+  // 2. Guarda número del alumno
   if (phone) saveStudentPhone(id, phone);
 
-  // 3. Guarda contactos del alumno (los que él puede llamar)
+  // 3. Guarda contactos del alumno
   const contacts = [
     ...contactFields.filter(c => c.number && c.name),
     { id: '911', name: 'Emergencias 911', role: 'Policía · Bomberos · Cruz Roja',
-      number: '911', emoji: '🚨', color: 'var(--danger-bg)', emergency: true }
+      number: '911', color: 'var(--danger-bg)', emergency: true }
   ];
   try { localStorage.setItem(`ss_contacts_${id}`, JSON.stringify(contacts)); } catch {}
-
-  // También actualiza la clave compartida ss_contacts_v1 para que la app alumno la lea
   try { localStorage.setItem('ss_contacts_v1', JSON.stringify(contacts)); } catch {}
 
   // 4. Guarda horario del alumno
-  const schedEnabled = document.getElementById('es-sched-toggle')?.classList.contains('on') || false;
   const days = [...document.querySelectorAll('#es-days-row .day-chip.on')].map(c => parseInt(c.dataset.day));
-  const start = document.getElementById('es-start')?.value || '06:00';
-  const end   = document.getElementById('es-end')?.value   || '16:00';
   const motion = document.getElementById('es-motion-toggle')?.classList.contains('on') !== false;
-  const sched = { enabled: schedEnabled, days, start, end, motionReactivate: motion };
+  const sched = { enabled: schedEnabled, days, start: startVal, end: endVal, motionReactivate: motion };
   try { localStorage.setItem(`ss_schedule_${id}`, JSON.stringify(sched)); } catch {}
-  // También actualiza ss_schedule_v1 compartida
   try { localStorage.setItem('ss_schedule_v1', JSON.stringify(sched)); } catch {}
 
   showToast(editingStudentId ? 'Cambios guardados' : `${name} agregado`);
@@ -4349,16 +4504,194 @@ function closeModal() {
 }
 
 /* ═══════════════════════════════════════
+   SISTEMA DE NOTIFICACIONES PUSH
+   ─────────────────────────────────────
+   Estado actual (sin Firebase):
+   - El Service Worker se registra y pide permiso al padre
+   - sendPushNotification() es el punto de conexión con Firebase
+   - Cuando llegue Firebase: llamar sendPushNotification() desde
+     los listeners de Firestore (onSnapshot de sos, batería, etc.)
+
+   Con Firebase (futuro):
+   - Firestore onSnapshot detecta SOS del alumno
+   - Llama sendPushNotification({ type:'sos', ... })
+   - El SW muestra el banner nativo en el celular del padre
+═══════════════════════════════════════ */
+
+let swRegistration  = null;
+let notifPermission = 'default';
+
+/* ── Registra el Service Worker ─────────────────────────
+   Se llama al cargar la página. El SW queda activo en
+   background y puede recibir push incluso con app cerrada. */
+function registerServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+
+  navigator.serviceWorker.register('/service-worker.js')
+    .then(reg => {
+      swRegistration = reg;
+
+      // Cuando el padre toca una notificación, el SW envía un mensaje
+      // y aquí navegamos a la pantalla correcta
+      navigator.serviceWorker.addEventListener('message', e => {
+        const { type: msgType, notifType } = e.data || {};
+        if (msgType !== 'NOTIFICATION_CLICK') return;
+        if      (notifType === 'sos')     navigateTo('emergency');
+        else if (notifType === 'battery') navigateTo('student', { id: currentStudentId });
+        else                              switchTab('alerts');
+      });
+    })
+    .catch(() => {
+      // Sin SW la Notification API directa sigue funcionando
+      // mientras la app esté abierta
+    });
+}
+
+/* ── Pide permiso de notificaciones ──────────────────────
+   Se llama después del login — el navegador requiere un
+   gesto del usuario (clic) antes de poder pedirlo. */
+async function requestNotifPermission() {
+  if (!('Notification' in window)) return;
+  if (Notification.permission !== 'default') {
+    notifPermission = Notification.permission;
+    return;
+  }
+  notifPermission = await Notification.requestPermission();
+}
+
+/* ── Envía una notificación push al padre ────────────────
+   Este es el ÚNICO punto que cambia cuando llegue Firebase.
+   Ahora: muestra la notificación directamente en este dispositivo.
+   Con Firebase: FCM entrega el push al celular del padre
+                 aunque la app esté cerrada.
+
+   payload = {
+     type:  'sos' | 'battery' | 'offline' | 'info',
+     title: 'Texto del título',
+     body:  'Texto del cuerpo',
+   }
+*/
+function sendPushNotification(payload) {
+  if (notifPermission !== 'granted') return;
+
+  const { type = 'info', title, body } = payload;
+
+  const options = {
+    body,
+    icon:               '/icons/icon-192.png',
+    badge:              '/icons/badge-72.png',
+    tag:                `schoolsafe-${type}`,   // reemplaza notif anterior del mismo tipo
+    renotify:           type === 'sos',          // SOS siempre vibra de nuevo
+    requireInteraction: type === 'sos',          // SOS no desaparece solo
+    vibrate: type === 'sos' ? [300,100,300,100,300] : [150],
+    data: { type },
+  };
+
+  // Vía Service Worker — funciona en background
+  if (swRegistration?.active) {
+    swRegistration.active.postMessage({ type: 'PUSH_NOTIFICATION', payload: { title, ...options } });
+    return;
+  }
+
+  // Fallback: Notification API directa (solo con app abierta)
+  const notif = new Notification(title, options);
+  notif.onclick = () => {
+    window.focus();
+    if      (type === 'sos')     navigateTo('emergency');
+    else if (type === 'battery') navigateTo('student', { id: currentStudentId });
+    else                         switchTab('alerts');
+  };
+}
+
+/* ═══════════════════════════════════════
+   DEMO DE NOTIFICACIONES
+   ─────────────────────────────────────
+   Simula la secuencia de eventos que llegarían
+   desde Firebase en producción. Solo corre una
+   vez por sesión. Eliminar cuando haya Firebase.
+═══════════════════════════════════════ */
+function runNotificationDemo() {
+  // Solo una vez por sesión
+  if (sessionStorage.getItem('notif_demo_done')) return;
+  sessionStorage.setItem('notif_demo_done', '1');
+
+  // ── Evento 1: SOS a los 8 segundos ──────────────────
+  // En producción: Firestore onSnapshot detecta data.sos === true
+  setTimeout(() => {
+    sendPushNotification({
+      type:  'sos',
+      title: 'SOS — Sofía García',
+      body:  'Presionó el botón de emergencia. Toca para ver su ubicación.',
+    });
+  }, 8000);
+
+  // ── Evento 2: Batería baja a los 22 segundos ─────────
+  // En producción: Firestore detecta data.battery <= 0.15
+  setTimeout(() => {
+    sendPushNotification({
+      type:  'battery',
+      title: 'Batería baja — Mateo García',
+      body:  'El celular tiene 12% de batería. Puede desconectarse pronto.',
+    });
+  }, 22000);
+
+  // ── Evento 3: Info — llegó al colegio a los 38s ──────
+  // En producción: Firestore detecta entrada a zona segura
+  setTimeout(() => {
+    sendPushNotification({
+      type:  'info',
+      title: 'Mateo llegó al colegio',
+      body:  'Entró a la zona segura · 07:52 AM',
+    });
+  }, 38000);
+}
+
+
+/*
+  ════════════════════════════════════════════════
+  CÓMO CONECTAR CON FIREBASE (cuando esté listo)
+  ════════════════════════════════════════════════
+
+  // En el listener de Firestore del alumno:
+  db.collection('students').doc(studentId).onSnapshot(doc => {
+    const data = doc.data();
+
+    // SOS activado
+    if (data.sos && !lastSosState) {
+      sendPushNotification({
+        type:  'sos',
+        title: `SOS — ${data.name}`,
+        body:  'Presionó el botón de emergencia.',
+      });
+    }
+    lastSosState = data.sos;
+
+    // Batería baja
+    if (data.battery <= 0.15 && !battAlerted) {
+      battAlerted = true;
+      sendPushNotification({
+        type:  'battery',
+        title: 'Batería baja',
+        body:  `${data.name} tiene ${Math.round(data.battery*100)}% de batería.`,
+      });
+    }
+  });
+  ════════════════════════════════════════════════
+*/
+
+/* ═══════════════════════════════════════
    INIT
 ═══════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', () => {
-  // El addEventListener del overlay va aquí — garantiza que el elemento existe
   document.getElementById('modal-overlay')?.addEventListener('click', function(e) {
     if (e.target === this) closeModal();
   });
 
   const nav = document.getElementById('bottom-nav');
   if (nav) nav.style.display = 'none';
+
+  // Registra SW al cargar (no requiere interacción del usuario)
+  registerServiceWorker();
 
   navigateTo('login');
   renderNotifications();
