@@ -254,6 +254,23 @@
   }
   .back-btn:active { background: var(--border); }
 
+  /* Botón atrás estilo iOS: ‹ Hijos */
+  .nav-back-btn {
+    display: flex; align-items: center; gap: 3px;
+    border: none; background: transparent;
+    padding: 6px 10px 6px 4px;
+    border-radius: 10px;
+    cursor: pointer;
+    flex-shrink: 0;
+    color: var(--blue-acc);
+    font-size: 16px; font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    transition: opacity 0.15s;
+    white-space: nowrap;
+  }
+  .nav-back-btn:active { opacity: 0.5; }
+  .nav-back-btn svg { flex-shrink: 0; }
+
   .icon-btn {
     width: 40px; height: 40px;
     border: none; background: transparent;
@@ -1905,7 +1922,7 @@
       <div style="display:flex; align-items:center; justify-content:space-between; position:relative; margin-bottom:20px;">
         <div>
           <div class="home-greeting">Buenos días,</div>
-          <div class="home-name">María García 👋</div>
+          <div class="home-name">María García</div>
         </div>
         <div style="display:flex; gap:8px;">
           <button class="theme-toggle-btn" onclick="toggleDarkMode()" title="Cambiar tema" id="header-theme-btn">
@@ -2016,7 +2033,7 @@
           <div class="student-meta">9no Grado · Colegio Lincoln</div>
           <div class="student-status-row">
             <div class="status-pill status-safe"><div class="status-dot"></div> Segura</div>
-            <div style="font-size:11px;color:var(--text-3);">📍 Colegio · hace 2 min</div>
+            <div style="font-size:11px;color:var(--text-3);">Colegio · hace 2 min</div>
           </div>
         </div>
         <svg class="student-card-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -2032,7 +2049,7 @@
           <div class="student-meta">7mo Grado · Colegio Lincoln</div>
           <div class="student-status-row">
             <div class="status-pill status-danger"><div class="status-dot"></div> SOS Activo</div>
-            <div style="font-size:11px;color:var(--danger);">⚡ Toca para ver</div>
+            <div style="font-size:11px;color:var(--danger);">Toca para ver</div>
           </div>
         </div>
         <svg class="student-card-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -2099,87 +2116,65 @@
   <!-- ══════════════════════════════
        SCREEN: PERFIL DEL HIJO
        Flujo: Tab Hijos → toca hijo → este perfil
-       Muestra: estado en vivo + mapa mini + sensores
-       Botón Editar → pantalla de configuración
   ══════════════════════════════ -->
-  <div class="screen" id="screen-student" style="background:var(--bg-app);">
+  <div class="screen" id="screen-student">
 
-    <!-- Topbar: ← Hijos | Nombre | Llamar | Editar -->
-    <div style="position:absolute;top:0;left:0;right:0;z-index:50;
-                display:flex;align-items:center;gap:10px;
-                padding:12px 16px 10px;
-                background:linear-gradient(180deg,rgba(10,22,40,0.92) 0%,transparent 100%);">
-      <button onclick="navigateTo('children')"
-        style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.12);
-               border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+    <!-- Topbar estándar del sistema -->
+    <div class="topbar">
+      <button class="nav-back-btn" onclick="navigateTo('children')">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <path d="M11 4L7 9L11 14" stroke="white" stroke-width="2" stroke-linecap="round"/>
+          <path d="M11 4L7 9L11 14" stroke="var(--blue-acc)" stroke-width="2.2" stroke-linecap="round"/>
         </svg>
+        Hijos
       </button>
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:16px;font-weight:700;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
-             id="student-hero-name">—</div>
-        <div style="font-size:11px;color:rgba(255,255,255,0.55);" id="student-hero-grade">—</div>
+      <div style="flex:1;min-width:0;text-align:center;">
+        <div class="topbar-title" id="student-hero-name">—</div>
       </div>
-      <button onclick="callStudent(currentStudentId)"
-        style="display:flex;align-items:center;gap:5px;background:rgba(15,191,122,0.22);
-               border:1px solid rgba(15,191,122,0.4);border-radius:20px;
-               padding:7px 14px;color:var(--safe);font-size:12px;font-weight:700;
-               cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;">
-        <svg width="13" height="13" viewBox="0 0 22 22" fill="none">
+      <button class="icon-btn" onclick="callStudent(currentStudentId)" title="Llamar">
+        <svg width="20" height="20" viewBox="0 0 22 22" fill="none">
           <path d="M20 14.4C18.8 14.4 17.6 14.2 16.5 13.8C16.2 13.7 15.8 13.8 15.6 14L13.9 15.7C11.6 14.5 9.5 12.5 8.3 10.1L10 8.4C10.2 8.2 10.3 7.8 10.2 7.5C9.8 6.4 9.6 5.2 9.6 4C9.6 3.4 9.2 3 8.6 3H5.4C4.8 3 4 3.3 4 4C4 13.1 10.9 20 20 20C20.7 20 21 19.2 21 18.6V15.4C21 14.8 20.6 14.4 20 14.4Z" fill="var(--safe)"/>
         </svg>
-        Llamar
       </button>
-      <button onclick="openEditStudent(currentStudentId)"
-        style="display:flex;align-items:center;gap:5px;background:rgba(41,121,255,0.22);
-               border:1px solid rgba(41,121,255,0.4);border-radius:20px;
-               padding:7px 14px;color:var(--blue-acc);font-size:12px;font-weight:700;
-               cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;">
-        <svg width="13" height="13" viewBox="0 0 18 18" fill="none">
-          <path d="M13 3L15 5L6 14H4V12L13 3Z" stroke="var(--blue-acc)" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+      <button class="icon-btn" onclick="openEditStudent(currentStudentId)" title="Editar">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M14 3L17 6L7 16H4V13L14 3Z" stroke="var(--text-2)" stroke-width="1.5" stroke-linecap="round" fill="none"/>
         </svg>
-        Editar
       </button>
     </div>
 
-    <!-- Mapa mini de Google Maps como hero fullwidth -->
-    <div style="position:relative;width:100%;height:240px;background:#0D1B2A;overflow:hidden;flex-shrink:0;">
-      <iframe id="student-mini-map"
-        style="width:100%;height:100%;border:none;pointer-events:none;opacity:0.85;"
-        loading="lazy" referrerpolicy="no-referrer-when-downgrade"
-        src="about:blank">
-      </iframe>
-      <!-- Overlay: estado en vivo sobre el mapa -->
-      <div style="position:absolute;bottom:0;left:0;right:0;
-                  background:linear-gradient(0deg,rgba(10,22,40,0.95) 0%,transparent 100%);
-                  padding:20px 16px 14px;">
-        <div style="display:flex;align-items:flex-end;justify-content:space-between;">
-          <div>
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+    <div class="scroll-content">
+
+      <!-- Mapa mini: hero visual fullwidth -->
+      <div style="position:relative;width:100%;height:220px;background:var(--bg-card);overflow:hidden;flex-shrink:0;">
+        <iframe id="student-mini-map"
+          style="width:100%;height:100%;border:none;pointer-events:none;opacity:0.9;"
+          loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+          src="about:blank">
+        </iframe>
+        <!-- Chip de estado sobre el mapa -->
+        <div style="position:absolute;bottom:0;left:0;right:0;
+                    background:linear-gradient(0deg,var(--bg-app) 0%,transparent 100%);
+                    padding:24px 20px 12px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:8px;">
               <div class="status-pill status-safe" id="student-hero-status" style="margin:0;">
                 <div class="status-dot"></div> Seguro/a
               </div>
-              <div style="font-size:11px;color:rgba(255,255,255,0.45);" id="student-last-seen">—</div>
+              <span style="font-size:11px;color:var(--text-3);" id="student-last-seen">—</span>
             </div>
-            <div style="font-size:12px;color:rgba(255,255,255,0.5);" id="student-gps-text">📍 Obteniendo ubicación...</div>
+            <button class="btn btn-ghost" style="height:32px;padding:0 12px;font-size:11px;font-weight:700;"
+                    onclick="switchTab('map')">
+              Ver mapa →
+            </button>
           </div>
-          <button onclick="switchTab('map')"
-            style="background:rgba(41,121,255,0.2);border:1px solid rgba(41,121,255,0.35);
-                   border-radius:10px;padding:7px 12px;color:var(--blue-acc);
-                   font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;
-                   white-space:nowrap;">
-            Mapa completo →
-          </button>
+          <div style="font-size:11px;color:var(--text-3);margin-top:4px;" id="student-gps-text">
+            Obteniendo ubicación...
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Contenido scrollable -->
-    <div style="flex:1;overflow-y:auto;padding-bottom:100px;">
-
-      <!-- Tiles: batería · velocidad · sync · dispositivo -->
-      <div style="padding:14px 16px 0;">
+      <!-- Info tiles -->
+      <div style="padding:16px 20px 0;">
         <div class="info-grid">
           <div class="card info-tile anim-item">
             <div class="info-tile-label">Batería</div>
@@ -2198,14 +2193,14 @@
           </div>
           <div class="card info-tile anim-item">
             <div class="info-tile-label">Dispositivo</div>
-            <div class="info-tile-value" style="font-size:13px;">📱</div>
+            <div class="info-tile-value" style="font-size:13px;">Celular</div>
             <div style="font-size:11px;color:var(--text-3);margin-top:4px;">App alumno</div>
           </div>
         </div>
       </div>
 
       <!-- Sensores en tiempo real -->
-      <div class="section-header" style="padding-top:18px;">
+      <div class="section-header" style="padding-top:20px;">
         <div class="section-title">Sensores en Tiempo Real</div>
         <div class="sensor-pulse" style="color:var(--safe);">
           <div class="sensor-pulse-dot" style="background:var(--safe);"></div>
@@ -2215,7 +2210,7 @@
 
       <div class="sensor-grid anim-item">
         <div class="sensor-card info">
-          <div class="sensor-label">📍 GPS</div>
+          <div class="sensor-label">GPS</div>
           <div class="sensor-value" id="sensor-gps-acc">±8m</div>
           <div class="sensor-sub" id="sensor-gps-loc">—</div>
           <div class="sensor-pulse" style="color:var(--blue-acc);margin-top:4px;">
@@ -2224,7 +2219,7 @@
           </div>
         </div>
         <div class="sensor-card safe">
-          <div class="sensor-label">📳 Movimiento</div>
+          <div class="sensor-label">Movimiento</div>
           <div class="accel-bars" id="accel-bars">
             <div class="accel-bar" style="height:40%;"></div>
             <div class="accel-bar" style="height:60%;"></div>
@@ -2236,7 +2231,7 @@
           <div class="sensor-sub" id="sensor-motion">Normal</div>
         </div>
         <div class="sensor-card safe">
-          <div class="sensor-label">🔋 Batería</div>
+          <div class="sensor-label">Batería</div>
           <div class="sensor-value" style="color:var(--safe);" id="sensor-battery">—</div>
           <div class="battery-bar" style="margin-top:4px;">
             <div class="battery-fill" id="battery-fill-sensor" style="width:0%;background:var(--safe);"></div>
@@ -2244,7 +2239,7 @@
           <div class="sensor-sub" id="sensor-charging">—</div>
         </div>
         <div class="sensor-card info">
-          <div class="sensor-label">🚶 Velocidad</div>
+          <div class="sensor-label">Velocidad</div>
           <div class="sensor-value" id="sensor-speed">—</div>
           <div class="sensor-sub">km/h</div>
           <div class="sensor-pulse" style="color:var(--blue-acc);margin-top:4px;">
@@ -2255,13 +2250,15 @@
       </div>
 
       <!-- Actividad del día -->
-      <div class="section-header" style="padding-top:18px;">
+      <div class="section-header" style="padding-top:20px;">
         <div class="section-title">Actividad de Hoy</div>
         <div style="font-size:12px;color:var(--blue-acc);cursor:pointer;font-weight:600;"
              onclick="renderStudentHistory()">↻ Actualizar</div>
       </div>
-      <div class="card" style="margin:0 20px 24px;" id="student-timeline">
-        <div style="text-align:center;padding:24px;color:var(--text-3);font-size:13px;">Cargando actividad...</div>
+      <div class="card" style="margin:0 20px 100px;" id="student-timeline">
+        <div style="text-align:center;padding:24px;color:var(--text-3);font-size:13px;">
+          Cargando actividad...
+        </div>
       </div>
 
     </div>
@@ -2276,22 +2273,23 @@
          contactos que el alumno puede llamar
          horario de monitoreo
   ══════════════════════════════ -->
-  <div class="screen" id="screen-edit-student" style="background:var(--bg-app);">
-    <div class="topbar" style="position:sticky;top:0;z-index:100;">
-      <button class="back-btn" onclick="goBack()">
+  <div class="screen" id="screen-edit-student">
+    <div class="topbar">
+      <button class="nav-back-btn" onclick="goBack()" id="edit-back-label">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <path d="M11 4L7 9L11 14" stroke="var(--text-h)" stroke-width="2" stroke-linecap="round"/>
+          <path d="M11 4L7 9L11 14" stroke="var(--blue-acc)" stroke-width="2.2" stroke-linecap="round"/>
         </svg>
+        Hijos
       </button>
       <div class="topbar-title" id="edit-screen-title">Agregar Hijo</div>
-      <button onclick="saveStudentFull()" style="background:var(--blue-acc);border:none;border-radius:12px;padding:8px 18px;font-size:13px;font-weight:700;color:white;cursor:pointer;font-family:'DM Sans',sans-serif;">Guardar</button>
+      <button onclick="saveStudentFull()" class="btn btn-primary" style="height:36px;padding:0 18px;font-size:13px;border-radius:12px;">Guardar</button>
     </div>
 
-    <div style="overflow-y:auto;height:calc(100% - 56px);padding:16px 16px 60px;display:flex;flex-direction:column;gap:18px;">
+    <div class="scroll-content" style="padding:16px 20px 80px;display:flex;flex-direction:column;gap:20px;">
 
       <!-- ① Info del alumno -->
-      <div>
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-3);margin-bottom:8px;padding:0 2px;">👤 Información del Alumno</div>
+      <div class="settings-section anim-item" style="margin:0;">
+        <div class="settings-section-title">Información del Alumno</div>
         <div class="card" style="padding:16px;display:flex;flex-direction:column;gap:12px;">
           <div class="input-group">
             <label class="input-label">Nombre completo</label>
@@ -2311,40 +2309,40 @@
       </div>
 
       <!-- ② Celular del alumno (para que el PADRE lo llame) -->
-      <div>
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-3);margin-bottom:8px;padding:0 2px;">📱 Celular del Alumno</div>
+      <div class="settings-section anim-item" style="margin:0;">
+        <div class="settings-section-title">Celular del Alumno</div>
         <div class="card" style="padding:16px;">
-          <div class="input-group" style="margin-bottom:8px;">
+          <div class="input-group" style="margin-bottom:10px;">
             <label class="input-label">Número de celular</label>
             <input class="input-field" id="es-phone" type="tel" placeholder="+504 9999-8888">
           </div>
-          <div style="background:rgba(41,121,255,0.08);border:1px solid rgba(41,121,255,0.15);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--text-3);">
-            💡 Este es el número que <strong style="color:var(--text-2);">tú como padre</strong> llamas cuando presionas el botón "Llamar" en el perfil de tu hijo.
+          <div style="background:rgba(41,121,255,0.08);border:1px solid rgba(41,121,255,0.15);border-radius:var(--radius-sm);padding:10px 12px;font-size:12px;color:var(--text-3);">
+            Este es el número que <strong style="color:var(--text-2);">tú como padre</strong> llamas cuando presionas el botón "Llamar" en el perfil de tu hijo.
           </div>
         </div>
       </div>
 
       <!-- ③ Contactos que el ALUMNO puede llamar -->
-      <div>
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-3);margin-bottom:4px;padding:0 2px;">☎️ Contactos que el Alumno puede Llamar</div>
-        <div style="font-size:12px;color:var(--text-3);margin-bottom:8px;padding:0 2px;">Aparecen en el botón "Llamar" de la app de tu hijo. El 911 siempre está incluido.</div>
-        <div class="card" style="padding:14px;">
+      <div class="settings-section anim-item" style="margin:0;">
+        <div class="settings-section-title">Contactos que el Alumno puede Llamar</div>
+        <div style="font-size:12px;color:var(--text-3);margin-bottom:8px;">Aparecen en el botón "Llamar" de la app de tu hijo. El 911 siempre está incluido.</div>
+        <div class="card" style="padding:16px;">
           <div id="es-contacts-list" style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px;"></div>
-          <button onclick="addContactField()" style="width:100%;height:40px;border-radius:10px;border:1.5px dashed var(--border);background:transparent;color:var(--text-3);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">
+          <button onclick="addContactField()" class="btn btn-ghost btn-full" style="height:40px;border:1.5px dashed var(--border);">
             + Agregar contacto
           </button>
         </div>
       </div>
 
       <!-- ④ Horario de monitoreo -->
-      <div>
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-3);margin-bottom:4px;padding:0 2px;">🕐 Horario de Monitoreo</div>
-        <div style="font-size:12px;color:var(--text-3);margin-bottom:8px;padding:0 2px;">¿De qué hora a qué hora quieres que los sensores de tu hijo te envíen información? Fuera de ese horario, el celular usa modo ahorro. El SOS siempre funciona.</div>
+      <div class="settings-section anim-item" style="margin:0;">
+        <div class="settings-section-title">Horario de Monitoreo</div>
+        <div style="font-size:12px;color:var(--text-3);margin-bottom:8px;">¿De qué hora a qué hora quieres que los sensores envíen información? Fuera del horario, el celular usa modo ahorro. El SOS siempre funciona.</div>
         <div class="card" style="padding:16px;display:flex;flex-direction:column;gap:14px;">
 
           <div style="display:flex;align-items:center;justify-content:space-between;">
             <div>
-              <div style="font-size:14px;font-weight:600;color:var(--text-h);">Activar horario específico</div>
+              <div style="font-size:14px;font-weight:600;color:var(--text-1);">Activar horario específico</div>
               <div style="font-size:12px;color:var(--text-3);">Sin horario = sensores activos 24/7</div>
             </div>
             <div class="toggle" id="es-sched-toggle" onclick="toggleEsSchedule(this)"><div class="toggle-thumb"></div></div>
@@ -2352,7 +2350,7 @@
 
           <div id="es-sched-body" style="display:none;flex-direction:column;gap:14px;">
             <div>
-              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-3);margin-bottom:8px;">Días de la semana</div>
+              <div class="settings-section-title" style="margin-bottom:8px;letter-spacing:0.06em;">Días activos</div>
               <div style="display:flex;gap:6px;flex-wrap:wrap;" id="es-days-row">
                 <button class="day-chip on" data-day="1">Lun</button>
                 <button class="day-chip on" data-day="2">Mar</button>
@@ -2366,55 +2364,55 @@
 
             <div style="display:flex;gap:10px;align-items:flex-end;">
               <div style="flex:1;">
-                <div style="font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:6px;">⏰ Desde</div>
+                <div style="font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:6px;">Desde</div>
                 <input type="time" id="es-start" value="06:00"
                   onchange="updateEsBatteryPreview()"
-                  style="width:100%;background:var(--bg-card);border:1.5px solid var(--border);border-radius:10px;padding:12px;font-size:16px;font-family:'DM Sans',sans-serif;color:var(--text-h);outline:none;text-align:center;">
+                  style="width:100%;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;font-size:16px;color:var(--text-1);outline:none;text-align:center;">
               </div>
               <div style="font-size:22px;color:var(--text-3);margin-bottom:12px;">→</div>
               <div style="flex:1;">
-                <div style="font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:6px;">🔔 Hasta</div>
+                <div style="font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:6px;">Hasta</div>
                 <input type="time" id="es-end" value="16:00"
                   onchange="updateEsBatteryPreview()"
-                  style="width:100%;background:var(--bg-card);border:1.5px solid var(--border);border-radius:10px;padding:12px;font-size:16px;font-family:'DM Sans',sans-serif;color:var(--text-h);outline:none;text-align:center;">
+                  style="width:100%;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;font-size:16px;color:var(--text-1);outline:none;text-align:center;">
               </div>
             </div>
 
-            <div style="background:rgba(245,166,35,0.06);border:1px solid rgba(245,166,35,0.2);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:12px;">
-              <div style="font-size:20px;">🚶</div>
+            <div style="background:rgba(245,166,35,0.06);border:1px solid rgba(245,166,35,0.2);border-radius:var(--radius-sm);padding:12px 14px;display:flex;align-items:center;gap:12px;">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style="flex-shrink:0;opacity:0.6;"><circle cx="10" cy="4" r="2" fill="var(--text-2)"/><path d="M7 8h6l-1 5H8L7 8Z" fill="var(--text-2)"/><path d="M8 13l-2 5M12 13l2 5" stroke="var(--text-2)" stroke-width="1.5" stroke-linecap="round"/></svg>
               <div style="flex:1;">
-                <div style="font-size:13px;font-weight:600;color:var(--text-h);">Reactivar si se mueve fuera de horario</div>
+                <div style="font-size:13px;font-weight:600;color:var(--text-1);">Reactivar si se mueve fuera de horario</div>
                 <div style="font-size:11px;color:var(--text-3);">Si el alumno camina, activa sensores por 30 min extra</div>
               </div>
               <div class="toggle on" id="es-motion-toggle" onclick="this.classList.toggle('on')"><div class="toggle-thumb"></div></div>
             </div>
 
-            <div style="background:rgba(232,54,74,0.05);border:1px solid rgba(232,54,74,0.15);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:12px;">
-              <div style="font-size:20px;">🆘</div>
+            <div style="background:rgba(232,54,74,0.05);border:1px solid rgba(232,54,74,0.15);border-radius:var(--radius-sm);padding:12px 14px;display:flex;align-items:center;gap:12px;">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style="flex-shrink:0;opacity:0.6;"><circle cx="10" cy="10" r="8" stroke="var(--danger)" stroke-width="1.5" fill="none"/><path d="M10 6v5M10 13v1" stroke="var(--danger)" stroke-width="2" stroke-linecap="round"/></svg>
               <div style="flex:1;">
-                <div style="font-size:13px;font-weight:600;color:var(--text-h);">SOS siempre activo</div>
+                <div style="font-size:13px;font-weight:600;color:var(--text-1);">SOS siempre activo</div>
                 <div style="font-size:11px;color:var(--text-3);">Funciona 24/7 sin importar el horario</div>
               </div>
-              <div style="font-size:11px;font-weight:700;color:var(--safe);background:var(--safe-bg);padding:4px 10px;border-radius:100px;">Siempre ✅</div>
+              <div style="font-size:11px;font-weight:700;color:var(--safe);background:var(--safe-bg);padding:4px 10px;border-radius:100px;">Siempre activo</div>
             </div>
 
             <!-- Preview ahorro de batería -->
-            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:14px;">
-              <div style="font-size:12px;font-weight:700;color:var(--text-2);margin-bottom:8px;">⚡ Ahorro estimado de batería</div>
-              <div style="display:flex;border-radius:6px;overflow:hidden;height:12px;margin-bottom:8px;" id="es-battery-bar"></div>
+            <div style="background:var(--card);border-radius:var(--radius-sm);padding:16px;">
+              <div style="font-size:12px;font-weight:700;color:var(--text-2);margin-bottom:8px;">Ahorro estimado de batería</div>
+              <div style="display:flex;border-radius:6px;overflow:hidden;height:10px;margin-bottom:8px;" id="es-battery-bar"></div>
               <div style="display:flex;gap:16px;font-size:11px;color:var(--text-3);">
-                <span>🟢 Activo (GPS full)</span>
-                <span>⬜ Bajo consumo</span>
+                <span style="display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--safe);display:inline-block;"></span>GPS activo</span>
+                <span style="display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--border);display:inline-block;"></span>Modo ahorro</span>
               </div>
-              <div style="margin-top:8px;font-size:13px;font-weight:700;color:var(--safe);">Ahorro: ~<span id="es-saving-pct">—</span> vs monitoreo 24/7</div>
+              <div style="margin-top:8px;font-size:13px;font-weight:700;color:var(--safe);">Ahorro: ~<span id="es-saving-pct">—</span> vs 24/7</div>
             </div>
           </div>
         </div>
       </div>
 
       <!-- ⑤ Zona de peligro (solo al editar) -->
-      <div id="es-danger-zone" style="display:none;">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--danger);margin-bottom:8px;padding:0 2px;">Zona de Peligro</div>
+      <div id="es-danger-zone" style="display:none;" class="anim-item">
+        <div class="settings-section-title" style="color:var(--danger);">Zona de peligro</div>
         <div class="card" style="padding:4px 0;">
           <div class="settings-item" onclick="confirmDeleteStudent()" style="color:var(--danger);">
             <div class="settings-item-icon" style="background:var(--danger-bg);">
@@ -2439,7 +2437,7 @@
   <div class="screen" id="screen-map">
     <div class="map-topbar">
       <div style="flex:1;">
-        <div style="font-family:'Sora',sans-serif;font-size:16px;font-weight:700;">Rastreo en Vivo</div>
+        <div class="topbar-title">Rastreo en Vivo</div>
         <div class="live-indicator" style="margin-top:3px;">
           <div class="live-dot"></div> Actualiza cada 30 seg
         </div>
@@ -2488,8 +2486,8 @@
       <div class="map-student-row" id="map-student-info">
         <div class="avatar avatar-ring-safe" style="width:48px;height:48px;font-size:17px;background:linear-gradient(135deg,#0D2E4F,#1A3358);" id="map-student-avatar">S</div>
         <div style="flex:1;">
-          <div style="font-family:'Sora',sans-serif;font-size:16px;font-weight:700;" id="map-student-name">Sofía García</div>
-          <div style="font-size:13px;color:var(--text-3);margin-top:2px;" id="map-student-location">📍 Obteniendo ubicación...</div>
+          <div class="topbar-title" style="font-size:16px;" id="map-student-name">Sofía García</div>
+          <div style="font-size:13px;color:var(--text-3);margin-top:2px;" id="map-student-location">Obteniendo ubicación...</div>
         </div>
         <div class="status-pill status-safe" id="map-student-status"><div class="status-dot"></div>Segura</div>
       </div>
@@ -2533,7 +2531,7 @@
           </svg>
         </div>
         <div class="alert-banner-text">
-          <div class="alert-banner-title">⚡ SOS — Mateo García</div>
+          <div class="alert-banner-title">SOS — Mateo García</div>
           <div class="alert-banner-sub">Activo hace 14 min · Movimiento inusual · Toca para responder</div>
         </div>
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -2543,10 +2541,10 @@
 
       <div class="filter-tabs anim-item">
         <button class="filter-tab active" onclick="setFilter(this)">Todos</button>
-        <button class="filter-tab" onclick="setFilter(this)">🆘 SOS</button>
-        <button class="filter-tab" onclick="setFilter(this)">📍 Zona</button>
-        <button class="filter-tab" onclick="setFilter(this)">⚡ Impacto</button>
-        <button class="filter-tab" onclick="setFilter(this)">🔋 Batería</button>
+        <button class="filter-tab" onclick="setFilter(this)">SOS</button>
+        <button class="filter-tab" onclick="setFilter(this)">Zona</button>
+        <button class="filter-tab" onclick="setFilter(this)">Impacto</button>
+        <button class="filter-tab" onclick="setFilter(this)">Batería</button>
       </div>
 
       <div class="section-header">
@@ -2709,14 +2707,14 @@
               <div style="flex:1;">
                 <div style="font-size:11px;color:var(--text-3);margin-bottom:4px;">Inicio</div>
                 <input type="time" id="sched-start" value="06:00"
-                  style="width:100%;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text-h);outline:none;"
+                  style="width:100%;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px;color:var(--text-h);outline:none;"
                   onchange="saveScheduleFromUI()">
               </div>
               <div style="font-size:18px;color:var(--text-3);margin-top:16px;">→</div>
               <div style="flex:1;">
                 <div style="font-size:11px;color:var(--text-3);margin-bottom:4px;">Fin</div>
                 <input type="time" id="sched-end" value="16:00"
-                  style="width:100%;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text-h);outline:none;"
+                  style="width:100%;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px;color:var(--text-h);outline:none;"
                   onchange="saveScheduleFromUI()">
               </div>
             </div>
@@ -2726,7 +2724,7 @@
             <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:4px;">
 
               <div style="display:flex;align-items:center;gap:12px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;">
-                <div style="font-size:20px;">🚶</div>
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style="flex-shrink:0;opacity:0.6;"><circle cx="10" cy="4" r="2" fill="var(--text-2)"/><path d="M7 8h6l-1 5H8L7 8Z" fill="var(--text-2)"/><path d="M8 13l-2 5M12 13l2 5" stroke="var(--text-2)" stroke-width="1.5" stroke-linecap="round"/></svg>
                 <div style="flex:1;">
                   <div style="font-size:13px;font-weight:600;color:var(--text-h);">Reactivar por movimiento</div>
                   <div style="font-size:11px;color:var(--text-3);margin-top:2px;">Si el alumno se mueve fuera del horario, activa monitoreo completo 30 min</div>
@@ -2735,21 +2733,21 @@
               </div>
 
               <div style="display:flex;align-items:center;gap:12px;background:rgba(232,54,74,0.06);border:1px solid rgba(232,54,74,0.15);border-radius:12px;padding:12px 14px;">
-                <div style="font-size:20px;">🆘</div>
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style="flex-shrink:0;opacity:0.6;"><circle cx="10" cy="10" r="8" stroke="var(--danger)" stroke-width="1.5" fill="none"/><path d="M10 6v5M10 13v1" stroke="var(--danger)" stroke-width="2" stroke-linecap="round"/></svg>
                 <div style="flex:1;">
                   <div style="font-size:13px;font-weight:600;color:var(--text-h);">SOS siempre activo</div>
                   <div style="font-size:11px;color:var(--text-3);margin-top:2px;">El botón SOS y detección de impactos funcionan 24/7, sin excepción</div>
                 </div>
-                <div style="font-size:11px;font-weight:700;color:var(--safe);background:var(--safe-bg);padding:4px 10px;border-radius:100px;white-space:nowrap;">Siempre ✅</div>
+                <div style="font-size:11px;font-weight:700;color:var(--safe);background:var(--safe-bg);padding:4px 10px;border-radius:100px;white-space:nowrap;">Siempre activo</div>
               </div>
 
               <div style="display:flex;align-items:center;gap:12px;background:rgba(245,166,35,0.06);border:1px solid rgba(245,166,35,0.15);border-radius:12px;padding:12px 14px;">
-                <div style="font-size:20px;">🔋</div>
+                
                 <div style="flex:1;">
                   <div style="font-size:13px;font-weight:600;color:var(--text-h);">Batería baja → modo ahorro</div>
                   <div style="font-size:11px;color:var(--text-3);margin-top:2px;">Si la batería baja de 15%, reduce el GPS para que el celular no se apague</div>
                 </div>
-                <div style="font-size:11px;font-weight:700;color:var(--warn);background:var(--warn-bg);padding:4px 10px;border-radius:100px;white-space:nowrap;">Auto ⚡</div>
+                <div style="font-size:11px;font-weight:700;color:var(--warn);background:var(--warn-bg);padding:4px 10px;border-radius:100px;white-space:nowrap;">Auto</div>
               </div>
             </div>
           </div>
@@ -2757,7 +2755,7 @@
 
         <!-- Previsualización del ahorro de batería -->
         <div id="sched-battery-preview" style="display:none;background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:0;">
-          <div style="font-size:12px;font-weight:700;color:var(--text-2);margin-bottom:10px;">📊 Estimado de batería hoy</div>
+          <div style="font-size:12px;font-weight:700;color:var(--text-2);margin-bottom:10px;">Estimado de batería hoy</div>
           <div style="display:flex;gap:0;border-radius:8px;overflow:hidden;height:12px;margin-bottom:8px;" id="battery-timeline-bar"></div>
           <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-3);" id="battery-timeline-labels"></div>
           <div style="margin-top:10px;display:flex;gap:16px;flex-wrap:wrap;">
@@ -2903,7 +2901,7 @@
           <path d="M11 4L7 9L11 14" stroke="rgba(255,255,255,0.8)" stroke-width="2" stroke-linecap="round"/>
         </svg>
       </button>
-      <div class="emergency-sos-badge">🆘 SOS ACTIVO</div>
+      <div class="emergency-sos-badge">SOS ACTIVO</div>
       <div class="emergency-timer" id="em-timer">14:23</div>
     </div>
 
@@ -2915,20 +2913,20 @@
         <div class="avatar" style="width:72px;height:72px;font-size:26px;background:linear-gradient(135deg,#7A1E2E,#4A1520);border:3px solid var(--danger);z-index:1;">M</div>
       </div>
       <div class="emergency-name">Mateo García</div>
-      <div class="emergency-location-text">📍 Av. Circunvalación & 3ra Calle · Visto hace 14 min</div>
+      <div class="emergency-location-text">Av. Circunvalación & 3ra Calle · Visto hace 14 min</div>
       <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
         <div style="background:rgba(232,54,74,0.15);border:1px solid rgba(232,54,74,0.3);border-radius:100px;padding:5px 14px;font-size:12px;color:rgba(255,255,255,0.7);">
-          ⚡ Movimiento inusual
+          Movimiento inusual
         </div>
         <div style="background:rgba(232,54,74,0.15);border:1px solid rgba(232,54,74,0.3);border-radius:100px;padding:5px 14px;font-size:12px;color:rgba(255,255,255,0.7);">
-          🔋 42% batería
+          42% batería
         </div>
       </div>
     </div>
 
     <div class="emergency-map-preview" style="z-index:10;position:relative;">
       <div id="em-map-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(26,5,8,0.7);z-index:2;border-radius:16px;">
-        <div style="font-size:12px;color:rgba(255,255,255,0.5);">📍 Cargando mapa...</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.5);">Obteniendo ubicación...</div>
       </div>
       <iframe id="em-gmap" src="" style="width:100%;height:100%;border:none;border-radius:16px;" allowfullscreen></iframe>
     </div>
@@ -3024,10 +3022,10 @@ const students = {
    NOTIFICATIONS DATA
 ═══════════════════════════════════════ */
 let notifications = [
-  { id: 1, type: 'danger', icon: '🆘', title: 'SOS activado — Mateo García', body: 'Movimiento inusual detectado cerca de Av. Circunvalación', time: 'Hace 14 min', unread: true, action: 'emergency' },
-  { id: 2, type: 'warn', icon: '📍', title: 'Salida de zona escolar', body: 'Mateo salió del perímetro del Colegio Lincoln por 4 minutos', time: 'Hace 23 min', unread: true, action: 'map' },
+  { id: 1, type: 'danger', icon: 'SOS', title: 'SOS activado — Mateo García', body: 'Movimiento inusual detectado cerca de Av. Circunvalación', time: 'Hace 14 min', unread: true, action: 'emergency' },
+  { id: 2, type: 'warn', icon: 'GPS', title: 'Salida de zona escolar', body: 'Mateo salió del perímetro del Colegio Lincoln por 4 minutos', time: 'Hace 23 min', unread: true, action: 'map' },
   { id: 3, type: 'safe', icon: '✅', title: 'Sofía llegó al colegio', body: 'Entró a la zona segura del Colegio Lincoln', time: 'Hace 1h 12min', unread: false, action: 'student' },
-  { id: 4, type: 'info', icon: '🔋', title: 'Batería baja — Mateo', body: 'El dispositivo de Mateo está al 18% de batería', time: 'Hace 2h', unread: false, action: 'student' },
+  { id: 4, type: 'info', icon: 'BAT', title: 'Batería baja — Mateo', body: 'El dispositivo de Mateo está al 18% de batería', time: 'Hace 2h', unread: false, action: 'student' },
   { id: 5, type: 'safe', icon: '🏠', title: 'Sofía salió de casa', body: 'Sofía salió de la zona hogar rumbo al colegio', time: 'Ayer 7:40 AM', unread: false, action: 'map' },
 ];
 
@@ -3091,13 +3089,13 @@ function handleNotifTap(id) {
 function clearAllNotifs() {
   notifications.forEach(n => n.unread = false);
   renderNotifications();
-  showToast('✅ Notificaciones marcadas como leídas');
+  
 }
 
 function markAllAlertsRead() {
   notifications.forEach(n => n.unread = false);
   renderNotifications();
-  showToast('✅ Todas las alertas marcadas como leídas');
+  
 }
 
 /* ═══════════════════════════════════════
@@ -3245,8 +3243,8 @@ function saveScheduleFromUI() {
   renderBatteryTimeline(s);
 
   showToast(enabled
-    ? `✅ Horario guardado · ${start} – ${end}`
-    : '⏸ Monitoreo 24/7 activado (sin horario)');
+    ? `Horario guardado · ${start} – ${end}`
+    : 'Monitoreo 24/7 activado (sin horario)');
 }
 
 function updateSchedSummary(s) {
@@ -3446,7 +3444,7 @@ function updateSensors() {
   // Estado en vivo sobre el mapa mini
   if (data && data.lat != null) {
     const gpsTextEl = document.getElementById('student-gps-text');
-    if (gpsTextEl) gpsTextEl.textContent = `📍 ${parseFloat(data.lat).toFixed(5)}, ${parseFloat(data.lng).toFixed(5)}`;
+    if (gpsTextEl) gpsTextEl.textContent = `${parseFloat(data.lat).toFixed(5)}, ${parseFloat(data.lng).toFixed(5)}`;
     const lastSeenEl = document.getElementById('student-last-seen');
     if (lastSeenEl && data.ts) {
       const ago = Math.round((Date.now() - data.ts) / 1000);
@@ -3543,9 +3541,9 @@ function recenterParentMap() {
   const data = getStudentLive();
   if (data && data.lat != null) {
     refreshParentMap(data.lat, data.lng, true);
-    showToast('📍 Mapa centrado en ubicación actual');
+    
   } else {
-    showToast('Sin datos de ubicación del alumno aún');
+    showToast('Sin ubicación disponible aún');
   }
 }
 
@@ -3587,10 +3585,10 @@ function initEmergencyMap() {
     // Actualiza chips de ubicación en pantalla emergencia
     const locEl  = document.querySelector('.emergency-location-text');
     const battEl = document.querySelector('#em-batt-chip');
-    if (locEl)  locEl.textContent = `📍 ${data.placeName || `${parseFloat(data.lat).toFixed(4)}, ${parseFloat(data.lng).toFixed(4)}`} · Vivo`;
-    if (battEl) battEl.textContent = `🔋 ${Math.round((data.battery||0)*100)}% batería`;
+    if (locEl)  locEl.textContent = `${data.placeName || `${parseFloat(data.lat).toFixed(4)}, ${parseFloat(data.lng).toFixed(4)}`} · Vivo`;
+    if (battEl) battEl.textContent = `${Math.round((data.battery||0)*100)}% batería`;
   } else {
-    if (loading) loading.querySelector('div').textContent = '📍 Sin ubicación del alumno';
+    if (loading) loading.querySelector('div').textContent = 'Sin ubicación disponible';
   }
 }
 
@@ -3601,7 +3599,7 @@ function callStudent(studentId) {
   const phone = getStudentPhone(studentId);
   const student = students[studentId];
   if (!phone) {
-    showToast(`📱 Guarda primero el número de ${student?.name || 'el alumno'} en Ajustes`);
+    showToast(`Sin número guardado para ${student?.name || 'este alumno'}`);
     // Abre directamente el modal de configurar número
     setTimeout(() => openEditPhone(studentId), 800);
     return;
@@ -3773,9 +3771,9 @@ function loadStudentProfile(id) {
   const syncEl = document.getElementById('student-last-seen');
   if (gpsEl) {
     if (live?.lat) {
-      gpsEl.textContent = `📍 ${live.lat.toFixed(5)}, ${live.lng.toFixed(5)}`;
+      gpsEl.textContent = `${live.lat.toFixed(5)}, ${live.lng.toFixed(5)}`;
     } else {
-      gpsEl.textContent = '📍 Esperando señal GPS...';
+      gpsEl.textContent = 'Esperando señal GPS...';
     }
   }
   if (syncEl && live?.ts) {
@@ -3793,15 +3791,26 @@ let contactFields = [];      // arreglo de {id, name, role, number, emoji}
 function openEditStudent(studentId) {
   editingStudentId = studentId || null;
 
-  const titleEl  = document.getElementById('edit-screen-title');
-  const dangerEl = document.getElementById('es-danger-zone');
+  const titleEl    = document.getElementById('edit-screen-title');
+  const dangerEl   = document.getElementById('es-danger-zone');
+  const backLabel  = document.getElementById('edit-back-label');
+
+  // Label del botón atrás: "‹ Perfil" si viene del perfil, "‹ Hijos" si viene de la lista
+  if (backLabel) {
+    const fromProfile = currentScreen === 'student';
+    backLabel.innerHTML = `
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+        <path d="M11 4L7 9L11 14" stroke="var(--blue-acc)" stroke-width="2.2" stroke-linecap="round"/>
+      </svg>
+      ${fromProfile ? 'Perfil' : 'Hijos'}`;
+  }
 
   if (studentId) {
-    if (titleEl)  titleEl.textContent   = 'Editar Hijo';
+    if (titleEl)  titleEl.textContent    = 'Editar Hijo';
     if (dangerEl) dangerEl.style.display = 'block';
     loadStudentIntoForm(studentId);
   } else {
-    if (titleEl)  titleEl.textContent   = 'Agregar Hijo';
+    if (titleEl)  titleEl.textContent    = 'Agregar Hijo';
     if (dangerEl) dangerEl.style.display = 'none';
     clearStudentForm();
   }
@@ -3993,7 +4002,7 @@ function saveStudentFull() {
   const grade  = document.getElementById('es-grade')?.value.trim();
   const phone  = document.getElementById('es-phone')?.value.trim().replace(/[\s\-\(\)]/g,'');
 
-  if (!name) { showToast('⚠️ Ingresa el nombre del alumno'); return; }
+  if (!name) { showToast('Ingresa el nombre del alumno'); return; }
 
   const id = editingStudentId || nextStudentId();
 
@@ -4031,7 +4040,7 @@ function saveStudentFull() {
   // También actualiza ss_schedule_v1 compartida
   try { localStorage.setItem('ss_schedule_v1', JSON.stringify(sched)); } catch {}
 
-  showToast(`✅ ${editingStudentId ? 'Cambios guardados' : '¡Hijo agregado!'} — ${name}`);
+  showToast(editingStudentId ? 'Cambios guardados' : `${name} agregado`);
   navigateTo('children');
 }
 
@@ -4050,7 +4059,7 @@ function confirmDeleteStudent() {
   try { localStorage.removeItem(`ss_contacts_${editingStudentId}`); } catch {}
   try { localStorage.removeItem(`ss_schedule_${editingStudentId}`); } catch {}
 
-  showToast('🗑️ Hijo eliminado');
+  showToast('Alumno eliminado');
   navigateTo('children');
 }
 
@@ -4129,7 +4138,7 @@ function endCall() {
   const overlay = document.getElementById('call-overlay');
   overlay.classList.remove('active');
   if (callTimeout) { clearInterval(callTimeout); clearTimeout(callTimeout); callTimeout = null; }
-  showToast('📵 Llamada terminada');
+  
 }
 
 /* ═══════════════════════════════════════
@@ -4201,7 +4210,6 @@ function toggleDarkMode() {
   if (iconBg)   iconBg.style.background = isDark ? 'rgba(245,166,35,0.12)' : 'rgba(10,22,40,0.07)';
 
   // El iframe de Google Maps no necesita rebuild — siempre se ve bien
-  showToast(isDark ? '🌙 Modo oscuro activado' : '☀️ Modo claro activado');
 }
 
 /* ═══════════════════════════════════════
@@ -4210,7 +4218,6 @@ function toggleDarkMode() {
 function toggleSwitch(el) {
   el.classList.toggle('on');
   const label = el.parentElement.querySelector('.settings-item-label');
-  showToast(el.classList.contains('on') ? `✅ ${label?.textContent} activado` : `🔕 ${label?.textContent} desactivado`);
 }
 
 /* ═══════════════════════════════════════
@@ -4263,14 +4270,14 @@ const modals = {
     title: '🚨 ¿Llamar a Autoridades?',
     sub: 'Esto te conectará con los servicios de emergencia. Úsalo solo en una emergencia confirmada.',
     content: `
-      <button class="btn btn-danger btn-full" style="height:56px;font-size:16px;margin-bottom:12px;" onclick="closeModal();showToast('📞 Marcando 911...')">☎️ Llamar al 911 Ahora</button>
+      <button class="btn btn-danger btn-full" style="height:56px;font-size:16px;margin-bottom:12px;" onclick="closeModal()">☎️ Llamar al 911 Ahora</button>
       <button class="btn btn-ghost btn-full" style="height:48px;" onclick="closeModal()">Cancelar — No es una emergencia</button>`
   },
   'dismiss-sos': {
     title: '¿Descartar Alerta SOS?',
     sub: 'Solo descarta si confirmaste que tu hijo está seguro. Esta acción queda registrada.',
     content: `
-      <button class="btn btn-danger btn-full" style="height:52px;margin-bottom:12px;" onclick="closeModal();goBack();showToast('✅ Alerta descartada y registrada')">Confirmar — Mi hijo está seguro</button>
+      <button class="btn btn-danger btn-full" style="height:52px;margin-bottom:12px;" onclick="closeModal();goBack()">Confirmar — Mi hijo está seguro</button>
       <button class="btn btn-ghost btn-full" style="height:48px;" onclick="closeModal()">Mantener Alerta Activa</button>`
   },
   'edit-profile': {
@@ -4280,7 +4287,7 @@ const modals = {
       <div class="input-group"><label class="input-label">Nombre Completo</label><input class="input-field" value="María García" type="text"></div>
       <div class="input-group"><label class="input-label">Teléfono</label><input class="input-field" value="+504 9999-8888" type="tel"></div>
       <div class="input-group"><label class="input-label">Correo</label><input class="input-field" value="maria.garcia@gmail.com" type="email"></div>
-      <button class="btn btn-primary btn-full" style="margin-top:8px;height:52px;" onclick="closeModal();showToast('✅ Perfil actualizado')">Guardar Cambios</button>
+      <button class="btn btn-primary btn-full" style="margin-top:8px;height:52px;" onclick="closeModal()">Guardar Cambios</button>
       <button class="btn btn-ghost btn-full" style="margin-top:10px;height:44px;" onclick="closeModal()">Cancelar</button>`
   },
   'security': {
