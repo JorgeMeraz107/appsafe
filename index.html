@@ -5592,6 +5592,23 @@
     window.showCallConfirm = showCallConfirm;
     window.endCall = endCall;
     window.doCall = doCall;
+    window.goBack = goBack;
+    window.renderStudentHistory = renderStudentHistory;
+    window.updateEsBatteryPreview = updateEsBatteryPreview;
+    window.saveNewStudent = saveNewStudent;
+    window.startCall = startCall;
+    window.toggleSchedule = toggleSchedule;
+    window.openEditPhone = openEditPhone;
+    window.setFilter = setFilter;
+    // Export variables used in onclick attributes
+    Object.defineProperty(window, 'currentStudentId', {
+      get: () => currentStudentId,
+      set: (v) => currentStudentId = v
+    });
+    Object.defineProperty(window, 'activeMapStudent', {
+      get: () => activeMapStudent,
+      set: (v) => activeMapStudent = v
+    });
   </script>
 </body>
 
