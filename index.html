@@ -2501,7 +2501,7 @@
           <div style="font-size:12px; color:var(--text-3);">Hoy</div>
         </div>
 
-        <div class="quick-stats anim-item">
+        <div class="quick-stats anim-item" id="home-stats-row">
           <div class="card stat-card">
             <div class="stat-icon" style="background:var(--safe-bg);">
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -2509,7 +2509,7 @@
                   fill="var(--safe)" />
               </svg>
             </div>
-            <div class="stat-value" style="color:var(--safe);">2</div>
+            <div class="stat-value" style="color:var(--safe);" id="home-stat-safe">-</div>
             <div class="stat-label">Seguros hoy</div>
           </div>
 
@@ -2521,7 +2521,7 @@
                 <circle cx="9" cy="13.5" r="0.8" fill="white" />
               </svg>
             </div>
-            <div class="stat-value" style="color:var(--warn);">1</div>
+            <div class="stat-value" style="color:var(--warn);" id="home-stat-alerts">0</div>
             <div class="stat-label">Alertas hoy</div>
           </div>
 
@@ -2532,8 +2532,8 @@
                 <path d="M9 5V9L12 11" stroke="var(--blue-acc)" stroke-width="1.5" stroke-linecap="round" />
               </svg>
             </div>
-            <div class="stat-value">7h</div>
-            <div class="stat-label">Tiempo escolar</div>
+            <div class="stat-value" id="home-stat-children">0</div>
+            <div class="stat-label">Hijos activos</div>
           </div>
 
           <div class="card stat-card">
@@ -2544,7 +2544,7 @@
                 <rect x="6" y="7" width="2" height="3" rx="0.5" fill="var(--text-3)" />
               </svg>
             </div>
-            <div class="stat-value">78%</div>
+            <div class="stat-value" id="home-stat-battery">-</div>
             <div class="stat-label">Batería prom.</div>
           </div>
         </div>
@@ -2555,42 +2555,17 @@
           <button class="section-link" onclick="switchTab('children')">Ver todos</button>
         </div>
 
-        <!-- Student card 1 - Safe -->
-        <div class="card card-pressable student-card anim-item" onclick="navigateTo('student',{id:1})">
-          <div class="avatar avatar-ring-safe"
-            style="width:52px;height:52px;font-size:18px;background:linear-gradient(135deg,#0D2E4F,#1A3358);">S</div>
-          <div class="student-info">
-            <div class="student-name">Sofía García</div>
-            <div class="student-meta">9no Grado · Colegio Lincoln</div>
-            <div class="student-status-row">
-              <div class="status-pill status-safe">
-                <div class="status-dot"></div> Segura
-              </div>
-              <div style="font-size:11px;color:var(--text-3);">Colegio · hace 2 min</div>
-            </div>
-          </div>
-          <svg class="student-card-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path d="M8 6L12 10L8 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-          </svg>
-        </div>
+        <!-- Student cards dinámicos -->
+        <div id="home-students-list" style="display:flex;flex-direction:column;gap:12px;padding:0 4px;"></div>
 
-        <!-- Student card 2 - Danger -->
-        <div class="card card-pressable student-card anim-item" onclick="navigateTo('student',{id:2})">
-          <div class="avatar avatar-ring-danger"
-            style="width:52px;height:52px;font-size:18px;background:linear-gradient(135deg,#4A1520,#7A1E2E);">M</div>
-          <div class="student-info">
-            <div class="student-name">Mateo García</div>
-            <div class="student-meta">7mo Grado · Colegio Lincoln</div>
-            <div class="student-status-row">
-              <div class="status-pill status-danger">
-                <div class="status-dot"></div> SOS Activo
-              </div>
-              <div style="font-size:11px;color:var(--danger);">Toca para ver</div>
-            </div>
-          </div>
-          <svg class="student-card-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path d="M8 6L12 10L8 14" stroke="var(--danger)" stroke-width="1.5" stroke-linecap="round" />
-          </svg>
+        <!-- Si no hay hijos -->
+        <div id="home-no-children" style="display:none;text-align:center;padding:32px 20px;">
+          <div style="font-size:40px;margin-bottom:12px;">👨‍👩‍👧</div>
+          <div style="font-weight:700;color:var(--text-1);margin-bottom:8px;">Aún no tienes hijos vinculados</div>
+          <div style="font-size:13px;color:var(--text-3);margin-bottom:20px;">Agrega a tus hijos para comenzar a
+            monitorearlos.</div>
+          <button onclick="switchTab('children')" class="btn btn-primary" style="height:44px;padding:0 24px;">+ Agregar
+            Hijo</button>
         </div>
 
         <div class="section-header" style="padding-top:8px;">
@@ -2598,39 +2573,8 @@
           <button class="section-link" onclick="switchTab('alerts')">Ver todo</button>
         </div>
 
-        <div class="card anim-item" style="margin:0 20px 24px; overflow:visible;">
-          <div class="timeline-item">
-            <div class="timeline-dot" style="background:var(--danger-bg);">
-              <svg width="10" height="10" viewBox="0 0 10 10">
-                <circle cx="5" cy="5" r="5" fill="var(--danger)" />
-              </svg>
-            </div>
-            <div class="timeline-content">
-              <div class="timeline-title">SOS activado por Mateo</div>
-              <div class="timeline-time">08:47 AM · Movimiento inusual detectado</div>
-            </div>
-          </div>
-          <div class="timeline-item">
-            <div class="timeline-dot" style="background:var(--safe-bg);">
-              <svg width="10" height="10" viewBox="0 0 10 10">
-                <circle cx="5" cy="5" r="5" fill="var(--safe)" />
-              </svg>
-            </div>
-            <div class="timeline-content">
-              <div class="timeline-title">Sofía llegó al colegio</div>
-              <div class="timeline-time">07:52 AM · Entró a zona segura</div>
-            </div>
-          </div>
-          <div class="timeline-item">
-            <div class="timeline-dot" style="background:var(--warn-bg);">
-              <svg width="10" height="10" viewBox="0 0 10 10">
-                <circle cx="5" cy="5" r="5" fill="var(--warn)" />
-              </svg>
-            </div>
-            <div class="timeline-content">
-              <div class="timeline-title">Mateo salió de casa</div>
-              <div class="timeline-time">07:38 AM · Camino al colegio</div>
-            </div>
+        <div id="home-activity-list" class="card anim-item" style="margin:0 0 24px; overflow:visible;">
+          <div style="padding:16px 16px 4px;font-size:13px;font-weight:600;color:var(--text-3);">Sin actividad reciente
           </div>
         </div>
       </div>
@@ -2807,6 +2751,11 @@
           <div style="text-align:center;padding:24px;color:var(--text-3);font-size:13px;">
             Cargando actividad...
           </div>
+        </div>
+
+        <!-- Código de Vinculación -->
+        <div id="student-linkcode-section" style="margin:0 20px 24px;">
+          <!-- Se carga dinámicamente con loadStudentProfile -->
         </div>
 
       </div>
@@ -4558,6 +4507,83 @@
       }).join('');
     }
 
+    /* ── Renderiza el dashboard HOME con datos reales ── */
+    function renderHomeScreen() {
+      const ids = Object.keys(students);
+      const homeList = document.getElementById('home-students-list');
+      const noChildren = document.getElementById('home-no-children');
+      const statSafe = document.getElementById('home-stat-safe');
+      const statAlerts = document.getElementById('home-stat-alerts');
+      const statChildren = document.getElementById('home-stat-children');
+      const statBattery = document.getElementById('home-stat-battery');
+      const summaryTitle = document.querySelector('.summary-title');
+      const summaryDate = document.querySelector('.status-summary-card .summary-sub');
+
+      // Actualizar stats
+      const total = ids.length;
+      const safeCount = ids.filter(id => students[id].status !== 'danger').length;
+      const alertCount = ids.filter(id => students[id].status === 'danger').length;
+
+      if (statSafe) statSafe.textContent = safeCount;
+      if (statAlerts) statAlerts.textContent = alertCount;
+      if (statChildren) statChildren.textContent = total;
+      if (statBattery) statBattery.textContent = total > 0 ? '-' : '-';
+
+      // Estado general
+      if (summaryTitle) {
+        if (total === 0) summaryTitle.textContent = 'Sin hijos vinculados aún';
+        else if (alertCount > 0) summaryTitle.textContent = `⚠️ ${alertCount} hijo(s) con alerta activa`;
+        else summaryTitle.textContent = 'Todos los hijos están seguros';
+      }
+
+      // Fecha actual
+      if (summaryDate) {
+        const now = new Date();
+        const opts = { weekday: 'short', month: 'short', day: 'numeric' };
+        summaryDate.textContent = `Actualizado ahora · ${now.toLocaleDateString('es-MX', opts)}`;
+      }
+
+      // Cards de hijos
+      if (!homeList) return;
+      if (total === 0) {
+        homeList.innerHTML = '';
+        if (noChildren) noChildren.style.display = 'block';
+        return;
+      }
+      if (noChildren) noChildren.style.display = 'none';
+
+      homeList.innerHTML = ids.map(id => {
+        const s = students[id];
+        const isSafe = s.status !== 'danger';
+        const ring = isSafe ? 'avatar-ring-safe' : 'avatar-ring-danger';
+        const pillClass = isSafe ? 'status-pill status-safe' : 'status-pill status-danger';
+        const pillText = isSafe ? '● Seguro/a' : '🆘 SOS Activo';
+        const arrowColor = isSafe ? 'currentColor' : 'var(--danger)';
+        const metaText = [s.grade, s.school].filter(Boolean).join(' · ') || 'Sin información';
+        const initial = s.name ? s.name[0].toUpperCase() : '?';
+
+        return `
+      <div class="card card-pressable student-card anim-item"
+           onclick="navigateTo('student',{id:'${id}'})">
+        <div class="avatar ${ring}"
+             style="width:52px;height:52px;font-size:18px;background:linear-gradient(135deg,#0D2E4F,#1A3358);">
+          ${initial}
+        </div>
+        <div class="student-info">
+          <div class="student-name">${s.name || 'Sin nombre'}</div>
+          <div class="student-meta">${metaText}</div>
+          <div class="student-status-row">
+            <div class="${pillClass}"><div class="status-dot"></div>${pillText}</div>
+            <div style="font-size:11px;color:var(--text-3);">${s.linked ? '✅ Vinculado' : '🔗 Pendiente vincular'}</div>
+          </div>
+        </div>
+        <svg class="student-card-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M8 6L12 10L8 14" stroke="${arrowColor}" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>`;
+      }).join('');
+    }
+
     /* ── Helper: leer horario del alumno ── */
     function getStudentSchedule(studentId) {
       try {
@@ -4610,6 +4636,48 @@
       if (syncEl && live?.ts) {
         const ago = Math.round((Date.now() - live.ts) / 1000);
         syncEl.textContent = ago < 60 ? `hace ${ago}s` : `hace ${Math.round(ago / 60)}min`;
+      }
+
+      // Código de vinculación
+      const linkSection = document.getElementById('student-linkcode-section');
+      if (linkSection) {
+        if (s.linked) {
+          linkSection.innerHTML = `
+            <div class="card" style="padding:16px 20px;display:flex;align-items:center;gap:14px;border-left:4px solid var(--safe);">
+              <div style="font-size:28px;">✅</div>
+              <div>
+                <div style="font-weight:700;font-size:14px;color:var(--safe);">App del alumno vinculada</div>
+                <div style="font-size:12px;color:var(--text-3);margin-top:2px;">${s.name} ya inició sesión en la app del alumno correctamente.</div>
+              </div>
+            </div>`;
+        } else {
+          const code = s.linkCode || '------';
+          const digits = code.split('');
+          const digitBoxes = digits.map(d =>
+            `<div style="
+              width:44px;height:54px;background:var(--bg);border:2px solid var(--blue-acc);
+              border-radius:10px;display:flex;align-items:center;justify-content:center;
+              font-size:26px;font-weight:800;font-family:'Sora',sans-serif;color:var(--text-1);
+              letter-spacing:0;">${d}</div>`
+          ).join('');
+
+          linkSection.innerHTML = `
+            <div class="card" style="padding:20px;border-left:4px solid var(--warn);">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+                <div style="font-size:22px;">🔗</div>
+                <div>
+                  <div style="font-weight:700;font-size:14px;color:var(--text-1);">Código de vinculación</div>
+                  <div style="font-size:12px;color:var(--text-3);">Dáselo a ${s.name} para que lo ingrese en su app</div>
+                </div>
+              </div>
+              <div style="display:flex;gap:6px;justify-content:center;margin-bottom:16px;">
+                ${digitBoxes}
+              </div>
+              <div style="font-size:11px;color:var(--text-3);text-align:center;">
+                📱 El alumno abre su app → ingresa este código → queda vinculado
+              </div>
+            </div>`;
+        }
       }
     }
 
@@ -5562,6 +5630,8 @@
             // Actualizar la UI de Hijos si está abierta
             if (currentScreen === 'children') renderChildrenList();
             if (currentScreen === 'settings') updateSettingsStudentList();
+            // Siempre actualiza el dashboard de Home (sin coste extra de red)
+            renderHomeScreen();
           });
 
           // Solo navegamos a home si estamos en login para evitar saltos raros si ya estamos en otra pantalla
