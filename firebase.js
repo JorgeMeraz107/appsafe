@@ -223,10 +223,10 @@ export function subscribeStudents(uid, onChange) {
 /**
  * Guarda (crea o actualiza) los datos de un alumno.
  * Usa merge:true para no sobreescribir campos como linkCode/linked.
- * @param {string|null} studentId — ID del doc (null si es nuevo)
  * @param {object} data      — campos a guardar
+ * @param {string|null} studentId — ID del doc (null si es nuevo)
  */
-export async function saveStudentFS(studentId, data) {
+export async function saveStudentFS(data, studentId = null) {
     let docRef;
     if (studentId) {
         docRef = doc(db, "students", studentId);

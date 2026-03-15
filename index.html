@@ -411,10 +411,11 @@
      BOTTOM NAV
   ═══════════════════════════════════════ */
     #bottom-nav {
+      display: none;
+      /* Hidden by default to avoid flicker */
       height: var(--nav-h);
       background: var(--surface);
       border-top: 1px solid var(--border);
-      display: flex;
       align-items: stretch;
       position: absolute;
       bottom: 0;
@@ -2321,6 +2322,21 @@
   </div>
 
   <div id="app-shell">
+    <!-- LOADING OVERLAY -->
+    <div id="initial-loader"
+      style="position:absolute; inset:0; background:var(--navy); z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px;">
+      <div class="brand-shield" style="transform: scale(0.8)">
+        <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+          <path d="M22 4L6 10V22C6 31.3 13.2 40.1 22 42C30.8 40.1 38 31.3 38 22V10L22 4Z" fill="white"
+            fill-opacity="0.9" />
+          <path d="M16 22L20 26L28 18" stroke="#2979FF" stroke-width="2.5" stroke-linecap="round"
+            stroke-linejoin="round" />
+        </svg>
+      </div>
+      <div
+        style="width:30px; height:30px; border:3px solid rgba(255,255,255,0.1); border-top-color:white; border-radius:50%; animation:spin 0.8s linear infinite;">
+      </div>
+    </div>
 
     <!-- NOTIFICATION PANEL BACKDROP -->
     <div class="notif-panel-backdrop" id="notif-backdrop" onclick="closeNotifPanel()"></div>
@@ -3615,7 +3631,7 @@
     <!-- ══════════════════════════════
        BOTTOM NAVIGATION
   ══════════════════════════════ -->
-    <nav id="bottom-nav">
+    <nav id="bottom-nav" style="display: none;">
       <button class="nav-item active" data-tab="home" onclick="switchTab('home')">
         <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
           <path d="M11 2L3 8V20H9V14H13V20H19V8L11 2Z" fill="#94A3B8" />
@@ -4443,8 +4459,13 @@
       const btn = document.getElementById('google-login-btn');
       if (btn) { btn.disabled = true; btn.innerHTML = 'Conectando con Google...'; }
 
-      // Con el nuevo SignInWithRedirect, la app simplemente saltará a Chrome/Navegador.
-      loginWithGoogle();
+      try {
+        await loginWithGoogle();
+      } catch (err) {
+        console.error(err);
+        showToast('Error al iniciar sesión con Google');
+        if (btn) { btn.disabled = false; btn.innerHTML = 'Google'; }
+      }
     }
 
     /* ── Cerrar sesión — Firebase ─────────── */
@@ -5423,6 +5444,12 @@
 
       // ──── Firebase: Sesión persistente ───────────────────────────
       onAuthChange(async user => {
+        const loader = document.getElementById('initial-loader');
+        if (loader) {
+          loader.style.opacity = '0';
+          setTimeout(() => loader.remove(), 400);
+        }
+
         const nav = document.getElementById('bottom-nav');
         if (user) {
           if (nav) nav.style.display = 'flex';
@@ -5508,10 +5535,17 @@
             if (currentScreen === 'settings') updateSettingsStudentList();
           });
 
-          navigateTo('home');
+          // Solo navegamos a home si estamos en login para evitar saltos raros si ya estamos en otra pantalla
+          if (currentScreen === 'login') {
+            navigateTo('home');
+          }
           renderNotifications();
         } else {
+          // Si no hay usuario y no estamos en login, forzamos login
           if (nav) nav.style.display = 'none';
+          if (currentScreen !== 'login') {
+            navigateTo('login');
+          }
 
           // Limpiar suscripciones al salir
           if (unsubStudents) { unsubStudents(); unsubStudents = null; }
