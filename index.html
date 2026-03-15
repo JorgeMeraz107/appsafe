@@ -4712,17 +4712,29 @@
     /* ── Contactos en el form ─────────────── */
     function loadContactsIntoForm(studentId) {
       try {
-        const key = `ss_contacts_${studentId}`;
-        const raw = localStorage.getItem(key);
-        const saved = raw ? JSON.parse(raw) : null;
-        window.contactFields = saved
-          ? saved.filter(c => !c.emergency) // excluye 911 — siempre está
-          : [
-            { id: 'mama', name: 'Mamá', role: 'Contacto principal', number: '', emoji: '👩' },
-            { id: 'papa', name: 'Papá', role: 'Contacto secundario', number: '', emoji: '👨' }
-          ];
+        // 1) Primero intentamos desde Firestore (objeto students en memoria)
+        const fsContacts = students[studentId]?.contacts;
+        if (fsContacts && fsContacts.length > 0) {
+          window.contactFields = fsContacts.filter(c => !c.emergency);
+          // Actualizamos el cache local para uso offline
+          localStorage.setItem(`ss_contacts_${studentId}`, JSON.stringify(window.contactFields));
+        } else {
+          // 2) Si Firestore no tiene datos, usamos localStorage como respaldo
+          const key = `ss_contacts_${studentId}`;
+          const raw = localStorage.getItem(key);
+          const saved = raw ? JSON.parse(raw) : null;
+          window.contactFields = saved
+            ? saved.filter(c => !c.emergency)
+            : [
+              { id: 'mama', name: 'Mamá', role: 'Contacto principal', number: '', emoji: '👩' },
+              { id: 'papa', name: 'Papá', role: 'Contacto secundario', number: '', emoji: '👨' }
+            ];
+        }
       } catch {
-        window.contactFields = [];
+        window.contactFields = [
+          { id: 'mama', name: 'Mamá', role: 'Contacto principal', number: '', emoji: '👩' },
+          { id: 'papa', name: 'Papá', role: 'Contacto secundario', number: '', emoji: '👨' }
+        ];
       }
       renderContactFields();
     }
@@ -4769,10 +4781,22 @@
     /* ── Horario en el form ─────────────── */
     function loadScheduleIntoForm(studentId) {
       try {
-        const key = `ss_schedule_${studentId}`;
-        const raw = localStorage.getItem(key);
-        const s = raw ? JSON.parse(raw) : null;
-        if (!s) return;
+        // 1) Primero desde Firestore (objeto students en memoria)
+        let s = students[studentId]?.schedule || null;
+
+        // 2) Si no hay en Firestore, usamos el cache local
+        if (!s) {
+          const key = `ss_schedule_${studentId}`;
+          const raw = localStorage.getItem(key);
+          s = raw ? JSON.parse(raw) : null;
+        }
+
+        if (!s) return; // Sin datos de horario
+
+        // Actualizamos el cache local con los datos de Firestore
+        if (students[studentId]?.schedule) {
+          localStorage.setItem(`ss_schedule_${studentId}`, JSON.stringify(s));
+        }
 
         const toggleEl = document.getElementById('es-sched-toggle');
         const bodyEl = document.getElementById('es-sched-body');
@@ -4781,6 +4805,9 @@
           if (s.enabled) {
             toggleEl?.classList.add('on');
             if (bodyEl) bodyEl.style.display = 'flex';
+          } else {
+            toggleEl?.classList.remove('on');
+            if (bodyEl) bodyEl.style.display = 'none';
           }
           const start = document.getElementById('es-start');
           const end = document.getElementById('es-end');
