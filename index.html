@@ -4899,6 +4899,14 @@
         contacts: window.contactFields.filter(c => c.number && c.name)
       };
 
+      // Si es un Alumno Nuevo, generamos un PIN de 6 dígitos y marcamos como no vinculado
+      if (!editingStudentId) {
+        studentData.parentid = currentUser.uid;
+        studentData.linkCode = Math.floor(100000 + Math.random() * 900000).toString();
+        studentData.linked = false;
+        studentData.createdAt = new Date().toISOString();
+      }
+
       const btn = document.querySelector('#screen-edit-student .btn-primary');
       const originalText = btn ? btn.textContent : '';
       if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
