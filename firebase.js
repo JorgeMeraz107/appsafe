@@ -14,7 +14,8 @@ import {
     signOut,
     onAuthStateChanged,
     GoogleAuthProvider,
-    signInWithPopup
+    signInWithRedirect,
+    getRedirectResult
 } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
 import {
     getFirestore,
@@ -104,14 +105,25 @@ export async function registerWithEmail(email, password) {
     return cred;
 }
 
-/** Inicia sesión con Google. Crea el doc en users si no existe. */
+/** Inicia sesión con Google. (Usa Redirect para soporte nativo de Android APKs) */
 export async function loginWithGoogle() {
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
-    const cred = await signInWithPopup(auth, provider);
-    await ensureUserProfile(cred.user);
-    return cred;
+    // Esto recargará la página y enviará al usuario a la pantalla de Google
+    await signInWithRedirect(auth, provider);
 }
+
+// Al volver de Google y recargarse la app, capturamos el resultado para asegurar el perfil
+getRedirectResult(auth)
+    .then(async (cred) => {
+        if (cred) {
+            console.log("Sesión iniciada correctamente tras redirección de Google");
+            await ensureUserProfile(cred.user);
+        }
+    })
+    .catch((error) => {
+        console.error("Error al retornar del login de Google:", error);
+    });
 
 /** Cierra la sesión actual. */
 export async function logout() {

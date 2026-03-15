@@ -4443,19 +4443,8 @@
       const btn = document.getElementById('google-login-btn');
       if (btn) { btn.disabled = true; btn.innerHTML = 'Conectando con Google...'; }
 
-      try {
-        await loginWithGoogle();
-        // onAuthChange maneja la navegación a home automáticamente
-        await requestNotifPermission().catch(() => { });
-      } catch (err) {
-        showToast('Error al iniciar con Google.');
-        console.error(err);
-      } finally {
-        if (btn) {
-          btn.disabled = false;
-          btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="10" fill="#4285F4"/><text x="10" y="14" text-anchor="middle" fill="white" font-size="12" font-weight="bold">G</text></svg> Google`;
-        }
-      }
+      // Con el nuevo SignInWithRedirect, la app simplemente saltará a Chrome/Navegador.
+      loginWithGoogle();
     }
 
     /* ── Cerrar sesión — Firebase ─────────── */
