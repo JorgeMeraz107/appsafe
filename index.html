@@ -4705,6 +4705,7 @@
         document.querySelectorAll('#es-days-row .day-chip').forEach(c => {
           c.classList.toggle('on', [1, 2, 3, 4, 5].includes(parseInt(c.dataset.day)));
         });
+        updateEsBatteryPreview();
       }, 50);
     }
 
@@ -4801,6 +4802,7 @@
       if (body) body.style.display = el.classList.contains('on') ? 'flex' : 'none';
       updateEsBatteryPreview();
     }
+
 
     function updateEsBatteryPreview() {
       const bar = document.getElementById('es-battery-bar');
@@ -4899,7 +4901,7 @@
         valid = false;
       }
 
-      if (!valid || !currentUser) return;
+      if (!valid || !currentUser()) return;
 
       const scheduleDays = [...document.querySelectorAll('#es-days-row .day-chip.on')].map(c => parseInt(c.dataset.day));
       const motion = document.getElementById('es-motion-toggle')?.classList.contains('on') !== false;
@@ -4922,7 +4924,7 @@
 
       // Si es un Alumno Nuevo, generamos un PIN de 6 dígitos y marcamos como no vinculado
       if (!editingStudentId) {
-        studentData.parentid = currentUser.uid;
+        studentData.parentid = currentUser().uid;
         studentData.linkCode = Math.floor(100000 + Math.random() * 900000).toString();
         studentData.linked = false;
         studentData.createdAt = new Date().toISOString();
@@ -4948,7 +4950,7 @@
 
     /* ── Eliminar alumno ─────────────────── */
     function confirmDeleteStudent() {
-      if (!editingStudentId || !currentUser) return;
+      if (!editingStudentId || !currentUser()) return;
       const s = students[editingStudentId];
       if (!confirm(`¿Eliminar a ${s?.name || 'este hijo'}? Esta acción no se puede deshacer.`)) return;
 
