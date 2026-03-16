@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<script src="https://js.puter.com/v2/"></script>
+
+<h2>Test Qwen3 4B</h2>
+
+<input id="prompt" placeholder="Escribe algo">
+<button onclick="ask()">Preguntar</button>
+
+<p id="response"></p>
+
+<script>
+
+async function ask(){
+
+let text = document.getElementById("prompt").value;
+
+const response = await puter.ai.chat(text,{
+model:"qwen/qwen3-4b:free"
+});
+
+document.getElementById("response").innerText = response;
+
+}
+
+</script>
+
+</body>
+</html>

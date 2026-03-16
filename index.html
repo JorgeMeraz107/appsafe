@@ -1851,6 +1851,18 @@
       transform: translateX(-50%) translateY(0);
     }
 
+    .toast-danger {
+      background: var(--danger) !important;
+      color: white !important;
+      box-shadow: 0 4px 20px rgba(232, 54, 74, 0.4);
+    }
+
+    .toast-warn {
+      background: var(--warn) !important;
+      color: white !important;
+      box-shadow: 0 4px 20px rgba(245, 166, 35, 0.4);
+    }
+
     /* ═══════════════════════════════════════
      ANIMATIONS & MISC
   ═══════════════════════════════════════ */
@@ -3636,8 +3648,8 @@
        ──────────────────────────────────────────────────────────────── */
     import {
       loginWithEmail, registerWithEmail, loginWithGoogle, logout as fbLogout, onAuthChange, currentUser,
-      getStudentsFS, subscribeStudents, subscribeStudentLive,
-      saveStudentFS, deleteStudentFS
+      getStudentsFS, subscribeStudents, subscribeStudentLive, subscribeStudentHistory,
+      getUserProfile, saveStudentFS, deleteStudentFS
     } from './firebase.js';
 
     /* ═══════════════════════════════════════
@@ -3655,8 +3667,11 @@
 
     let students = {}; // Se poblará desde Firestore
     let liveData = {}; // Se poblará desde Firestore (por studentId)
+    let historyData = {}; // Se poblará desde Firestore (por studentId)
     let unsubStudents = null;
     let unsubLive = {};
+    let unsubHistory = {};
+    let lastProcessedHistoryId = {}; // { childId: lastEventId }
 
     /* ═══════════════════════════════════════
        NOTIFICATIONS DATA
@@ -4106,11 +4121,11 @@
        HISTORIAL — Lee del localStorage del alumno
        y renderiza en la pantalla de perfil
     ═══════════════════════════════════════ */
-    function renderStudentHistory() {
+    function renderStudentHistory(studentId = currentStudentId) {
       const container = document.getElementById('student-timeline');
       if (!container) return;
 
-      const events = getStudentHistory(15);
+      const events = historyData[studentId] || [];
 
       if (events.length === 0) {
         container.innerHTML = `
@@ -4123,22 +4138,25 @@
       const TYPE_ICON = {
         gps: '📍', motion: '🚶', sos: '🆘', safe: '✅', battery: '🔋',
         charging: '⚡', network: '📶', checkin: '📌', app: '📱', impact: '💥',
-        info: 'ℹ️'
+        info: 'ℹ️', movement: '🚗'
       };
 
       container.innerHTML = events.map(ev => {
         const icon = TYPE_ICON[ev.type] || 'ℹ️';
-        const time = ev.ts ? new Date(ev.ts).toLocaleTimeString('es-HN', { hour: '2-digit', minute: '2-digit' }) : '';
+        const time = (ev.ts || ev.serverTs) ? new Date(ev.ts || ev.serverTs.toDate()).toLocaleTimeString('es-HN', { hour: '2-digit', minute: '2-digit' }) : '';
         const color = ev.type === 'sos' ? 'var(--danger)' : ev.type === 'safe' ? 'var(--safe)' : ev.type === 'impact' ? 'var(--warn)' : 'var(--blue-acc)';
         const dotBg = ev.type === 'sos' ? 'var(--danger-bg)' : ev.type === 'safe' ? 'var(--safe-bg)' : ev.type === 'impact' ? 'var(--warn-bg)' : 'rgba(41,121,255,0.1)';
+        const title = ev.title || ev.label || ev.type;
+
         return `
       <div class="timeline-item">
         <div class="timeline-dot" style="background:${dotBg};">
           <svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="5" fill="${color}"/></svg>
         </div>
         <div class="timeline-content">
-          <div class="timeline-title">${icon} ${ev.label || ev.type}</div>
+          <div class="timeline-title">${icon} ${title}</div>
           <div class="timeline-time">${time}${ev.placeName ? ' · ' + ev.placeName : ''}</div>
+          ${ev.to ? `<div style="font-size:11px;color:var(--text-3);margin-top:2px;">Hacia: ${ev.to}</div>` : ''}
         </div>
       </div>`;
       }).join('');
@@ -5180,12 +5198,19 @@
        TOAST
     ═══════════════════════════════════════ */
     let toastTimeout = null;
-    function showToast(msg) {
+    function showToast(msg, type = 'info') {
       const t = document.getElementById('toast');
+      if (!t) return;
       t.textContent = msg;
+
+      // Limpiar clases previas
+      t.classList.remove('toast-danger', 'toast-warn');
+      if (type === 'danger') t.classList.add('toast-danger');
+      if (type === 'warn') t.classList.add('toast-warn');
+
       t.classList.add('show');
       if (toastTimeout) clearTimeout(toastTimeout);
-      toastTimeout = setTimeout(() => t.classList.remove('show'), 3000);
+      toastTimeout = setTimeout(() => t.classList.remove('show'), 4000);
     }
 
     /* ═══════════════════════════════════════
@@ -5625,6 +5650,35 @@
                   }
                 });
               }
+
+              // Suscribirse al historial de cada hijo
+              if (!unsubHistory[childId]) {
+                unsubHistory[childId] = subscribeStudentHistory(childId, (events) => {
+                  historyData[childId] = events;
+
+                  // Verificar si hay eventos nuevos de alta prioridad (SOS, Impacto)
+                  if (events.length > 0) {
+                    const latest = events[0]; // El primero es el más reciente (orderBy serverTs desc)
+                    const lastId = lastProcessedHistoryId[childId];
+                    const eventId = latest.id || latest.serverTs?.toMillis() || Date.now();
+
+                    if (lastId && lastId !== eventId) {
+                      // Solo alertamos si es un evento nuevo (no la carga inicial)
+                      if (latest.type === 'sos') {
+                        showToast(`🆘 SOS ACTIVADO: ${students[childId]?.name || 'Hijo'}`, 'danger');
+                      } else if (latest.type === 'impact') {
+                        showToast(`💥 IMPACTO DETECTADO: ${students[childId]?.name || 'Hijo'}`, 'warn');
+                      }
+                    }
+                    lastProcessedHistoryId[childId] = eventId;
+                  }
+
+                  // Si estamos viendo a este hijo, actualiza el timeline
+                  if (currentStudentId == childId && currentScreen === 'student') {
+                    renderStudentHistory(childId);
+                  }
+                });
+              }
             });
 
             // Actualizar la UI de Hijos si está abierta
@@ -5649,9 +5703,12 @@
           // Limpiar suscripciones al salir
           if (unsubStudents) { unsubStudents(); unsubStudents = null; }
           Object.values(unsubLive).forEach(un => un());
+          Object.values(unsubHistory).forEach(un => un());
           unsubLive = {};
+          unsubHistory = {};
           students = {};
           liveData = {};
+          historyData = {};
 
           navigateTo('login');
         }

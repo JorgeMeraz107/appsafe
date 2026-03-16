@@ -28,6 +28,8 @@ import {
     onSnapshot,
     query,
     where,
+    orderBy,
+    limit,
     serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
@@ -233,6 +235,12 @@ export async function saveStudentFS(data, studentId = null) {
     } else {
         // Genera un ID automático si es alumno nuevo
         docRef = doc(collection(db, "students"));
+        // Asignar código de vinculación inicial si no existe
+        if (!data.linkCode) {
+            data.linkCode = Math.floor(100000 + Math.random() * 900000).toString();
+        }
+        data.linked = false;
+        data.createdAt = serverTimestamp();
     }
     await setDoc(docRef, data, { merge: true });
 }
@@ -264,6 +272,21 @@ export function subscribeStudentLive(studentId, onChange) {
     const ref = doc(db, "student_live", studentId);
     return onSnapshot(ref, snap => {
         onChange(snap.exists() ? { id: snap.id, ...snap.data() } : null);
+    });
+}
+
+/**
+ * Suscribe al historial de eventos de un alumno.
+ */
+export function subscribeStudentHistory(studentId, onChange) {
+    const q = query(
+        collection(db, "students", studentId, "history"),
+        orderBy("serverTs", "desc"),
+        limit(20)
+    );
+    return onSnapshot(q, snap => {
+        const events = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        onChange(events);
     });
 }
 
