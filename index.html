@@ -2980,9 +2980,8 @@
             <div class="live-dot"></div> Actualiza cada 30 seg
           </div>
         </div>
-        <div style="display:flex;gap:8px;">
-          <button class="filter-tab active" onclick="filterMapStudent(1, this)">Sofía</button>
-          <button class="filter-tab" onclick="filterMapStudent(2, this)">Mateo</button>
+        <div style="display:flex;gap:8px;" id="map-student-tabs">
+          <!-- Rendered dynamically by renderMapTabs() -->
         </div>
       </div>
 
@@ -3033,7 +3032,7 @@
             style="width:48px;height:48px;font-size:17px;background:linear-gradient(135deg,#0D2E4F,#1A3358);"
             id="map-student-avatar">S</div>
           <div style="flex:1;">
-            <div class="topbar-title" style="font-size:16px;" id="map-student-name">Sofía García</div>
+            <div class="topbar-title" style="font-size:16px;" id="map-student-name">...</div>
             <div style="font-size:13px;color:var(--text-3);margin-top:2px;" id="map-student-location">Obteniendo
               ubicación...</div>
           </div>
@@ -3084,8 +3083,8 @@
             </svg>
           </div>
           <div class="alert-banner-text">
-            <div class="alert-banner-title">SOS — Mateo García</div>
-            <div class="alert-banner-sub">Activo hace 14 min · Movimiento inusual · Toca para responder</div>
+            <div class="alert-banner-title" id="alert-banner-title">Sin alertas activas</div>
+            <div class="alert-banner-sub" id="alert-banner-sub">Todo está bajo control</div>
           </div>
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
             <path d="M7 5L11 9L7 13" stroke="var(--danger)" stroke-width="1.5" stroke-linecap="round" />
@@ -3100,74 +3099,12 @@
           <button class="filter-tab" onclick="setFilter(this)">Batería</button>
         </div>
 
-        <div class="section-header">
-          <div class="section-title">Hoy</div>
-        </div>
-
-        <div class="card alert-item card-pressable anim-item" onclick="navigateTo('emergency')"
-          style="margin-bottom:10px;">
-          <div class="alert-item-icon" style="background:var(--danger-bg);">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M9 1.5L1 15.5H17L9 1.5Z" fill="var(--danger)" />
-              <rect x="8.5" y="6.5" width="1" height="4.5" rx="0.5" fill="white" />
-              <circle cx="9" cy="12.5" r="0.7" fill="white" />
-            </svg>
+        <div id="alerts-list">
+          <!-- Rendered dynamically -->
+          <div style="text-align:center;padding:40px 20px;color:var(--text-3);">
+            <div style="font-size:40px;margin-bottom:12px;">🔔</div>
+            <div style="font-size:14px;font-weight:500;">No hay alertas recientes</div>
           </div>
-          <div class="alert-item-content">
-            <div class="alert-item-title">Botón SOS Activado</div>
-            <div class="alert-item-meta">Mateo García · 08:47 AM · Cerca de Av. Circunvalación</div>
-          </div>
-          <div class="alert-item-badge badge-active">Activo</div>
-        </div>
-
-        <div class="card alert-item card-pressable anim-item" style="margin-bottom:10px;"
-          onclick="showToast('Detalles de alerta')">
-          <div class="alert-item-icon" style="background:var(--warn-bg);">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <circle cx="9" cy="9" r="7" stroke="var(--warn)" stroke-width="1.5" fill="none" />
-              <path d="M9 6V9" stroke="var(--warn)" stroke-width="1.5" stroke-linecap="round" />
-              <circle cx="9" cy="12" r="0.8" fill="var(--warn)" />
-            </svg>
-          </div>
-          <div class="alert-item-content">
-            <div class="alert-item-title">Salida de Zona Escolar</div>
-            <div class="alert-item-meta">Mateo García · 07:50 AM · 4 min fuera de zona</div>
-          </div>
-          <div class="alert-item-badge badge-resolved">Resuelto</div>
-        </div>
-
-        <div class="section-header">
-          <div class="section-title">Ayer</div>
-        </div>
-
-        <div class="card alert-item card-pressable anim-item" style="margin-bottom:10px;">
-          <div class="alert-item-icon" style="background:var(--safe-bg);">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M9 1.5L1 5V9C1 13.4 4.5 17.5 9 19C13.5 17.5 17 13.4 17 9V5L9 1.5Z" fill="var(--safe)"
-                opacity="0.4" />
-              <path d="M6 9L8 11L12 7" stroke="var(--safe)" stroke-width="1.5" stroke-linecap="round" />
-            </svg>
-          </div>
-          <div class="alert-item-content">
-            <div class="alert-item-title">Sofía llegó a casa</div>
-            <div class="alert-item-meta">Sofía García · 3:42 PM · Entró a zona hogar</div>
-          </div>
-          <div class="alert-item-badge badge-resolved">Info</div>
-        </div>
-
-        <div class="card alert-item card-pressable anim-item" style="margin-bottom:24px;">
-          <div class="alert-item-icon" style="background:var(--danger-bg);">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <rect x="2" y="9" width="14" height="7" rx="1" fill="var(--danger)" opacity="0.3" />
-              <rect x="2" y="9" width="4" height="7" rx="1" fill="var(--danger)" />
-              <rect x="6" y="6" width="2" height="3" rx="0.5" fill="var(--text-3)" />
-            </svg>
-          </div>
-          <div class="alert-item-content">
-            <div class="alert-item-title">Alerta de batería baja</div>
-            <div class="alert-item-meta">Mateo García · 2:15 PM · Dispositivo al 8%</div>
-          </div>
-          <div class="alert-item-badge badge-resolved">Resuelto</div>
         </div>
       </div>
     </div>
@@ -3203,30 +3140,7 @@
         <div class="settings-section">
           <div class="settings-section-title">Hijos</div>
           <div class="card" id="settings-students-list">
-            <div class="settings-item" onclick="openEditStudent(1)">
-              <div class="avatar"
-                style="width:38px;height:38px;font-size:14px;background:linear-gradient(135deg,#0D2E4F,#1A3358);">S
-              </div>
-              <div class="settings-item-text">
-                <div class="settings-item-label">Sofía García</div>
-                <div class="settings-item-sub" id="sofia-phone-sub">9no Grado · Sin número</div>
-              </div>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="opacity:0.4;flex-shrink:0;">
-                <path d="M6 4L10 8L6 12" stroke="var(--text-h)" stroke-width="1.5" stroke-linecap="round" />
-              </svg>
-            </div>
-            <div class="settings-item" onclick="openEditStudent(2)">
-              <div class="avatar"
-                style="width:38px;height:38px;font-size:14px;background:linear-gradient(135deg,#4A1520,#7A1E2E);">M
-              </div>
-              <div class="settings-item-text">
-                <div class="settings-item-label">Mateo García</div>
-                <div class="settings-item-sub" id="mateo-phone-sub">7mo Grado · Sin número</div>
-              </div>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="opacity:0.4;flex-shrink:0;">
-                <path d="M6 4L10 8L6 12" stroke="var(--text-h)" stroke-width="1.5" stroke-linecap="round" />
-              </svg>
-            </div>
+            <!-- Rendered dynamically by renderSettingsStudents() -->
           </div>
           <button class="btn btn-ghost btn-full" style="margin-top:8px;height:44px;" onclick="openEditStudent(null)">
             + Agregar nuevo hijo
@@ -3534,20 +3448,20 @@
           <div class="pulse-ring"></div>
           <div class="pulse-ring"></div>
           <div class="pulse-ring"></div>
-          <div class="avatar"
+          <div class="avatar" id="emergency-avatar"
             style="width:72px;height:72px;font-size:26px;background:linear-gradient(135deg,#7A1E2E,#4A1520);border:3px solid var(--danger);z-index:1;">
-            M</div>
+            ?</div>
         </div>
-        <div class="emergency-name">Mateo García</div>
-        <div class="emergency-location-text">Av. Circunvalación & 3ra Calle · Visto hace 14 min</div>
+        <div class="emergency-name" id="emergency-name">Cargando...</div>
+        <div class="emergency-location-text" id="emergency-location">Obteniendo ubicación...</div>
         <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
-          <div
+          <div id="emergency-alert-type"
             style="background:rgba(232,54,74,0.15);border:1px solid rgba(232,54,74,0.3);border-radius:100px;padding:5px 14px;font-size:12px;color:rgba(255,255,255,0.7);">
-            Movimiento inusual
+            Alerta SOS
           </div>
-          <div
+          <div id="emergency-battery-chip"
             style="background:rgba(232,54,74,0.15);border:1px solid rgba(232,54,74,0.3);border-radius:100px;padding:5px 14px;font-size:12px;color:rgba(255,255,255,0.7);">
-            42% batería
+            --% batería
           </div>
         </div>
       </div>
@@ -3562,15 +3476,15 @@
       </div>
 
       <div class="emergency-actions" style="z-index:10;">
-        <button class="btn btn-ghost"
+        <button class="btn btn-ghost" id="emergency-call-btn"
           style="flex:1;height:52px;border:1.5px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:white;"
-          onclick="callStudent(2)">
+          onclick="callStudent(emergencyChildId)">
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
             <path
               d="M16 11.6C15.1 11.6 14.2 11.4 13.4 11.1C13.2 11 12.9 11.1 12.8 11.2L11.3 12.7C9.6 11.8 8.2 10.4 7.3 8.7L8.8 7.2C8.9 7.1 9 6.8 8.9 6.6C8.6 5.8 8.4 4.9 8.4 4C8.4 3.7 8.2 3.5 7.9 3.5H5.7C5.4 3.5 5 3.7 5 4C5 10.8 10.2 16 17 16C17.3 16 17.5 15.6 17.5 15.3V13.1C17.5 12.8 17.3 11.6 16 11.6Z"
               fill="white" />
           </svg>
-          Llamar a Mateo
+          Llamar
         </button>
         <button class="btn btn-danger"
           style="flex:2;height:52px;font-size:15px;box-shadow:0 4px 24px rgba(232,54,74,0.5);"
@@ -3664,6 +3578,7 @@
     let sensorInterval = null;
     let callTimeout = null;
     let isDark = false;
+    let emergencyChildId = null;
 
     let students = {}; // Se poblará desde Firestore
     let liveData = {}; // Se poblará desde Firestore (por studentId)
@@ -3676,13 +3591,7 @@
     /* ═══════════════════════════════════════
        NOTIFICATIONS DATA
     ═══════════════════════════════════════ */
-    let notifications = [
-      { id: 1, type: 'danger', icon: 'SOS', title: 'SOS activado — Mateo García', body: 'Movimiento inusual detectado cerca de Av. Circunvalación', time: 'Hace 14 min', unread: true, action: 'emergency' },
-      { id: 2, type: 'warn', icon: 'GPS', title: 'Salida de zona escolar', body: 'Mateo salió del perímetro del Colegio Lincoln por 4 minutos', time: 'Hace 23 min', unread: true, action: 'map' },
-      { id: 3, type: 'safe', icon: '✅', title: 'Sofía llegó al colegio', body: 'Entró a la zona segura del Colegio Lincoln', time: 'Hace 1h 12min', unread: false, action: 'student' },
-      { id: 4, type: 'info', icon: 'BAT', title: 'Batería baja — Mateo', body: 'El dispositivo de Mateo está al 18% de batería', time: 'Hace 2h', unread: false, action: 'student' },
-      { id: 5, type: 'safe', icon: '🏠', title: 'Sofía salió de casa', body: 'Sofía salió de la zona hogar rumbo al colegio', time: 'Ayer 7:40 AM', unread: false, action: 'map' },
-    ];
+    let notifications = []; // Se cargará dinámicamente
 
     function renderNotifications() {
       const list = document.getElementById('notif-list');
@@ -3793,9 +3702,13 @@
         setTimeout(loadParentMap, 100);
       }
       if (screen === 'emergency') {
+        if (data.id) emergencyChildId = data.id;
         if (nav) nav.style.display = 'none';
         startEmTimer();
         setTimeout(initEmergencyMap, 100);
+      }
+      if (screen === 'alerts') {
+        renderAlertsScreen();
       }
       if (screen === 'settings') {
         onSettingsEnter();
@@ -3972,7 +3885,6 @@
 
     /* ── Leer datos del alumno ─────────── */
     function getStudentLive(studentId = currentStudentId) {
-      // Ahora retorna los datos en tiempo real descargados por subscribeStudentLive
       return liveData[studentId] || null;
     }
 
@@ -4003,7 +3915,6 @@
 
     /* ═══════════════════════════════════════
        SENSORES — Lee del localStorage del alumno
-       (antes era simulación random — ahora son datos reales)
     ═══════════════════════════════════════ */
     function startSensorSimulation() {
       stopSensorSimulation();
@@ -4029,7 +3940,7 @@
         if (gpsLoc) gpsLoc.textContent = 'Sin datos del alumno';
       }
 
-      // Acelerómetro — visualiza con barras proporcionales a los valores reales
+      // Acelerómetro
       const bars = document.querySelectorAll('#accel-bars .accel-bar');
       if (data && data.accel_x != null) {
         const vals = [
@@ -4118,48 +4029,117 @@
     }
 
     /* ═══════════════════════════════════════
-       HISTORIAL — Lee del localStorage del alumno
-       y renderiza en la pantalla de perfil
+       HISTORIAL — Lee data de Firestore
     ═══════════════════════════════════════ */
     function renderStudentHistory(studentId = currentStudentId) {
       const container = document.getElementById('student-timeline');
       if (!container) return;
-
       const events = historyData[studentId] || [];
-
       if (events.length === 0) {
-        container.innerHTML = `
-      <div style="text-align:center;padding:24px;color:var(--text-3);font-size:13px;">
-        Sin actividad registrada aún.<br>La app del alumno debe estar abierta.
-      </div>`;
+        container.innerHTML = `<div style="text-align:center;padding:24px;color:var(--text-3);font-size:13px;">Sin actividad registrada aún.</div>`;
         return;
       }
-
-      const TYPE_ICON = {
-        gps: '📍', motion: '🚶', sos: '🆘', safe: '✅', battery: '🔋',
-        charging: '⚡', network: '📶', checkin: '📌', app: '📱', impact: '💥',
-        info: 'ℹ️', movement: '🚗'
-      };
-
+      const TYPE_ICON = { gps: '📍', motion: '🚶', sos: '🆘', safe: '✅', battery: '🔋', charging: '⚡', network: '📶', checkin: '📌', app: '📱', impact: '💥', info: 'ℹ️' };
       container.innerHTML = events.map(ev => {
         const icon = TYPE_ICON[ev.type] || 'ℹ️';
         const time = (ev.ts || ev.serverTs) ? new Date(ev.ts || ev.serverTs.toDate()).toLocaleTimeString('es-HN', { hour: '2-digit', minute: '2-digit' }) : '';
         const color = ev.type === 'sos' ? 'var(--danger)' : ev.type === 'safe' ? 'var(--safe)' : ev.type === 'impact' ? 'var(--warn)' : 'var(--blue-acc)';
         const dotBg = ev.type === 'sos' ? 'var(--danger-bg)' : ev.type === 'safe' ? 'var(--safe-bg)' : ev.type === 'impact' ? 'var(--warn-bg)' : 'rgba(41,121,255,0.1)';
-        const title = ev.title || ev.label || ev.type;
-
-        return `
-      <div class="timeline-item">
-        <div class="timeline-dot" style="background:${dotBg};">
-          <svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="5" fill="${color}"/></svg>
-        </div>
-        <div class="timeline-content">
-          <div class="timeline-title">${icon} ${title}</div>
-          <div class="timeline-time">${time}${ev.placeName ? ' · ' + ev.placeName : ''}</div>
-          ${ev.to ? `<div style="font-size:11px;color:var(--text-3);margin-top:2px;">Hacia: ${ev.to}</div>` : ''}
-        </div>
-      </div>`;
+        return `<div class="timeline-item"><div class="timeline-dot" style="background:${dotBg};"><svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="5" fill="${color}"/></svg></div><div class="timeline-content"><div class="timeline-title">${icon} ${ev.title || ev.label || ev.type}</div><div class="timeline-time">${time}${ev.placeName ? ' · ' + ev.placeName : ''}</div></div></div>`;
       }).join('');
+    }
+
+    function renderAlertsScreen() {
+      const container = document.getElementById('alerts-list');
+      if (!container) return;
+      let allEvents = [];
+      Object.keys(students).forEach(childId => {
+        const events = historyData[childId] || [];
+        events.forEach(ev => { allEvents.push({ ...ev, childId, childName: students[childId]?.name || 'Hijo' }); });
+      });
+      allEvents.sort((a, b) => (b.ts || b.serverTs?.toMillis() || 0) - (a.ts || a.serverTs?.toMillis() || 0));
+      if (allEvents.length === 0) {
+        container.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--text-3);"><div style="font-size:40px;margin-bottom:12px;">🔔</div><div style="font-size:14px;font-weight:500;">No hay alertas recientes</div></div>`;
+        return;
+      }
+      const colors = { sos: 'var(--danger-bg)', impact: 'var(--warn-bg)', safe: 'var(--safe-bg)', info: 'rgba(41,121,255,0.1)' };
+      const icons = { sos: '🆘', impact: '💥', battery: '🔋', checkin: '📌', safe: '✅' };
+      container.innerHTML = allEvents.map(ev => {
+        const color = colors[ev.type] || colors.info;
+        const icon = icons[ev.type] || '🔔';
+        const time = (ev.ts || ev.serverTs?.toMillis()) ? new Date(ev.ts || ev.serverTs.toMillis()).toLocaleTimeString('es-HN', { hour: '2-digit', minute: '2-digit' }) : '';
+        const date = (ev.ts || ev.serverTs?.toMillis()) ? new Date(ev.ts || ev.serverTs.toMillis()).toLocaleDateString('es-HN', { day: 'numeric', month: 'short' }) : '';
+        return `<div class="card alert-item card-pressable anim-item" style="margin-bottom:10px;" onclick="${ev.type === 'sos' ? `navigateTo('emergency',{id:'${ev.childId}'})` : `navigateTo('student',{id:'${ev.childId}'})`}"><div class="alert-item-icon" style="background:${color};"><span style="font-size:18px;">${icon}</span></div><div class="alert-item-content"><div class="alert-item-title">${ev.title || ev.type.toUpperCase()}</div><div class="alert-item-meta">${ev.childName} · ${time} · ${date}</div></div>${ev.type === 'sos' ? '<div class="alert-item-badge badge-active">Activo</div>' : ''}</div>`;
+      }).join('');
+    }
+
+    /* ═══════════════════════════════════════
+       GOOGLE MAPS — Padre
+    ═══════════════════════════════════════ */
+    function refreshParentMap(lat, lng, force = true) {
+      const iframe = document.getElementById('parent-gmap');
+      const loading = document.getElementById('parent-map-loading');
+      const chip = document.getElementById('parent-map-chip');
+      const coords = document.getElementById('parent-map-coords');
+      if (!iframe) return;
+      if (!force && lastParentMapLat != null) {
+        const dist = haversine(lastParentMapLat, lastParentMapLng, lat, lng);
+        if (dist < 30) return;
+      }
+      lastParentMapLat = lat; lastParentMapLng = lng;
+      iframe.src = `https://maps.google.com/maps?q=${lat},${lng}&z=17&output=embed&hl=es`;
+      if (loading) loading.style.opacity = '0';
+      if (chip) chip.style.display = 'flex';
+      if (coords) coords.textContent = `${parseFloat(lat).toFixed(4)}, ${parseFloat(lng).toFixed(4)}`;
+    }
+
+    function recenterParentMap() {
+      const data = getStudentLive();
+      if (data && data.lat != null) refreshParentMap(data.lat, data.lng, true);
+      else showToast('Sin ubicación disponible aún');
+    }
+
+    function loadParentMap() {
+      const data = getStudentLive(activeMapStudent);
+      const loadingText = document.getElementById('parent-map-loading-text');
+      if (data && data.lat != null) {
+        refreshParentMap(data.lat, data.lng, true);
+      } else {
+        if (loadingText) loadingText.textContent = 'Abre la app del alumno primero';
+      }
+      const student = students[activeMapStudent];
+      const nameEl = document.getElementById('map-student-name');
+      const locEl = document.getElementById('map-student-location');
+      if (nameEl) nameEl.textContent = student?.name || 'Alumno';
+      if (locEl) locEl.textContent = data?.placeName ? '📍 ' + data.placeName : '📍 Obteniendo ubicación...';
+    }
+
+    function filterMapStudent(id, btn) {
+      activeMapStudent = id;
+      document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      lastParentMapLat = null;
+      loadParentMap();
+    }
+
+    function renderMapTabs() {
+      const container = document.getElementById('map-student-tabs');
+      if (!container) return;
+      const ids = Object.keys(students);
+      if (ids.length === 0) {
+        container.innerHTML = '';
+        return;
+      }
+      container.innerHTML = ids.map(id => {
+        const s = students[id];
+        const firstName = s.name ? s.name.split(' ')[0] : 'Alumno';
+        const activeClass = (activeMapStudent == id) ? 'active' : '';
+        return `<button class="filter-tab ${activeClass}" onclick="filterMapStudent('${id}', this)">${firstName}</button>`;
+      }).join('');
+      if (!students[activeMapStudent] && ids.length > 0) {
+        activeMapStudent = ids[0];
+        renderMapTabs();
+      }
     }
 
     /* ═══════════════════════════════════════
@@ -4227,11 +4207,55 @@
       loadParentMap();
     }
 
+    function renderMapTabs() {
+      const container = document.getElementById('map-student-tabs');
+      if (!container) return;
+      const ids = Object.keys(students);
+      if (ids.length === 0) {
+        container.innerHTML = '';
+        return;
+      }
+      container.innerHTML = ids.map(id => {
+        const s = students[id];
+        const firstName = s.name ? s.name.split(' ')[0] : 'Alumno';
+        const activeClass = (activeMapStudent == id) ? 'active' : '';
+        return `<button class="filter-tab ${activeClass}" onclick="filterMapStudent('${id}', this)">${firstName}</button>`;
+      }).join('');
+
+      // Si el alumno activo ya no existe, usamos el primero
+      if (!students[activeMapStudent] && ids.length > 0) {
+        activeMapStudent = ids[0];
+        renderMapTabs();
+      }
+    }
+
     /* ═══════════════════════════════════════
        MAPA DE EMERGENCIA — Google Maps iframe
     ═══════════════════════════════════════ */
     function initEmergencyMap() {
-      const data = getStudentLive();
+      const student = students[emergencyChildId];
+      if (!student) {
+        showToast('No se encontró información del alumno');
+        goBack();
+        return;
+      }
+
+      // Populate UI
+      const nameEl = document.getElementById('emergency-name');
+      const avatarEl = document.getElementById('emergency-avatar');
+      const callBtn = document.getElementById('emergency-call-btn');
+      if (nameEl) nameEl.textContent = student.name;
+      if (avatarEl) avatarEl.textContent = student.name ? student.name[0].toUpperCase() : '?';
+      if (callBtn) {
+        callBtn.innerHTML = `
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M16 11.6C15.1 11.6 14.2 11.4 13.4 11.1C13.2 11 12.9 11.1 12.8 11.2L11.3 12.7C9.6 11.8 8.2 10.4 7.3 8.7L8.8 7.2C8.9 7.1 9 6.8 8.9 6.6C8.6 5.8 8.4 4.9 8.4 4C8.4 3.7 8.2 3.5 7.9 3.5H5.7C5.4 3.5 5 3.7 5 4C5 10.8 10.2 16 17 16C17.3 16 17.5 15.6 17.5 15.3V13.1C17.5 12.8 17.3 11.6 16 11.6Z" fill="white" />
+          </svg>
+          Llamar a ${student.name.split(' ')[0]}
+        `;
+      }
+
+      const data = getStudentLive(emergencyChildId);
       const iframe = document.getElementById('em-gmap');
       const loading = document.getElementById('em-map-loading');
       if (!iframe) return;
@@ -4240,12 +4264,19 @@
         iframe.src = `https://maps.google.com/maps?q=${data.lat},${data.lng}&z=17&output=embed&hl=es`;
         if (loading) setTimeout(() => { loading.style.display = 'none'; }, 1500);
         // Actualiza chips de ubicación en pantalla emergencia
-        const locEl = document.querySelector('.emergency-location-text');
-        const battEl = document.querySelector('#em-batt-chip');
-        if (locEl) locEl.textContent = `${data.placeName || `${parseFloat(data.lat).toFixed(4)}, ${parseFloat(data.lng).toFixed(4)}`} · Vivo`;
+        const locEl = document.getElementById('emergency-location');
+        const battEl = document.getElementById('emergency-battery-chip');
+        if (locEl) {
+          const ago = data.ts ? Math.round((Date.now() - data.ts) / 60000) : null;
+          const timeText = ago !== null ? ` · Visto hace ${ago} min` : '';
+          locEl.textContent = `${data.placeName || `${parseFloat(data.lat).toFixed(4)}, ${parseFloat(data.lng).toFixed(4)}`}${timeText}`;
+        }
         if (battEl) battEl.textContent = `${Math.round((data.battery || 0) * 100)}% batería`;
       } else {
-        if (loading) loading.querySelector('div').textContent = 'Sin ubicación disponible';
+        if (loading) {
+          const loadingText = loading.querySelector('div');
+          if (loadingText) loadingText.textContent = 'Buscando última ubicación...';
+        }
       }
     }
 
@@ -5478,47 +5509,8 @@
     }
 
     /* ═══════════════════════════════════════
-       DEMO DE NOTIFICACIONES
-       ─────────────────────────────────────
-       Simula la secuencia de eventos que llegarían
-       desde Firebase en producción. Solo corre una
-       vez por sesión. Eliminar cuando haya Firebase.
+       FIREBASE CONNECTION
     ═══════════════════════════════════════ */
-    function runNotificationDemo() {
-      // Solo una vez por sesión
-      if (sessionStorage.getItem('notif_demo_done')) return;
-      sessionStorage.setItem('notif_demo_done', '1');
-
-      // ── Evento 1: SOS a los 8 segundos ──────────────────
-      // En producción: Firestore onSnapshot detecta data.sos === true
-      setTimeout(() => {
-        sendPushNotification({
-          type: 'sos',
-          title: 'SOS — Sofía García',
-          body: 'Presionó el botón de emergencia. Toca para ver su ubicación.',
-        });
-      }, 8000);
-
-      // ── Evento 2: Batería baja a los 22 segundos ─────────
-      // En producción: Firestore detecta data.battery <= 0.15
-      setTimeout(() => {
-        sendPushNotification({
-          type: 'battery',
-          title: 'Batería baja — Mateo García',
-          body: 'El celular tiene 12% de batería. Puede desconectarse pronto.',
-        });
-      }, 22000);
-
-      // ── Evento 3: Info — llegó al colegio a los 38s ──────
-      // En producción: Firestore detecta entrada a zona segura
-      setTimeout(() => {
-        sendPushNotification({
-          type: 'info',
-          title: 'Mateo llegó al colegio',
-          body: 'Entró a la zona segura · 07:52 AM',
-        });
-      }, 38000);
-    }
 
 
     /*
@@ -5684,6 +5676,8 @@
             // Actualizar la UI de Hijos si está abierta
             if (currentScreen === 'children') renderChildrenList();
             if (currentScreen === 'settings') updateSettingsStudentList();
+            if (currentScreen === 'map') renderMapTabs();
+            if (currentScreen === 'alerts') renderAlertsScreen();
             // Siempre actualiza el dashboard de Home (sin coste extra de red)
             renderHomeScreen();
           });
@@ -5736,6 +5730,7 @@
     window.confirmDeleteStudent = confirmDeleteStudent;
     window.recenterParentMap = recenterParentMap;
     window.filterMapStudent = filterMapStudent;
+    window.renderMapTabs = renderMapTabs;
     window.callStudent = callStudent;
     window.toggleSwitch = toggleSwitch;
     window.toggleDarkMode = toggleDarkMode;
@@ -5755,6 +5750,10 @@
     window.openEditPhone = openEditPhone;
     window.setFilter = setFilter;
     // Export variables used in onclick attributes
+    Object.defineProperty(window, 'emergencyChildId', {
+      get: () => emergencyChildId,
+      set: (v) => emergencyChildId = v
+    });
     Object.defineProperty(window, 'currentStudentId', {
       get: () => currentStudentId,
       set: (v) => currentStudentId = v
