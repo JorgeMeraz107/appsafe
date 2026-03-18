@@ -2980,7 +2980,9 @@
             <div class="live-dot"></div> Actualiza cada 30 seg
           </div>
         </div>
-        <div style="display:flex;gap:8px;" id="map-student-tabs">
+        <div
+          style="display:flex;gap:8px;overflow-x:auto;mask-image:linear-gradient(to right,black 90%,transparent);max-width:200px;-webkit-overflow-scrolling:touch;padding-bottom:5px;"
+          id="map-student-tabs">
           <!-- Rendered dynamically by renderMapTabs() -->
         </div>
       </div>
@@ -3579,7 +3581,7 @@
     let callTimeout = null;
     let isDark = false;
     let emergencyChildId = null;
-    let activeMapStudent = 1;
+    let activeMapStudent = null;
     let lastParentMapLat = null;
     let lastParentMapLng = null;
     let currentStudentId = null;
@@ -3704,6 +3706,7 @@
         stopSensorSimulation();
       }
       if (screen === 'map') {
+        renderMapTabs();
         setTimeout(loadParentMap, 100);
       }
       if (screen === 'emergency') {
@@ -4063,6 +4066,24 @@
         events.forEach(ev => { allEvents.push({ ...ev, childId, childName: students[childId]?.name || 'Hijo' }); });
       });
       allEvents.sort((a, b) => (b.ts || b.serverTs?.toMillis() || 0) - (a.ts || a.serverTs?.toMillis() || 0));
+
+      // Update Topbar Badge
+      const subEl = document.querySelector('#screen-alerts .topbar-sub');
+      const activeAlerts = allEvents.filter(ev => ev.type === 'sos' || ev.type === 'impact');
+      if (subEl) subEl.textContent = `${activeAlerts.length} alertas activas`;
+
+      // Update Banner
+      const bannerTitle = document.getElementById('alert-banner-title');
+      const bannerSub = document.getElementById('alert-banner-sub');
+      if (activeAlerts.length > 0) {
+        const top = activeAlerts[0];
+        if (bannerTitle) bannerTitle.textContent = `${top.type === 'sos' ? '🆘 SOS' : '💥 IMPACTO'}: ${top.childName}`;
+        if (bannerSub) bannerSub.textContent = `Evento detectado hace poco. Toca para ver detalle.`;
+      } else {
+        if (bannerTitle) bannerTitle.textContent = 'Sin alertas activas';
+        if (bannerSub) bannerSub.textContent = 'Todo está bajo control';
+      }
+
       if (allEvents.length === 0) {
         container.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--text-3);"><div style="font-size:40px;margin-bottom:12px;">🔔</div><div style="font-size:14px;font-weight:500;">No hay alertas recientes</div></div>`;
         return;
@@ -4105,18 +4126,33 @@
     }
 
     function loadParentMap() {
+      const ids = Object.keys(students);
+      if (ids.length === 0) {
+        const loadingText = document.getElementById('parent-map-loading-text');
+        if (loadingText) loadingText.textContent = 'Abre la app del alumno primero';
+        return;
+      }
+
+      if (!activeMapStudent || !students[activeMapStudent]) {
+        activeMapStudent = ids[0];
+      }
+
       const data = getStudentLive(activeMapStudent);
       const loadingText = document.getElementById('parent-map-loading-text');
       if (data && data.lat != null) {
         refreshParentMap(data.lat, data.lng, true);
       } else {
-        if (loadingText) loadingText.textContent = 'Abre la app del alumno primero';
+        if (loadingText) loadingText.textContent = 'Esperando ubicación de ' + (students[activeMapStudent]?.name || 'alumno');
       }
+
       const student = students[activeMapStudent];
       const nameEl = document.getElementById('map-student-name');
       const locEl = document.getElementById('map-student-location');
+      const avatarEl = document.getElementById('map-student-avatar');
+
       if (nameEl) nameEl.textContent = student?.name || 'Alumno';
       if (locEl) locEl.textContent = data?.placeName ? '📍 ' + data.placeName : '📍 Obteniendo ubicación...';
+      if (avatarEl && student?.name) avatarEl.textContent = student.name[0].toUpperCase();
     }
 
     function filterMapStudent(id, btn) {
@@ -4484,7 +4520,7 @@
       const statChildren = document.getElementById('home-stat-children');
       const statBattery = document.getElementById('home-stat-battery');
       const summaryTitle = document.querySelector('.summary-title');
-      const summaryDate = document.querySelector('.status-summary-card .summary-sub');
+      const summarySub = document.querySelector('.status-summary-card .summary-sub');
 
       // Actualizar stats
       const total = ids.length;
@@ -4494,20 +4530,47 @@
       if (statSafe) statSafe.textContent = safeCount;
       if (statAlerts) statAlerts.textContent = alertCount;
       if (statChildren) statChildren.textContent = total;
-      if (statBattery) statBattery.textContent = total > 0 ? '-' : '-';
+
+      // Batería promedio
+      let avgBatt = 0;
+      let countBatt = 0;
+      ids.forEach(id => {
+        const live = liveData[id];
+        if (live && live.battery != null) {
+          avgBatt += live.battery;
+          countBatt++;
+        }
+      });
+      if (statBattery) statBattery.textContent = countBatt > 0 ? `${Math.round((avgBatt / countBatt) * 100)}%` : '-';
 
       // Estado general
       if (summaryTitle) {
-        if (total === 0) summaryTitle.textContent = 'Sin hijos vinculados aún';
-        else if (alertCount > 0) summaryTitle.textContent = `⚠️ ${alertCount} hijo(s) con alerta activa`;
-        else summaryTitle.textContent = 'Todos los hijos están seguros';
+        const card = document.querySelector('.status-summary-card');
+        if (total === 0) {
+          summaryTitle.textContent = 'Sin hijos vinculados aún';
+          if (card) { card.classList.remove('status-summary-safe'); card.classList.add('status-summary-warn'); }
+        } else if (alertCount > 0) {
+          summaryTitle.textContent = `${alertCount} hijo(s) con alerta activa`;
+          if (card) { card.classList.remove('status-summary-safe'); card.classList.add('status-summary-danger'); }
+        } else {
+          summaryTitle.textContent = 'Todos los hijos están seguros';
+          if (card) { card.classList.remove('status-summary-danger', 'status-summary-warn'); card.classList.add('status-summary-safe'); }
+        }
       }
 
-      // Fecha actual
+      // Fecha y hora
+      if (summarySub) {
+        const now = new Date();
+        const time = now.toLocaleTimeString('es-HN', { hour: '2-digit', minute: '2-digit' });
+        summarySub.textContent = `Actualizado a las ${time} • Monitoreo activo`;
+      }
+
+      const summaryDate = document.querySelector('.status-summary-card div[style*="text-align:right"]');
       if (summaryDate) {
         const now = new Date();
-        const opts = { weekday: 'short', month: 'short', day: 'numeric' };
-        summaryDate.textContent = `Actualizado ahora · ${now.toLocaleDateString('es-MX', opts)}`;
+        const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+        const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+        summaryDate.innerHTML = `${days[now.getDay()]}<br>${months[now.getMonth()]} ${now.getDate()}`;
       }
 
       // Cards de hijos
