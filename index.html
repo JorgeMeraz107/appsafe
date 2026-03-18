@@ -3579,6 +3579,11 @@
     let callTimeout = null;
     let isDark = false;
     let emergencyChildId = null;
+    let activeMapStudent = 1;
+    let lastParentMapLat = null;
+    let lastParentMapLng = null;
+    let currentStudentId = null;
+    let editingStudentId = null;
 
     let students = {}; // Se poblará desde Firestore
     let liveData = {}; // Se poblará desde Firestore (por studentId)
@@ -4142,92 +4147,6 @@
       }
     }
 
-    /* ═══════════════════════════════════════
-       GOOGLE MAPS — Padre (igual que alumno)
-    ═══════════════════════════════════════ */
-    let activeMapStudent = 1;
-    let lastParentMapLat = null;
-    let lastParentMapLng = null;
-
-    function refreshParentMap(lat, lng, force = true) {
-      const iframe = document.getElementById('parent-gmap');
-      const loading = document.getElementById('parent-map-loading');
-      const chip = document.getElementById('parent-map-chip');
-      const coords = document.getElementById('parent-map-coords');
-      if (!iframe) return;
-
-      // Solo recarga si se movió más de 30m o es forzado
-      if (!force && lastParentMapLat != null) {
-        const dist = haversine(lastParentMapLat, lastParentMapLng, lat, lng);
-        if (dist < 30) return;
-      }
-
-      lastParentMapLat = lat;
-      lastParentMapLng = lng;
-
-      const url = `https://maps.google.com/maps?q=${lat},${lng}&z=17&output=embed&hl=es`;
-      iframe.src = url;
-
-      if (loading) loading.style.opacity = '0';
-      if (chip) { chip.style.display = 'flex'; }
-      if (coords) coords.textContent = `${parseFloat(lat).toFixed(4)}, ${parseFloat(lng).toFixed(4)}`;
-    }
-
-    function recenterParentMap() {
-      const data = getStudentLive();
-      if (data && data.lat != null) {
-        refreshParentMap(data.lat, data.lng, true);
-
-      } else {
-        showToast('Sin ubicación disponible aún');
-      }
-    }
-
-    function loadParentMap() {
-      const data = getStudentLive();
-      const loadingText = document.getElementById('parent-map-loading-text');
-      if (data && data.lat != null) {
-        refreshParentMap(data.lat, data.lng, true);
-      } else {
-        if (loadingText) loadingText.textContent = 'Abre la app del alumno primero';
-      }
-      // Info del alumno en el bottom sheet
-      const student = students[activeMapStudent] || Object.values(students)[0];
-      const nameEl = document.getElementById('map-student-name');
-      const locEl = document.getElementById('map-student-location');
-      if (nameEl) nameEl.textContent = student?.name || 'Alumno';
-      if (locEl) locEl.textContent = data?.placeName ? '📍 ' + data.placeName : '📍 Obteniendo ubicación...';
-    }
-
-    function filterMapStudent(id, btn) {
-      activeMapStudent = id;
-      document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
-      if (btn) btn.classList.add('active');
-      lastParentMapLat = null; // forzar recarga
-      loadParentMap();
-    }
-
-    function renderMapTabs() {
-      const container = document.getElementById('map-student-tabs');
-      if (!container) return;
-      const ids = Object.keys(students);
-      if (ids.length === 0) {
-        container.innerHTML = '';
-        return;
-      }
-      container.innerHTML = ids.map(id => {
-        const s = students[id];
-        const firstName = s.name ? s.name.split(' ')[0] : 'Alumno';
-        const activeClass = (activeMapStudent == id) ? 'active' : '';
-        return `<button class="filter-tab ${activeClass}" onclick="filterMapStudent('${id}', this)">${firstName}</button>`;
-      }).join('');
-
-      // Si el alumno activo ya no existe, usamos el primero
-      if (!students[activeMapStudent] && ids.length > 0) {
-        activeMapStudent = ids[0];
-        renderMapTabs();
-      }
-    }
 
     /* ═══════════════════════════════════════
        MAPA DE EMERGENCIA — Google Maps iframe
@@ -4328,7 +4247,6 @@
       return number;
     }
 
-    let currentStudentId = 1;
 
     /* ═══════════════════════════════════════
        VALIDACIONES — helpers reutilizables
@@ -4732,7 +4650,6 @@
 
 
     /* ── Estado de la pantalla de edición ── */
-    let editingStudentId = null; // null = nuevo alumno
     window.contactFields = [];      // arreglo de {id, name, role, number, emoji}
 
     /* ── Abrir pantalla de edición ──────── */
