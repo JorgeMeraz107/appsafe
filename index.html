@@ -4095,7 +4095,18 @@
         const icon = icons[ev.type] || '🔔';
         const time = (ev.ts || ev.serverTs?.toMillis()) ? new Date(ev.ts || ev.serverTs.toMillis()).toLocaleTimeString('es-HN', { hour: '2-digit', minute: '2-digit' }) : '';
         const date = (ev.ts || ev.serverTs?.toMillis()) ? new Date(ev.ts || ev.serverTs.toMillis()).toLocaleDateString('es-HN', { day: 'numeric', month: 'short' }) : '';
-        return `<div class="card alert-item card-pressable anim-item" style="margin-bottom:10px;" onclick="${ev.type === 'sos' ? `navigateTo('emergency',{id:'${ev.childId}'})` : `navigateTo('student',{id:'${ev.childId}'})`}"><div class="alert-item-icon" style="background:${color};"><span style="font-size:18px;">${icon}</span></div><div class="alert-item-content"><div class="alert-item-title">${ev.title || ev.type.toUpperCase()}</div><div class="alert-item-meta">${ev.childName} · ${time} · ${date}</div></div>${ev.type === 'sos' ? '<div class="alert-item-badge badge-active">Activo</div>' : ''}</div>`;
+        return `
+          <div class="card alert-item card-pressable anim-item" style="margin-bottom:10px;" 
+               onclick="${ev.type === 'sos' ? `navigateTo('emergency',{id:'${ev.childId}'})` : `navigateTo('student',{id:'${ev.childId}'})`}">
+            <div class="alert-item-icon" style="background:${color};">
+              <span style="font-size:18px;">${icon}</span>
+            </div>
+            <div class="alert-item-content">
+              <div class="alert-item-title">${escapeHTML(ev.title || ev.type.toUpperCase())}</div>
+              <div class="alert-item-meta">${escapeHTML(ev.childName)} · ${time} · ${date}</div>
+            </div>
+            ${ev.type === 'sos' ? '<div class="alert-item-badge badge-active">Activo</div>' : ''}
+          </div>`;
       }).join('');
     }
 
@@ -4486,17 +4497,17 @@
         const pillText = isSafe ? '● Seguro/a' : '🆘 SOS Activo';
         const sched = getStudentSchedule(parseInt(id));
         const schedText = sched?.enabled ? `⏰ ${sched.start} – ${sched.end}` : '⏰ Monitoreo 24/7';
-        const metaText = [s.grade, s.school].filter(Boolean).join(' · ') || 'Sin información';
+        const metaText = [escapeHTML(s.grade), escapeHTML(s.school)].filter(Boolean).join(' · ') || 'Sin información';
 
         return `
       <div class="card card-pressable student-card anim-item"
            onclick="navigateTo('student',{id:'${id}'})">
         <div class="avatar ${ring}"
              style="width:52px;height:52px;font-size:18px;background:linear-gradient(135deg,#0D2E4F,#1A3358);">
-          ${s.name ? s.name[0].toUpperCase() : '?'}
+          ${s.name ? escapeHTML(s.name[0].toUpperCase()) : '?'}
         </div>
         <div class="student-info">
-          <div class="student-name">${s.name}</div>
+          <div class="student-name">${escapeHTML(s.name)}</div>
           <div class="student-meta">${metaText}</div>
           <div class="student-status-row">
             <div class="${pillClass}"><div class="status-dot"></div>${pillText}</div>
@@ -4511,6 +4522,14 @@
     }
 
     /* ── Renderiza el dashboard HOME con datos reales ── */
+    /* ── Helpers de Seguridad ──────────────── */
+    function escapeHTML(str) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
     function renderHomeScreen() {
       const ids = Object.keys(students);
       const homeList = document.getElementById('home-students-list');
@@ -4589,7 +4608,7 @@
         const pillClass = isSafe ? 'status-pill status-safe' : 'status-pill status-danger';
         const pillText = isSafe ? '● Seguro/a' : '🆘 SOS Activo';
         const arrowColor = isSafe ? 'currentColor' : 'var(--danger)';
-        const metaText = [s.grade, s.school].filter(Boolean).join(' · ') || 'Sin información';
+        const metaText = [escapeHTML(s.grade), escapeHTML(s.school)].filter(Boolean).join(' · ') || 'Sin información';
         const initial = s.name ? s.name[0].toUpperCase() : '?';
 
         return `
@@ -4597,10 +4616,10 @@
            onclick="navigateTo('student',{id:'${id}'})">
         <div class="avatar ${ring}"
              style="width:52px;height:52px;font-size:18px;background:linear-gradient(135deg,#0D2E4F,#1A3358);">
-          ${initial}
+          ${escapeHTML(initial)}
         </div>
         <div class="student-info">
-          <div class="student-name">${s.name || 'Sin nombre'}</div>
+          <div class="student-name">${escapeHTML(s.name || 'Sin nombre')}</div>
           <div class="student-meta">${metaText}</div>
           <div class="student-status-row">
             <div class="${pillClass}"><div class="status-dot"></div>${pillText}</div>
@@ -4713,7 +4732,7 @@
               <div style="font-size:28px;">✅</div>
               <div>
                 <div style="font-weight:700;font-size:14px;color:var(--safe);">App del alumno vinculada</div>
-                <div style="font-size:12px;color:var(--text-3);margin-top:2px;">${s.name} ya inició sesión en la app del alumno correctamente.</div>
+                <div style="font-size:12px;color:var(--text-3);margin-top:2px;">${escapeHTML(s.name)} ya inició sesión en la app del alumno correctamente.</div>
               </div>
             </div>`;
         } else {
@@ -4733,7 +4752,7 @@
                 <div style="font-size:22px;">🔗</div>
                 <div>
                   <div style="font-weight:700;font-size:14px;color:var(--text-1);">Código de vinculación</div>
-                  <div style="font-size:12px;color:var(--text-3);">Dáselo a ${s.name} para que lo ingrese en su app</div>
+                  <div style="font-size:12px;color:var(--text-3);">Dáselo a ${escapeHTML(s.name)} para que lo ingrese en su app</div>
                 </div>
               </div>
               <div style="display:flex;gap:6px;justify-content:center;margin-bottom:16px;">

@@ -19,6 +19,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
 import {
     getFirestore,
+    enableIndexedDbPersistence,
     doc,
     collection,
     getDoc,
@@ -49,6 +50,19 @@ const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 const auth = getAuth(app);
 const db = getFirestore(app);
+
+// Enable offline persistence
+enableIndexedDbPersistence(db).catch((err) => {
+    if (err.code == 'failed-precondition') {
+        // Multiple tabs open, persistence can only be enabled
+        // in one tab at a time.
+        console.warn("Firestore persistence target already active in another tab.");
+    } else if (err.code == 'unimplemented') {
+        // The current browser does not support all of the
+        // features required to enable persistence
+        console.warn("Firestore persistence not supported by this browser.");
+    }
+});
 
 /* ═══════════════════════════════════════════════════════════════
    ESTRUCTURA REAL DE FIRESTORE
