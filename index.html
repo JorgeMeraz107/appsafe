@@ -1485,6 +1485,117 @@
       transition: all 0.15s;
     }
 
+    /* Safe Zones Styles */
+    .safe-zone-card {
+      padding: 12px 14px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      margin-top: 10px;
+      transition: transform 0.2s;
+    }
+
+    .safe-zone-card:active {
+      transform: scale(0.98);
+    }
+
+    .safe-zone-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+      background: var(--bg);
+    }
+
+    .safe-zone-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .safe-zone-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-1);
+    }
+
+    .safe-zone-addr {
+      font-size: 12px;
+      color: var(--text-3);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 2px;
+    }
+
+    .safe-zone-status {
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 100px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .sz-pending {
+      background: var(--bg);
+      color: var(--text-3);
+    }
+
+    .sz-at {
+      background: var(--safe-bg);
+      color: var(--safe);
+    }
+
+    .sz-away {
+      background: rgba(41, 121, 255, 0.08);
+      color: var(--blue-acc);
+    }
+
+    .route-context {
+      background: linear-gradient(135deg, var(--navy) 0%, #1A3358 100%);
+      padding: 16px;
+      border-radius: 16px;
+      color: white;
+      margin: 10px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      box-shadow: 0 8px 24px rgba(13, 46, 79, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .route-icon {
+      width: 44px;
+      height: 44px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+
+    .route-info {
+      flex: 1;
+    }
+
+    .route-title {
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .route-sub {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.6);
+      margin-top: 2px;
+    }
+
     .filter-tab.active {
       background: var(--navy);
       color: white;
@@ -2831,6 +2942,16 @@
               Señal buena
             </div>
           </div>
+          <div class="sensor-card info" id="safe-zone-home-card">
+            <div class="sensor-label">Hogar</div>
+            <div class="sensor-value" id="home-distance">—</div>
+            <div class="safe-zone-status sz-pending" id="home-status">No definido</div>
+          </div>
+          <div class="sensor-card info" id="safe-zone-school-card">
+            <div class="sensor-label">Escuela</div>
+            <div class="sensor-value" id="school-distance">—</div>
+            <div class="safe-zone-status sz-pending" id="school-status">No definido</div>
+          </div>
           <div class="sensor-card safe">
             <div class="sensor-label">Movimiento</div>
             <div class="accel-bars" id="accel-bars">
@@ -2940,6 +3061,45 @@
               Este es el número que <strong style="color:var(--text-2);">tú como padre</strong> llamas cuando presionas
               el botón "Llamar" en el perfil de tu hijo.
             </div>
+          </div>
+        </div>
+
+        <!-- Safe Zones Tracking -->
+        <div class="settings-section anim-item" style="margin:0;">
+          <div class="settings-section-title">Rastreo de Zonas Seguras</div>
+          <div style="font-size:12px;color:var(--text-3);margin-bottom:8px;">Define el Hogar y la Escuela para recibir
+            alertas de llegada/salida.</div>
+          <div class="card" style="padding:12px 16px;">
+            <!-- Casa -->
+            <div class="safe-zone-card" style="margin-top:4px;" onclick="openLocationPicker('home')">
+              <div class="safe-zone-icon" style="background:rgba(15,191,122,0.1);color:var(--safe);">🏠</div>
+              <div class="safe-zone-info">
+                <div class="safe-zone-name" id="es-home-label">Casa / Hogar</div>
+                <div class="safe-zone-addr" id="es-home-addr">Toca para configurar ubicación</div>
+              </div>
+              <input type="hidden" id="es-home-lat"><input type="hidden" id="es-home-lng">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M5 3L9 7L5 11" stroke="var(--text-3)" stroke-width="1.5" stroke-linecap="round" />
+              </svg>
+            </div>
+            <!-- Escuela -->
+            <div class="safe-zone-card" onclick="openLocationPicker('school')">
+              <div class="safe-zone-icon" style="background:rgba(41,121,255,0.1);color:var(--blue-acc);">🏫</div>
+              <div class="safe-zone-info">
+                <div class="safe-zone-name" id="es-school-label">Escuela / Colegio</div>
+                <div class="safe-zone-addr" id="es-school-addr">Toca para configurar ubicación</div>
+              </div>
+              <input type="hidden" id="es-school-lat"><input type="hidden" id="es-school-lng">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M5 3L9 7L5 11" stroke="var(--text-3)" stroke-width="1.5" stroke-linecap="round" />
+              </svg>
+            </div>
+
+            <button class="btn btn-ghost btn-full"
+              style="height:44px;margin-top:12px;font-size:12px;border:1px dashed var(--border);"
+              onclick="useCurrentStudentLoc()">
+              📍 Usar ubicación actual del alumno
+            </button>
           </div>
         </div>
 
@@ -4920,6 +5080,9 @@
         syncEl.textContent = ago < 60 ? `hace ${ago}s` : `hace ${Math.round(ago / 60)}min`;
       }
 
+      // Geo-Zonas (Safe Zones)
+      updateSafeZonesDisplay(id, live);
+
       // Código de vinculación
       const linkSection = document.getElementById('student-linkcode-section');
       if (linkSection) {
@@ -5024,6 +5187,15 @@
 
       // Horario
       loadScheduleIntoForm(id);
+
+      // Zonas Seguras
+      document.getElementById('es-home-lat').value = s.homeLat || '';
+      document.getElementById('es-home-lng').value = s.homeLng || '';
+      document.getElementById('es-home-addr').textContent = s.homeLat ? `${s.homeLat.toFixed(4)}, ${s.homeLng.toFixed(4)}` : 'Toca para configurar ubicación';
+
+      document.getElementById('es-school-lat').value = s.schoolLat || '';
+      document.getElementById('es-school-lng').value = s.schoolLng || '';
+      document.getElementById('es-school-addr').textContent = s.schoolLat ? `${s.schoolLat.toFixed(4)}, ${s.schoolLng.toFixed(4)}` : 'Toca para configurar ubicación';
     }
 
     /* ── Limpia el form para nuevo alumno ── */
@@ -5203,6 +5375,55 @@
       if (saving) saving.textContent = `~${Math.max(0, savedPct)}%`;
     }
 
+    /* ═══════════════════════════════════════
+       GEO-CERCAS Y CÁLCULOS DE DISTANCIA
+    ═══════════════════════════════════════ */
+    function haversine(lat1, lon1, lat2, lon2) {
+      const R = 6371e3; // Radio de la Tierra en metros
+      const φ1 = lat1 * Math.PI / 180;
+      const φ2 = lat2 * Math.PI / 180;
+      const Δφ = (lat2 - lat1) * Math.PI / 180;
+      const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+      const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+        Math.cos(φ1) * Math.cos(φ2) *
+        Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+      return R * c; // Distancia en metros
+    }
+
+    function openLocationPicker(type) {
+      const live = getStudentLive(editingStudentId || currentStudentId);
+      if (!live || live.lat == null) {
+        showToast("No hay ubicación actual del alumno para usar como referencia.");
+        return;
+      }
+
+      const title = type === 'home' ? 'Hogar' : 'Escuela';
+      const confirmMsg = `¿Deseas marcar la ubicación ACTUAL del alumno (${live.lat.toFixed(6)}, ${live.lng.toFixed(6)}) como la ubicación de "${title}"?`;
+
+      if (confirm(confirmMsg)) {
+        document.getElementById(`es-${type}-lat`).value = live.lat;
+        document.getElementById(`es-${type}-lng`).value = live.lng;
+        document.getElementById(`es-${type}-addr`).textContent = `${live.lat.toFixed(6)}, ${live.lng.toFixed(6)}`;
+        document.getElementById(`es-${type}-addr`).style.color = 'var(--safe)';
+        showToast(`${title} configurado correctamente.`);
+      }
+    }
+
+    function useCurrentStudentLoc() {
+      const live = getStudentLive(editingStudentId || currentStudentId);
+      if (!live || live.lat == null) {
+        showToast("No hay ubicación actual disponible.");
+        return;
+      }
+      // Por defecto lo ponemos en Casa si ambos están vacíos
+      const hasHome = document.getElementById('es-home-lat').value;
+      const type = hasHome ? 'school' : 'home';
+      openLocationPicker(type);
+    }
+
     /* ── Guardar todo del alumno ──────────── */
     function saveStudentFull() {
       const name = document.getElementById('es-name')?.value.trim();
@@ -5295,7 +5516,12 @@
           end: endVal,
           motionReactivate: motion
         },
-        contacts: window.contactFields.filter(c => c.number && c.name)
+        contacts: window.contactFields.filter(c => c.number && c.name),
+        // Nuevos campos de Zonas Seguras
+        homeLat: parseFloat(document.getElementById('es-home-lat').value) || null,
+        homeLng: parseFloat(document.getElementById('es-home-lng').value) || null,
+        schoolLat: parseFloat(document.getElementById('es-school-lat').value) || null,
+        schoolLng: parseFloat(document.getElementById('es-school-lng').value) || null
       };
 
       // Si es un Alumno Nuevo, generamos un PIN de 6 dígitos y marcamos como no vinculado
@@ -5322,6 +5548,46 @@
         .finally(() => {
           if (btn) { btn.disabled = false; btn.textContent = originalText; }
         });
+    }
+
+    function updateSafeZonesDisplay(studentId, live) {
+      const s = students[studentId];
+      if (!s) return;
+
+      const zones = [
+        { id: 'home', lat: s.homeLat, lng: s.homeLng, name: 'Hogar' },
+        { id: 'school', lat: s.schoolLat, lng: s.schoolLng, name: 'Escuela' }
+      ];
+
+      zones.forEach(z => {
+        const distEl = document.getElementById(`${z.id}-distance`);
+        const statusEl = document.getElementById(`${z.id}-status`);
+        const cardEl = document.getElementById(`safe-zone-${z.id}-card`);
+
+        if (!distEl || !statusEl) return;
+
+        if (z.lat == null || z.lng == null) {
+          distEl.textContent = '—';
+          statusEl.textContent = 'No definido';
+          statusEl.className = 'safe-zone-status sz-pending';
+          return;
+        }
+
+        if (live && live.lat != null) {
+          const d = haversine(live.lat, live.lng, z.lat, z.lng);
+          distEl.textContent = d < 1000 ? `${Math.round(d)}m` : `${(d / 1000).toFixed(1)}km`;
+
+          if (d <= 150) {
+            statusEl.textContent = '● En zona';
+            statusEl.className = 'safe-zone-status sz-at';
+            if (cardEl) cardEl.style.border = '1px solid var(--safe)';
+          } else {
+            statusEl.textContent = 'Fuera';
+            statusEl.className = 'safe-zone-status sz-away';
+            if (cardEl) cardEl.style.border = '1px solid var(--border)';
+          }
+        }
+      });
     }
 
     /* ── Eliminar alumno ─────────────────── */
