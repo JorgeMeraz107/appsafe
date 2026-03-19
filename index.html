@@ -1557,6 +1557,94 @@
       color: var(--blue-acc);
     }
 
+    /* ── Location Picker Screen ──────────── */
+    .picker-map-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 1;
+    }
+
+    .picker-overlay {
+      position: absolute;
+      top: 60px;
+      left: 20px;
+      right: 20px;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      pointer-events: none;
+    }
+
+    .picker-search-bar {
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      border: 1px solid var(--border);
+      pointer-events: auto;
+    }
+
+    .picker-search-input {
+      flex: 1;
+      border: none;
+      background: none;
+      font-size: 14px;
+      color: var(--text-1);
+      outline: none;
+    }
+
+    .picker-fab {
+      position: absolute;
+      bottom: 100px;
+      right: 20px;
+      z-index: 10;
+      width: 56px;
+      height: 56px;
+      border-radius: 28px;
+      background: var(--blue-acc);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 32px rgba(41, 121, 255, 0.4);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .picker-fab:active {
+      transform: scale(0.9);
+    }
+
+    .picker-footer {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--bg);
+      padding: 20px;
+      border-top: 1px solid var(--border);
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.05);
+    }
+
+    .picker-coords {
+      font-size: 13px;
+      font-family: 'Sora', sans-serif;
+      font-weight: 600;
+      color: var(--text-3);
+      text-align: center;
+    }
+
     .route-context {
       background: linear-gradient(135deg, var(--navy) 0%, #1A3358 100%);
       padding: 16px;
@@ -2943,12 +3031,22 @@
             </div>
           </div>
           <div class="sensor-card info" id="safe-zone-home-card">
-            <div class="sensor-label">Hogar</div>
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+              <div class="sensor-label">Hogar</div>
+              <button class="btn btn-ghost"
+                style="height:22px;padding:0 6px;font-size:9px;border:1px solid var(--border);border-radius:6px;"
+                onclick="viewZoneOnMap('home')">Ver</button>
+            </div>
             <div class="sensor-value" id="home-distance">—</div>
             <div class="safe-zone-status sz-pending" id="home-status">No definido</div>
           </div>
           <div class="sensor-card info" id="safe-zone-school-card">
-            <div class="sensor-label">Escuela</div>
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+              <div class="sensor-label">Escuela</div>
+              <button class="btn btn-ghost"
+                style="height:22px;padding:0 6px;font-size:9px;border:1px solid var(--border);border-radius:6px;"
+                onclick="viewZoneOnMap('school')">Ver</button>
+            </div>
             <div class="sensor-value" id="school-distance">—</div>
             <div class="safe-zone-status sz-pending" id="school-status">No definido</div>
           </div>
@@ -3798,6 +3896,66 @@
 
       <div class="emergency-dismiss" style="z-index:10;" onclick="showModal('dismiss-sos')">
         Descartar alerta
+      </div>
+    </div>
+
+    <!-- PANTALLA: SELECTOR DE UBICACIÓN (Location Picker) -->
+    <div id="screen-location-picker" class="screen">
+      <div class="topbar" style="background:transparent;z-index:20;">
+        <button class="nav-back-btn" onclick="goBack()"
+          style="background:var(--bg);border-radius:100px;padding:4px 12px;box-shadow:var(--shadow-sm);">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M11 4L7 9L11 14" stroke="var(--blue-acc)" stroke-width="2.2" stroke-linecap="round" />
+          </svg>
+          Atrás
+        </button>
+        <div style="flex:1;text-align:center;">
+          <div class="topbar-title" id="picker-title" style="font-size:15px;">Configurar Ubicación</div>
+        </div>
+        <div style="width:70px;"></div>
+      </div>
+
+      <div class="picker-map-container">
+        <iframe id="picker-iframe" width="100%" height="100%" frameborder="0" style="border:0;" allowfullscreen=""
+          loading="lazy"></iframe>
+      </div>
+
+      <div class="picker-overlay">
+        <div class="picker-search-bar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="opacity:0.5;">
+            <circle cx="11" cy="11" r="8" stroke="var(--text-1)" stroke-width="2" />
+            <path d="M21 21L16.65 16.65" stroke="var(--text-1)" stroke-width="2" stroke-linecap="round" />
+          </svg>
+          <input type="text" class="picker-search-input" id="picker-search" placeholder="Busca una dirección o lugar..."
+            onkeydown="if(event.key==='Enter') searchInPicker()">
+        </div>
+
+        <div style="display:flex;gap:8px;pointer-events:auto;">
+          <button class="btn btn-ghost"
+            style="flex:1;background:var(--bg);box-shadow:var(--shadow-sm);font-size:11px;height:36px;"
+            onclick="useCurrentStudentLocPicker()">
+            📍 Usar ubicación del alumno
+          </button>
+        </div>
+      </div>
+
+      <div class="picker-fab" onclick="recenterPicker()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" />
+          <path d="M12 2V5M12 19V22M2 12H5M19 12H22" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        </svg>
+      </div>
+
+      <div class="picker-footer">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--text-1);margin-bottom:2px;" id="picker-point-name">
+            Lugar
+            seleccionado</div>
+          <div class="picker-coords" id="picker-coords-text">--.----, --.----</div>
+        </div>
+        <button class="btn btn-primary btn-full" style="height:52px;" onclick="confirmPickerLocation()">
+          Confirmar esta Ubicación
+        </button>
       </div>
     </div>
 
@@ -5393,35 +5551,123 @@
       return R * c; // Distancia en metros
     }
 
+    /* ═══════════════════════════════════════
+       PROFESSIONAL LOCATION PICKER LOGIC
+    ═══════════════════════════════════════ */
+    let currentPickerType = 'home'; // 'home' or 'school'
+    let pickerLat = null;
+    let pickerLng = null;
+
     function openLocationPicker(type) {
-      const live = getStudentLive(editingStudentId || currentStudentId);
-      if (!live || live.lat == null) {
-        showToast("No hay ubicación actual del alumno para usar como referencia.");
-        return;
+      currentPickerType = type;
+      const title = type === 'home' ? 'Hogar' : 'Escuela';
+      const titleEl = document.getElementById('picker-title');
+      const pointEl = document.getElementById('picker-point-name');
+
+      if (titleEl) titleEl.textContent = `Ubicar ${title}`;
+      if (pointEl) pointEl.textContent = `Marca el punto de "${title}"`;
+
+      // Load existing coords if they exist
+      const latVal = document.getElementById(`es-${type}-lat`)?.value;
+      const lngVal = document.getElementById(`es-${type}-lng`)?.value;
+
+      if (latVal && lngVal && latVal !== '') {
+        pickerLat = parseFloat(latVal);
+        pickerLng = parseFloat(lngVal);
+      } else {
+        // Fallback to student live loc
+        const live = getStudentLive(editingStudentId || currentStudentId);
+        if (live && live.lat != null) {
+          pickerLat = live.lat;
+          pickerLng = live.lng;
+        } else {
+          // Fallback to default (Honduras Center)
+          pickerLat = 14.0722;
+          pickerLng = -87.1921;
+        }
       }
 
-      const title = type === 'home' ? 'Hogar' : 'Escuela';
-      const confirmMsg = `¿Deseas marcar la ubicación ACTUAL del alumno (${live.lat.toFixed(6)}, ${live.lng.toFixed(6)}) como la ubicación de "${title}"?`;
+      updatePickerUI();
+      navigateTo('location-picker');
+    }
 
-      if (confirm(confirmMsg)) {
-        document.getElementById(`es-${type}-lat`).value = live.lat;
-        document.getElementById(`es-${type}-lng`).value = live.lng;
-        document.getElementById(`es-${type}-addr`).textContent = `${live.lat.toFixed(6)}, ${live.lng.toFixed(6)}`;
-        document.getElementById(`es-${type}-addr`).style.color = 'var(--safe)';
-        showToast(`${title} configurado correctamente.`);
+    function updatePickerUI() {
+      if (pickerLat == null) return;
+      const coordsText = document.getElementById('picker-coords-text');
+      if (coordsText) coordsText.textContent = `${pickerLat.toFixed(6)}, ${pickerLng.toFixed(6)}`;
+
+      const iframe = document.getElementById('picker-iframe');
+      if (iframe) {
+        // Without API key, we use the free search embed
+        iframe.src = `https://maps.google.com/maps?q=${pickerLat},${pickerLng}&z=17&output=embed`;
       }
     }
 
-    function useCurrentStudentLoc() {
+    function useCurrentStudentLocPicker() {
       const live = getStudentLive(editingStudentId || currentStudentId);
       if (!live || live.lat == null) {
         showToast("No hay ubicación actual disponible.");
         return;
       }
-      // Por defecto lo ponemos en Casa si ambos están vacíos
-      const hasHome = document.getElementById('es-home-lat').value;
-      const type = hasHome ? 'school' : 'home';
-      openLocationPicker(type);
+      pickerLat = live.lat;
+      pickerLng = live.lng;
+      updatePickerUI();
+      showToast("Usando ubicación del alumno.");
+    }
+
+    function searchInPicker() {
+      const q = document.getElementById('picker-search')?.value.trim();
+      if (!q) return;
+      const iframe = document.getElementById('picker-iframe');
+      if (iframe) {
+        iframe.src = `https://maps.google.com/maps?q=${encodeURIComponent(q)}&z=17&output=embed`;
+      }
+      showToast("Buscando...");
+      // Nota: Sin API de JS no se pueden recuperar las coordenadas exactas de la búsqueda directamente.
+      // Se recomienda al usuario usar la posición del alumno para mayor precisión.
+    }
+
+    function recenterPicker() {
+      updatePickerUI();
+    }
+
+    function confirmPickerLocation() {
+      if (pickerLat == null) return;
+      const latInput = document.getElementById(`es-${currentPickerType}-lat`);
+      const lngInput = document.getElementById(`es-${currentPickerType}-lng`);
+      const addrText = document.getElementById(`es-${currentPickerType}-addr`);
+
+      if (latInput) latInput.value = pickerLat;
+      if (lngInput) lngInput.value = pickerLng;
+
+      if (addrText) {
+        addrText.textContent = `${pickerLat.toFixed(6)}, ${pickerLng.toFixed(6)}`;
+        addrText.style.color = 'var(--safe)';
+      }
+
+      goBack();
+      showToast("Ubicación marcada.");
+    }
+
+    function viewZoneOnMap(type) {
+      const s = students[currentStudentId];
+      if (!s) return;
+      const lat = type === 'home' ? s.homeLat : s.schoolLat;
+      const lng = type === 'home' ? s.homeLng : s.schoolLng;
+
+      if (lat == null || lng == null) {
+        showToast("Zona no configurada.");
+        return;
+      }
+
+      // Switch to Map tab and set visual marker
+      switchTab('map');
+      setTimeout(() => {
+        const iframe = document.getElementById('parent-gmap');
+        if (iframe) {
+          iframe.src = `https://maps.google.com/maps?q=${lat},${lng}&z=18&output=embed`;
+        }
+      }, 500);
     }
 
     /* ── Guardar todo del alumno ──────────── */
@@ -5695,8 +5941,6 @@
     /* ═══════════════════════════════════════
        UTILIDADES
     ═══════════════════════════════════════ */
-
-
 
     /* ═══════════════════════════════════════
        EMERGENCY TIMER
