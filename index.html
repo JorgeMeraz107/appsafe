@@ -1324,6 +1324,86 @@
       font-size: 18px;
     }
 
+    /* Offline Fallback UI */
+    .map-offline-fallback {
+      display: none;
+      position: absolute;
+      inset: 0;
+      background: var(--bg-card);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 30px;
+      z-index: 20;
+      backdrop-filter: blur(4px);
+    }
+
+    .map-offline-fallback.active {
+      display: flex;
+    }
+
+    .offline-icon-container {
+      width: 80px;
+      height: 80px;
+      background: rgba(148, 163, 184, 0.1);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .offline-icon-container svg {
+      width: 40px;
+      height: 40px;
+      color: var(--text-3);
+    }
+
+    .offline-status-dot {
+      position: absolute;
+      bottom: 5px;
+      right: 5px;
+      width: 14px;
+      height: 14px;
+      background: var(--danger);
+      border: 3px solid var(--bg-card);
+      border-radius: 50%;
+    }
+
+    .offline-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-1);
+      margin-bottom: 10px;
+    }
+
+    .offline-sub {
+      font-size: 14px;
+      color: var(--text-3);
+      max-width: 240px;
+      line-height: 1.5;
+    }
+
+    .offline-retry-btn {
+      margin-top: 24px;
+      padding: 12px 24px;
+      background: var(--blue-acc);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .offline-retry-btn:active {
+      transform: scale(0.95);
+    }
+
     /* ═══════════════════════════════════════
      ══════════ SCREEN 4: ALERTS ════════
   ═══════════════════════════════════════ */
@@ -2269,21 +2349,38 @@
       margin-top: 20px;
     }
 
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    border: 3px solid var(--safe);
-    overflow: hidden;
-    background: var(--navy-mid);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Sora',
-    sans-serif;
-    font-weight: 700;
-    color: white;
-    font-size: 16px;
-    box-shadow: 0 4px 20px rgba(15, 191, 122, 0.5);
+    .avatar-ring-safe {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 3px solid var(--safe);
+      overflow: hidden;
+      background: var(--navy-mid);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Sora', sans-serif;
+      font-weight: 700;
+      color: white;
+      font-size: 16px;
+      box-shadow: 0 4px 20px rgba(15, 191, 122, 0.5);
+    }
+
+    .avatar-ring-danger {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 3px solid var(--danger);
+      overflow: hidden;
+      background: var(--navy-mid);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Sora', sans-serif;
+      font-weight: 700;
+      color: white;
+      font-size: 16px;
+      box-shadow: 0 4px 20px rgba(232, 54, 74, 0.5);
     }
 
     /* School zone overlay label */
@@ -2650,6 +2747,18 @@
 
         <!-- Mapa mini: hero visual fullwidth -->
         <div style="position:relative;width:100%;height:220px;background:var(--bg-card);overflow:hidden;flex-shrink:0;">
+          <div class="map-offline-fallback" id="student-mini-map-offline">
+            <div class="offline-icon-container">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path
+                  d="M1 1l22 22M16.72 11.06A10.94 10.94 0 0 1 19 12.55M5 12.55a10.94 10.94 0 0 1 5.17-2.39M10.71 5.05A16 16 0 0 1 22.58 9M1.42 9a15.91 15.91 0 0 1 4.7-2.88M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01" />
+              </svg>
+              <div class="offline-status-dot"></div>
+            </div>
+            <div class="offline-title">Mapa Offline</div>
+            <div class="offline-sub">Conéctate a internet para ver la ubicación en el mapa.</div>
+          </div>
           <iframe id="student-mini-map" style="width:100%;height:100%;border:none;pointer-events:none;opacity:0.9;"
             loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="about:blank">
           </iframe>
@@ -2995,6 +3104,19 @@
             style="width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--blue-acc);border-radius:50%;animation:spin 0.8s linear infinite;">
           </div>
           <div style="font-size:12px;color:var(--text-3);" id="parent-map-loading-text">Esperando ubicación...</div>
+        </div>
+        <div class="map-offline-fallback" id="parent-gmap-offline" style="z-index: 10;">
+          <div class="offline-icon-container">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path
+                d="M1 1l22 22M16.72 11.06A10.94 10.94 0 0 1 19 12.55M5 12.55a10.94 10.94 0 0 1 5.17-2.39M10.71 5.05A16 16 0 0 1 22.58 9M1.42 9a15.91 15.91 0 0 1 4.7-2.88M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01" />
+            </svg>
+            <div class="offline-status-dot"></div>
+          </div>
+          <div class="offline-title">Sin Conexión</div>
+          <div class="offline-sub">No se puede cargar el mapa dinámico sin internet. Verifica tu wifi o datos.</div>
+          <button class="offline-retry-btn" onclick="window.location.reload()">Reintentar conexión</button>
         </div>
         <iframe id="parent-gmap" src="" style="width:100%;height:100%;border:none;display:block;" allowfullscreen
           loading="lazy"></iframe>
@@ -3473,6 +3595,20 @@
           style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(26,5,8,0.7);z-index:2;border-radius:16px;">
           <div style="font-size:12px;color:rgba(255,255,255,0.5);">Obteniendo ubicación...</div>
         </div>
+        <div class="map-offline-fallback" id="em-gmap-offline"
+          style="background: rgba(26,5,8,0.95); border-radius: 16px;">
+          <div class="offline-icon-container">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path
+                d="M1 1l22 22M16.72 11.06A10.94 10.94 0 0 1 19 12.55M5 12.55a10.94 10.94 0 0 1 5.17-2.39M10.71 5.05A16 16 0 0 1 22.58 9M1.42 9a15.91 15.91 0 0 1 4.7-2.88M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01" />
+            </svg>
+            <div class="offline-status-dot"></div>
+          </div>
+          <div class="offline-title" style="color: white;">Mapa no disponible</div>
+          <div class="offline-sub" style="color: rgba(255,255,255,0.6);">El rastreo de emergencia requiere conexión a
+            internet.</div>
+        </div>
         <iframe id="em-gmap" src="" style="width:100%;height:100%;border:none;border-radius:16px;"
           allowfullscreen></iframe>
       </div>
@@ -3594,6 +3730,35 @@
     let unsubLive = {};
     let unsubHistory = {};
     let lastProcessedHistoryId = {}; // { childId: lastEventId }
+    let isOffline = !navigator.onLine;
+
+    /* ═══════════════════════════════════════
+       CONNECTIVITY UTILS
+    ═══════════════════════════════════════ */
+    function updateMapsConnectivity() {
+      isOffline = !navigator.onLine;
+      const mapIds = ['parent-gmap', 'student-mini-map', 'em-gmap'];
+      mapIds.forEach(id => {
+        const iframe = document.getElementById(id);
+        const fallback = document.getElementById(id + '-offline');
+        if (iframe && fallback) {
+          if (isOffline) {
+            iframe.style.display = 'none';
+            fallback.classList.add('active');
+          } else {
+            iframe.style.display = 'block';
+            fallback.classList.remove('active');
+            // Si volvemos a estar online, recargamos los mapas si es necesario
+            if (id === 'parent-gmap' && currentScreen === 'map') loadParentMap();
+            if (id === 'student-mini-map' && currentScreen === 'student') loadStudentProfile(currentStudentId);
+            if (id === 'em-gmap' && currentScreen === 'emergency') initEmergencyMap();
+          }
+        }
+      });
+    }
+
+    window.addEventListener('online', updateMapsConnectivity);
+    window.addEventListener('offline', updateMapsConnectivity);
 
     /* ═══════════════════════════════════════
        NOTIFICATIONS DATA
@@ -4125,6 +4290,18 @@
       }
       lastParentMapLat = lat; lastParentMapLng = lng;
       iframe.src = `https://maps.google.com/maps?q=${lat},${lng}&z=17&output=embed&hl=es`;
+
+      // Manejo de estado offline
+      if (!navigator.onLine) {
+        iframe.style.display = 'none';
+        const fallback = document.getElementById('parent-gmap-offline');
+        if (fallback) fallback.classList.add('active');
+      } else {
+        iframe.style.display = 'block';
+        const fallback = document.getElementById('parent-gmap-offline');
+        if (fallback) fallback.classList.remove('active');
+      }
+
       if (loading) loading.style.opacity = '0';
       if (chip) chip.style.display = 'flex';
       if (coords) coords.textContent = `${parseFloat(lat).toFixed(4)}, ${parseFloat(lng).toFixed(4)}`;
@@ -4228,7 +4405,18 @@
 
       if (data && data.lat != null) {
         iframe.src = `https://maps.google.com/maps?q=${data.lat},${data.lng}&z=17&output=embed&hl=es`;
-        if (loading) setTimeout(() => { loading.style.display = 'none'; }, 1500);
+
+        if (!navigator.onLine) {
+          iframe.style.display = 'none';
+          const fallback = document.getElementById('em-gmap-offline');
+          if (fallback) fallback.classList.add('active');
+        } else {
+          iframe.style.display = 'block';
+          const fallback = document.getElementById('em-gmap-offline');
+          if (fallback) fallback.classList.remove('active');
+          if (loading) setTimeout(() => { loading.style.display = 'none'; }, 1500);
+        }
+
         // Actualiza chips de ubicación en pantalla emergencia
         const locEl = document.getElementById('emergency-location');
         const battEl = document.getElementById('emergency-battery-chip');
@@ -4706,6 +4894,15 @@
       const miniMap = document.getElementById('student-mini-map');
       if (miniMap) {
         miniMap.src = `https://maps.google.com/maps?q=${lat},${lng}&z=16&output=embed&hl=es`;
+        if (!navigator.onLine) {
+          miniMap.style.display = 'none';
+          const fb = document.getElementById('student-mini-map-offline');
+          if (fb) fb.classList.add('active');
+        } else {
+          miniMap.style.display = 'block';
+          const fb = document.getElementById('student-mini-map-offline');
+          if (fb) fb.classList.remove('active');
+        }
       }
 
       // GPS text
