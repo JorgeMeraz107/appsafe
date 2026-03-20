@@ -3079,6 +3079,15 @@
               c/5s
             </div>
           </div>
+          <div class="sensor-card info" id="sensor-card-impact">
+            <div class="sensor-label">Impacto / Caída</div>
+            <div class="sensor-value" id="sensor-impact-status">Normal</div>
+            <div class="sensor-sub" id="sensor-impact-detail">Sin alertas</div>
+            <div class="sensor-pulse" id="sensor-impact-pulse" style="color:var(--blue-acc);margin-top:4px;">
+              <div class="sensor-pulse-dot" id="sensor-impact-dot" style="background:var(--blue-acc);"></div>
+              Monitoreando
+            </div>
+          </div>
         </div>
 
         <!-- Actividad del día -->
@@ -4488,6 +4497,37 @@
       const speedEl = document.getElementById('sensor-speed');
       if (speedEl) {
         speedEl.textContent = (data && data.speed != null) ? parseFloat(data.speed).toFixed(1) : '—';
+      }
+
+      // Impacto / Caída (Lógica dinámica)
+      const impStatusEl = document.getElementById('sensor-impact-status');
+      const impDetailEl = document.getElementById('sensor-impact-detail');
+      const impPulseEl = document.getElementById('sensor-impact-pulse');
+      const impDotEl = document.getElementById('sensor-impact-dot');
+      const impCardEl = document.getElementById('sensor-card-impact');
+
+      if (impStatusEl && data) {
+        // Detectamos si hay impacto o caída en los datos
+        const isImpact = data.impact === true || (data.motion && data.motion.toLowerCase().includes('impacto'));
+        const isFall = data.fall === true || (data.motion && data.motion.toLowerCase().includes('caida')) || (data.motion && data.motion.toLowerCase().includes('caída'));
+
+        if (isImpact || isFall) {
+          impStatusEl.textContent = isFall ? '¡CAÍDA DETECTADA!' : '¡IMPACTO!';
+          impStatusEl.style.color = 'var(--danger)';
+          if (impDetailEl) impDetailEl.textContent = 'Alerta de seguridad activa';
+          if (impPulseEl) impPulseEl.style.color = 'var(--danger)';
+          if (impDotEl) impDotEl.style.background = 'var(--danger)';
+          if (impCardEl) impCardEl.style.border = '1px solid var(--danger)';
+          if (impPulseEl) impPulseEl.innerHTML = '<div class="sensor-pulse-dot" style="background:var(--danger);"></div> ALERTA ACTIVA';
+        } else {
+          impStatusEl.textContent = 'Normal';
+          impStatusEl.style.color = 'var(--text-1)';
+          if (impDetailEl) impDetailEl.textContent = 'Sin alertas';
+          if (impPulseEl) impPulseEl.style.color = 'var(--blue-acc)';
+          if (impDotEl) impDotEl.style.background = 'var(--blue-acc)';
+          if (impCardEl) impCardEl.style.border = '1px solid var(--border)';
+          if (impPulseEl) impPulseEl.innerHTML = '<div class="sensor-pulse-dot" style="background:var(--blue-acc);"></div> Monitoreando';
+        }
       }
 
       // Info tiles en pantalla de perfil de alumno
