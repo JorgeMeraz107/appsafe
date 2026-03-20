@@ -3916,6 +3916,18 @@
       </div>
 
       <div class="picker-map-container">
+        <div class="map-offline-fallback" id="picker-iframe-offline">
+          <div class="offline-icon-container">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path
+                d="M1 1l22 22M16.72 11.06A10.94 10.94 0 0 1 19 12.55M5 12.55a10.94 10.94 0 0 1 5.17-2.39M10.71 5.05A16 16 0 0 1 22.58 9M1.42 9a15.91 15.91 0 0 1 4.7-2.88M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01" />
+            </svg>
+            <div class="offline-status-dot"></div>
+          </div>
+          <div class="offline-title">Mapa Offline</div>
+          <div class="offline-sub">Conéctate para configurar la zona segura.</div>
+        </div>
         <iframe id="picker-iframe" width="100%" height="100%" frameborder="0" style="border:0;" allowfullscreen=""
           loading="lazy"></iframe>
       </div>
@@ -4055,7 +4067,7 @@
     ═══════════════════════════════════════ */
     function updateMapsConnectivity() {
       isOffline = !navigator.onLine;
-      const mapIds = ['parent-gmap', 'student-mini-map', 'em-gmap'];
+      const mapIds = ['parent-gmap', 'student-mini-map', 'em-gmap', 'picker-iframe'];
       mapIds.forEach(id => {
         const iframe = document.getElementById(id);
         const fallback = document.getElementById(id + '-offline');
@@ -4066,10 +4078,11 @@
           } else {
             iframe.style.display = 'block';
             fallback.classList.remove('active');
-            // Si volvemos a estar online, recargamos los mapas si es necesario
+            // Recargar si es necesario
             if (id === 'parent-gmap' && currentScreen === 'map') loadParentMap();
             if (id === 'student-mini-map' && currentScreen === 'student') loadStudentProfile(currentStudentId);
             if (id === 'em-gmap' && currentScreen === 'emergency') initEmergencyMap();
+            if (id === 'picker-iframe' && currentScreen === 'location-picker') updatePickerUI();
           }
         }
       });
@@ -5615,6 +5628,19 @@
       showToast("Usando ubicación del alumno.");
     }
 
+    // Helper para el botón rápido en el formulario de edición
+    function useCurrentStudentLoc() {
+      const live = getStudentLive(editingStudentId || currentStudentId);
+      if (!live || live.lat == null) {
+        showToast("No hay ubicación actual disponible.");
+        return;
+      }
+      // Si el hogar no está definido, configuramos Hogar, sino Escuela
+      const homeLat = document.getElementById('es-home-lat')?.value;
+      const type = (homeLat && homeLat !== '') ? 'school' : 'home';
+      openLocationPicker(type); // Abre el nuevo selector profesional
+    }
+
     function searchInPicker() {
       const q = document.getElementById('picker-search')?.value.trim();
       if (!q) return;
@@ -6489,6 +6515,11 @@
     window.setFilter = setFilter;
     window.openLocationPicker = openLocationPicker;
     window.useCurrentStudentLoc = useCurrentStudentLoc;
+    window.useCurrentStudentLocPicker = useCurrentStudentLocPicker;
+    window.searchInPicker = searchInPicker;
+    window.confirmPickerLocation = confirmPickerLocation;
+    window.recenterPicker = recenterPicker;
+    window.viewZoneOnMap = viewZoneOnMap;
     // Export variables used in onclick attributes
     Object.defineProperty(window, 'emergencyChildId', {
       get: () => emergencyChildId,
