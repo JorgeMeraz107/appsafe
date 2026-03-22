@@ -5,8 +5,8 @@
    SDK: Firebase 12.10.0 (ESModules — se importa desde CDN)
    ═══════════════════════════════════════════════════════════════ */
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-analytics.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
 import {
     getAuth,
     signInWithEmailAndPassword,
@@ -16,7 +16,7 @@ import {
     GoogleAuthProvider,
     signInWithRedirect,
     getRedirectResult
-} from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import {
     getFirestore,
     enableIndexedDbPersistence,
@@ -32,7 +32,7 @@ import {
     orderBy,
     limit,
     serverTimestamp,
-} from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 /* ── Configuración del proyecto ────────────────────────────────── */
 const firebaseConfig = {
@@ -54,12 +54,8 @@ const db = getFirestore(app);
 // Enable offline persistence
 enableIndexedDbPersistence(db).catch((err) => {
     if (err.code == 'failed-precondition') {
-        // Multiple tabs open, persistence can only be enabled
-        // in one tab at a time.
         console.warn("Firestore persistence target already active in another tab.");
     } else if (err.code == 'unimplemented') {
-        // The current browser does not support all of the
-        // features required to enable persistence
         console.warn("Firestore persistence not supported by this browser.");
     }
 });
@@ -311,6 +307,54 @@ export function subscribeStudentHistory(studentId, onChange) {
 export async function getStudentLiveFS(studentId) {
     const snap = await getDoc(doc(db, "student_live", studentId));
     return snap.exists() ? { id: snap.id, ...snap.data() } : null;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   NOTIFICACIONES — /notifications
+   ───────────────────────────────────────────────────────────────
+   Usado para el panel de la campana y alertas unificadas.
+   ═══════════════════════════════════════════════════════════════ */
+
+/**
+ * Suscribe en tiempo real a las NOTIFICACIONES del padre.
+ * @param {string}   uid      — UID del padre
+ * @param {function} onChange — callback con array de notificaciones
+ * @returns {function} unsubscribe
+ */
+export function subscribeNotifications(uid, onChange) {
+    const q = query(
+        collection(db, "notifications"),
+        where("parentid", "==", uid),
+        orderBy("ts", "desc"),
+        limit(50)
+    );
+    return onSnapshot(q, snap => {
+        const notifs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        onChange(notifs);
+    });
+}
+
+/**
+ * Marca una notificación como leída en Firestore.
+ */
+export async function markNotificationRead(notifId) {
+    await setDoc(doc(db, "notifications", notifId), {
+        unread: false
+    }, { merge: true });
+}
+
+/**
+ * Marca TODAS las notificaciones del padre como leídas.
+ */
+export async function markAllNotificationsRead(uid) {
+    const q = query(
+        collection(db, "notifications"),
+        where("parentid", "==", uid),
+        where("unread", "==", true)
+    );
+    const snap = await getDocs(q);
+    const promises = snap.docs.map(d => markNotificationRead(d.id));
+    await Promise.all(promises);
 }
 
 /* ═══════════════════════════════════════════════════════════════

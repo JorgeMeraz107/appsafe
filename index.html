@@ -2924,8 +2924,12 @@
           </svg>
           Hijos
         </button>
-        <div style="flex:1;min-width:0;text-align:center;">
-          <div class="topbar-title" id="student-hero-name">—</div>
+        <div style="flex:1;min-width:0;display:flex;align-items:center;gap:10px;margin-left:8px;">
+          <div id="student-hero-avatar" class="avatar"
+            style="width:34px;height:34px;font-size:14px;flex-shrink:0;background:var(--bg-item);">
+          </div>
+          <div class="topbar-title" id="student-hero-name"
+            style="text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">—</div>
         </div>
         <button class="icon-btn" onclick="callStudent(currentStudentId)" title="Llamar">
           <svg width="20" height="20" viewBox="0 0 22 22" fill="none">
@@ -3151,6 +3155,25 @@
                 <label class="input-label">Grado</label>
                 <input class="input-field" id="es-grade" type="text" placeholder="Ej. 9no Grado">
               </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ① Perfil: Género -->
+        <div class="settings-section anim-item" style="margin:0;">
+          <div class="settings-section-title">Perfil del Alumno</div>
+          <div class="card" style="padding:16px;">
+            <div class="input-group" style="margin-bottom:0;">
+              <label class="input-label">Género (Avatar Predeterminado)</label>
+              <select class="input-field" id="es-gender" style="background:var(--bg-app);">
+                <option value="boy">Niño 👦</option>
+                <option value="girl">Niña 👧</option>
+                <option value="other">Otro / Prefiero no decir</option>
+              </select>
+            </div>
+            <div style="font-size:11px;color:var(--text-3);margin-top:10px;">
+              El alumno puede elegir su propio avatar entre 12 opciones divertidas en su app. Si no elige, se usará uno
+              según su género.
             </div>
           </div>
         </div>
@@ -4040,7 +4063,8 @@
     import {
       loginWithEmail, registerWithEmail, loginWithGoogle, logout as fbLogout, onAuthChange, currentUser,
       getStudentsFS, subscribeStudents, subscribeStudentLive, subscribeStudentHistory,
-      getUserProfile, saveStudentFS, deleteStudentFS
+      getUserProfile, saveStudentFS, deleteStudentFS,
+      subscribeNotifications, markNotificationRead, markAllNotificationsRead
     } from './firebase.js';
 
     /* ═══════════════════════════════════════
@@ -4097,13 +4121,9 @@
       });
     }
 
-    window.addEventListener('online', updateMapsConnectivity);
-    window.addEventListener('offline', updateMapsConnectivity);
-
-    /* ═══════════════════════════════════════
-       NOTIFICATIONS DATA
-    ═══════════════════════════════════════ */
-    let notifications = []; // Se cargará dinámicamente
+    // Notifications state
+    let notifications = [];
+    let unsubNotifs = null;
 
     function renderNotifications() {
       const list = document.getElementById('notif-list');
@@ -4112,32 +4132,43 @@
 
       if (notifications.length === 0) {
         list.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--text-3);">
-      <div style="font-size:40px;margin-bottom:12px;">🔕</div>
-      <div style="font-size:14px;font-weight:500;">Sin notificaciones nuevas</div>
-    </div>`;
+          <div style="font-size:40px;margin-bottom:12px;">🔕</div>
+          <div style="font-size:14px;font-weight:500;">Sin notificaciones nuevas</div>
+        </div>`;
+        updateNotifBadges(0);
         return;
       }
 
-      const colors = { danger: 'var(--danger-bg)', warn: 'var(--warn-bg)', safe: 'var(--safe-bg)', info: 'rgba(41,121,255,0.1)' };
+      const colors = { danger: 'var(--danger-bg)', warn: 'var(--warn-bg)', safe: 'var(--safe-bg)', info: 'rgba(41,121,255,0.1)', sos: 'var(--danger-bg)', impact: 'var(--warn-bg)', battery: 'var(--warn-bg)', checkin: 'var(--safe-bg)', offline: 'rgba(148,163,184,0.15)' };
 
-      list.innerHTML = notifications.map(n => `
-    <div class="notif-item ${n.unread ? 'unread' : ''}" onclick="handleNotifTap(${n.id})">
-      <div class="notif-icon" style="background:${colors[n.type]}; font-size:18px;">${n.icon}</div>
+      list.innerHTML = notifications.map(n => {
+        const time = n.ts ? new Date(n.ts.toMillis()).toLocaleTimeString('es-HN', { hour: '2-digit', minute: '2-digit' }) : '';
+        return `
+    <div class="notif-item ${n.unread ? 'unread' : ''}" onclick="handleNotifTap('${n.id}', '${n.action}', '${n.studentId}')">
+      <div class="notif-icon" style="background:${colors[n.type] || colors.info}; font-size:18px;">${n.icon || '🔔'}</div>
       <div class="notif-content">
         <div class="notif-title">${n.title}</div>
-        <div class="notif-body">${n.body}</div>
-        <div class="notif-time">${n.time}</div>
+        <div class="notif-body">${n.studentName} · ${n.body}</div>
+        <div class="notif-time">${time}</div>
       </div>
       ${n.unread ? `<div style="width:8px;height:8px;border-radius:50%;background:var(--blue-acc);flex-shrink:0;margin-top:4px;"></div>` : ''}
     </div>
-  `).join('');
+  `}).join('');
 
-      // Update badge
+      updateNotifBadges(unreadCount);
+    }
+
+    function updateNotifBadges(count) {
       const badge = document.getElementById('notif-badge-count');
-      if (badge) badge.textContent = unreadCount > 0 ? unreadCount : '';
-      // Update nav badge
+      if (badge) {
+        badge.textContent = count > 0 ? count : '';
+        badge.style.display = count > 0 ? 'flex' : 'none';
+      }
       const navBadge = document.querySelector('#bottom-nav .nav-badge');
-      if (navBadge) navBadge.textContent = unreadCount > 0 ? unreadCount : '';
+      if (navBadge) {
+        navBadge.textContent = count > 0 ? count : '';
+        navBadge.style.display = count > 0 ? 'flex' : 'none';
+      }
     }
 
     function openNotifPanel() {
@@ -4151,21 +4182,17 @@
       document.getElementById('notif-backdrop')?.classList.remove('open');
     }
 
-    function handleNotifTap(id) {
-      const n = notifications.find(x => x.id === id);
-      if (!n) return;
-      n.unread = false;
+    function handleNotifTap(id, action, studentId) {
+      markNotificationRead(id);
       closeNotifPanel();
-      if (n.action === 'emergency') navigateTo('emergency');
-      else if (n.action === 'map') switchTab('map');
-      else if (n.action === 'student') navigateTo('children');
-      renderNotifications();
+      if (action === 'emergency') navigateTo('emergency', { id: studentId });
+      else if (action === 'map') switchTab('map');
+      else if (action === 'student') navigateTo('student', { id: studentId });
     }
 
     function clearAllNotifs() {
-      notifications.forEach(n => n.unread = false);
-      renderNotifications();
-
+      if (!auth.currentUser) return;
+      markAllNotificationsRead(auth.currentUser.uid);
     }
 
     function markAllAlertsRead() {
@@ -5049,7 +5076,6 @@
 
       container.innerHTML = ids.map(id => {
         const s = students[id];
-        // En Firestore guardamos linked (boolean) y status
         const isSafe = s.status !== 'danger';
         const ring = isSafe ? 'avatar-ring-safe' : 'avatar-ring-danger';
         const pillClass = isSafe ? 'status-pill status-safe' : 'status-pill status-danger';
@@ -5062,8 +5088,8 @@
       <div class="card card-pressable student-card anim-item"
            onclick="navigateTo('student',{id:'${id}'})">
         <div class="avatar ${ring}"
-             style="width:52px;height:52px;font-size:18px;background:linear-gradient(135deg,#0D2E4F,#1A3358);">
-          ${s.name ? escapeHTML(s.name[0].toUpperCase()) : '?'}
+             style="width:52px;height:52px;font-size:18px;background:var(--bg-item);overflow:hidden;">
+          ${getStudentAvatarHTML(s)}
         </div>
         <div class="student-info">
           <div class="student-name">${escapeHTML(s.name)}</div>
@@ -5087,6 +5113,14 @@
       const div = document.createElement('div');
       div.textContent = str;
       return div.innerHTML;
+    }
+
+    function getStudentAvatarHTML(s) {
+      if (s.photoURL) return `<img src="${s.photoURL}" style="width:100%;height:100%;object-fit:cover;">`;
+      const defaults = { boy: 'Felix', girl: 'Aneka', other: 'Nova' };
+      const seed = defaults[s.gender] || 'Felix';
+      const initial = s.name ? s.name[0].toUpperCase() : '?';
+      return `<img src="https://api.dicebear.com/7.x/notionists/svg?seed=${seed}" style="width:100%;height:100%;object-fit:cover;opacity:0.8;">`;
     }
 
     function renderHomeScreen() {
@@ -5174,8 +5208,8 @@
       <div class="card card-pressable student-card anim-item"
            onclick="navigateTo('student',{id:'${id}'})">
         <div class="avatar ${ring}"
-             style="width:52px;height:52px;font-size:18px;background:linear-gradient(135deg,#0D2E4F,#1A3358);">
-          ${escapeHTML(initial)}
+             style="width:52px;height:52px;font-size:18px;background:var(--bg-item);overflow:hidden;">
+          ${getStudentAvatarHTML(s)}
         </div>
         <div class="student-info">
           <div class="student-name">${escapeHTML(s.name || 'Sin nombre')}</div>
@@ -5244,6 +5278,14 @@
       if (!s) return;
 
       const isSafe = s.status !== 'danger';
+
+      // Avatar Hero
+      const heroAvatar = document.getElementById('student-hero-avatar');
+      if (heroAvatar) {
+        heroAvatar.innerHTML = getStudentAvatarHTML(s);
+        heroAvatar.style.background = 'var(--bg-item)';
+        heroAvatar.style.overflow = 'hidden';
+      }
 
       // Topbar: nombre y grado
       const nameEl = document.getElementById('student-hero-name');
@@ -5380,6 +5422,7 @@
       document.getElementById('es-school')?.setAttribute('value', s.school || '');
       document.getElementById('es-grade')?.setAttribute('value', s.grade || '');
       document.getElementById('es-phone')?.setAttribute('value', s.phone || '');
+      document.getElementById('es-gender')?.setAttribute('value', s.gender || 'boy');
 
       // value necesita asignarse como propiedad, no atributo, después del render
       setTimeout(() => {
@@ -5387,10 +5430,12 @@
         const sc = document.getElementById('es-school');
         const gr = document.getElementById('es-grade');
         const ph = document.getElementById('es-phone');
+        const gn = document.getElementById('es-gender');
         if (n) n.value = s.name || '';
         if (sc) sc.value = s.school || '';
         if (gr) gr.value = s.grade || '';
         if (ph) ph.value = s.phone || '';
+        if (gn) gn.value = s.gender || 'boy';
       }, 50);
 
       // Contactos que el alumno puede llamar
@@ -5829,6 +5874,9 @@
           motionReactivate: motion
         },
         contacts: window.contactFields.filter(c => c.number && c.name),
+        gender: document.getElementById('es-gender')?.value || 'boy',
+        // El photoURL se conserva si ya existe (elegido por el alumno)
+        photoURL: students[editingStudentId]?.photoURL || '',
         // Nuevos campos de Zonas Seguras
         homeLat: parseFloat(document.getElementById('es-home-lat').value) || null,
         homeLng: parseFloat(document.getElementById('es-home-lng').value) || null,
@@ -6432,7 +6480,33 @@
             Object.keys(students).forEach(childId => {
               if (!unsubLive[childId]) {
                 unsubLive[childId] = subscribeStudentLive(childId, (liveInfo) => {
+                  const prevLive = liveData[childId] || {};
                   liveData[childId] = liveInfo;
+
+                  // 🔥 AUTO-NAVEGACIÓN A PANTALLA ROJA en caso de SOS
+                  // Si el SOS acaba de cambiar de false a true, interrumpimos al padre
+                  if (liveInfo && liveInfo.sos && !prevLive.sos) {
+                    sendPushNotification({
+                      type: 'sos',
+                      title: `🆘 SOS ACTIVADO: ${students[childId]?.name || 'Tu hijo'}`,
+                      body: 'Toca aquí para ver ubicación y llamar'
+                    });
+
+                    // Solo navegamos si no está ya en la pantalla de emergencia
+                    if (currentScreen !== 'emergency' || emergencyChildId !== childId) {
+                      navigateTo('emergency', { id: childId });
+                    }
+                  }
+
+                  // 🔥 DETECCIÓN RÁPIDA DE IMPACTO (Opcional navegación)
+                  if (liveInfo && liveInfo.impact && !prevLive.impact) {
+                    sendPushNotification({
+                      type: 'impact',
+                      title: `💥 IMPACTO FUERTE DETECTADO`,
+                      body: `${students[childId]?.name || 'Tu hijo'} registró un golpe. Toca para ver info.`
+                    });
+                  }
+
                   // Si estamos viendo a este hijo, actualiza la UI
                   if (currentStudentId == childId && currentScreen === 'student') {
                     updateSensors();
@@ -6452,21 +6526,8 @@
                   historyData[childId] = events;
 
                   // Verificar si hay eventos nuevos de alta prioridad (SOS, Impacto)
-                  if (events.length > 0) {
-                    const latest = events[0]; // El primero es el más reciente (orderBy serverTs desc)
-                    const lastId = lastProcessedHistoryId[childId];
-                    const eventId = latest.id || latest.serverTs?.toMillis() || Date.now();
-
-                    if (lastId && lastId !== eventId) {
-                      // Solo alertamos si es un evento nuevo (no la carga inicial)
-                      if (latest.type === 'sos') {
-                        showToast(`🆘 SOS ACTIVADO: ${students[childId]?.name || 'Hijo'}`, 'danger');
-                      } else if (latest.type === 'impact') {
-                        showToast(`💥 IMPACTO DETECTADO: ${students[childId]?.name || 'Hijo'}`, 'warn');
-                      }
-                    }
-                    lastProcessedHistoryId[childId] = eventId;
-                  }
+                  // NOTA: Ahora las notificaciones principales vienen de la coleccion 'notifications'
+                  // pero mantenemos esto para actualizar el timeline y alerts screen local.
 
                   // Si estamos viendo a este hijo, actualiza el timeline
                   if (currentStudentId == childId && currentScreen === 'student') {
@@ -6486,7 +6547,23 @@
             renderHomeScreen();
           });
 
-          // Solo navegamos a home si estamos en login para evitar saltos raros si ya estamos en otra pantalla
+          // 3) Suscribirse a NOTIFICACIONES (NUEVO)
+          if (unsubNotifs) unsubNotifs();
+          unsubNotifs = subscribeNotifications(user.uid, (data) => {
+            // Detectar nuevas notificaciones críticas para lanzar Toast
+            const unreadCountBefore = notifications.filter(n => n.unread).length;
+            const newCritical = data.find(n => n.unread && !notifications.some(old => old.id === n.id) && (n.type === 'sos' || n.type === 'impact'));
+
+            notifications = data;
+            renderNotifications();
+
+            if (newCritical) {
+              const icon = newCritical.icon || (newCritical.type === 'sos' ? '🆘' : '💥');
+              showToast(`${icon} ${newCritical.title}: ${newCritical.studentName || 'Hijo'}`, newCritical.type === 'sos' ? 'danger' : 'warn');
+            }
+          });
+
+          // Solo navegamos a home si estamos en login
           if (currentScreen === 'login') {
             navigateTo('home');
           }
@@ -6500,6 +6577,7 @@
 
           // Limpiar suscripciones al salir
           if (unsubStudents) { unsubStudents(); unsubStudents = null; }
+          if (unsubNotifs) { unsubNotifs(); unsubNotifs = null; }
           Object.values(unsubLive).forEach(un => un());
           Object.values(unsubHistory).forEach(un => un());
           unsubLive = {};
@@ -6507,6 +6585,7 @@
           students = {};
           liveData = {};
           historyData = {};
+          notifications = [];
 
           navigateTo('login');
         }
