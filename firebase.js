@@ -171,6 +171,10 @@ export async function saveUserProfile(uid, data) {
     }, { merge: true });
 }
 
+export async function updateParentProfileFS(uid, data) {
+    await setDoc(doc(db, "users", uid), data, { merge: true });
+}
+
 /**
  * Se asegura de que el usuario tenga un doc en Firestore.
  * Llamado internamente tras cada login exitoso.

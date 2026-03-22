@@ -3540,7 +3540,7 @@
               Premium</span>
           </div>
         </div>
-        <button class="icon-btn" onclick="showModal('edit-profile')">
+        <button class="icon-btn" onclick="openEditParentProfile()">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
             <path d="M14 2L18 6L8 16L4 16L4 12L14 2Z" stroke="rgba(255,255,255,0.6)" stroke-width="1.5" fill="none"
               stroke-linejoin="round" />
@@ -4064,8 +4064,10 @@
       loginWithEmail, registerWithEmail, loginWithGoogle, logout as fbLogout, onAuthChange, currentUser,
       getStudentsFS, subscribeStudents, subscribeStudentLive, subscribeStudentHistory,
       getUserProfile, saveStudentFS, deleteStudentFS,
-      subscribeNotifications, markNotificationRead, markAllNotificationsRead
+      subscribeNotifications, markNotificationRead, markAllNotificationsRead, updateParentProfileFS
     } from './firebase.js';
+
+    window.app_updateParentProfileFS = updateParentProfileFS;
 
     /* ═══════════════════════════════════════
        APP STATE
@@ -4137,6 +4139,7 @@
     document.addEventListener('pointerdown', () => AudioController.init(), { once: true });
 
     let students = {}; // Se poblará desde Firestore
+    let currentParentProfile = {}; // Firestore user profile
     let liveData = {}; // Se poblará desde Firestore (por studentId)
     let historyData = {}; // Se poblará desde Firestore (por studentId)
     let unsubStudents = null;
@@ -4209,10 +4212,11 @@
     }
 
     function updateNotifBadges(count) {
-      const badge = document.getElementById('notif-badge-count');
-      if (badge) {
-        badge.textContent = count > 0 ? count : '';
-        badge.style.display = count > 0 ? 'flex' : 'none';
+      const badgeGroup = document.getElementById('notif-badge-group');
+      const badgeCount = document.getElementById('notif-badge-count');
+      if (badgeGroup && badgeCount) {
+        badgeCount.textContent = count > 0 ? count : '';
+        badgeGroup.style.display = count > 0 ? 'inline' : 'none';
       }
       const navBadge = document.querySelector('#bottom-nav .nav-badge');
       if (navBadge) {
@@ -6040,7 +6044,7 @@
         const phone = getStudentPhone(parseInt(id));
         return `
       <div class="settings-item" onclick="openEditStudent(${id})">
-        <div class="avatar" style="width:38px;height:38px;font-size:14px;background:linear-gradient(135deg,#0D2E4F,#1A3358);">${s.initial || '?'}</div>
+        <div class="avatar" style="width:38px;height:38px;font-size:14px;background:linear-gradient(135deg,#0D2E4F,#1A3358);">${s.avatar || s.initial || '?'}</div>
         <div class="settings-item-text">
           <div class="settings-item-label">${s.name}</div>
           <div class="settings-item-sub">${s.grade || ''}${phone ? ' · 📱 ' + formatPhoneParent(phone) : ' · Sin número'}</div>
@@ -6240,16 +6244,6 @@
       <button class="btn btn-danger btn-full" style="height:52px;margin-bottom:12px;" onclick="closeModal();goBack()">Confirmar — Mi hijo está seguro</button>
       <button class="btn btn-ghost btn-full" style="height:48px;" onclick="closeModal()">Mantener Alerta Activa</button>`
       },
-      'edit-profile': {
-        title: 'Editar Perfil',
-        sub: 'Actualiza tu información de contacto.',
-        content: `
-      <div class="input-group"><label class="input-label">Nombre Completo</label><input class="input-field" value="María García" type="text"></div>
-      <div class="input-group"><label class="input-label">Teléfono</label><input class="input-field" value="+504 9999-8888" type="tel"></div>
-      <div class="input-group"><label class="input-label">Correo</label><input class="input-field" value="maria.garcia@gmail.com" type="email"></div>
-      <button class="btn btn-primary btn-full" style="margin-top:8px;height:52px;" onclick="closeModal()">Guardar Cambios</button>
-      <button class="btn btn-ghost btn-full" style="margin-top:10px;height:44px;" onclick="closeModal()">Cancelar</button>`
-      },
       'security': {
         title: '🔒 Privacidad y Seguridad',
         sub: 'Controla quién puede acceder a la información de tus hijos.',
@@ -6289,6 +6283,98 @@
       <button class="btn btn-ghost btn-full" style="height:48px;" onclick="closeModal()">Cerrar</button>`
       }
     };
+
+    window.openEditParentProfile = function () {
+      const parentName = currentParentProfile?.name || '';
+      const parentEmail = currentParentProfile?.email || '';
+      const currentAvatar = currentParentProfile?.avatar || '👨';
+
+      modals['edit-profile'] = {
+        title: 'Editar Perfil',
+        sub: 'Personaliza tu cuenta de SchoolSafe.',
+        content: `
+        <div class="input-group"><label class="input-label">Nombre Completo</label><input class="input-field" id="edit-parent-name" value="${escapeHTML(parentName)}" type="text"></div>
+        <div class="input-group"><label class="input-label">Correo (solo lectura)</label><input class="input-field" value="${escapeHTML(parentEmail)}" type="email" disabled></div>
+        <div class="input-group">
+          <label class="input-label">Selecciona tu Avatar</label>
+          <div style="display:flex;gap:8px;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;" id="parent-avatar-grid">
+             ${['👨', '👩', '👨‍🦱', '👩‍🦱', '🧔', '👱‍♀️'].map(e =>
+          `<button type="button" class="avatar-option" style="width:40px;height:40px;border-radius:10px;border:${e === currentAvatar ? '2px solid var(--blue-acc)' : '2px solid transparent'};background:var(--bg);font-size:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:${e === currentAvatar ? '1' : '0.5'}" onclick="selectParentAvatar(this, '${e}')">${e}</button>`
+        ).join('')}
+          </div>
+        </div>
+        <input type="hidden" id="edit-parent-avatar" value="${escapeHTML(currentAvatar)}">
+        <button class="btn btn-primary btn-full" style="margin-top:8px;height:52px;" onclick="saveParentProfile()">Guardar Cambios</button>
+        <button class="btn btn-ghost btn-full" style="margin-top:10px;height:44px;" onclick="closeModal()">Cancelar</button>`
+      };
+      showModal('edit-profile');
+    };
+
+    window.selectParentAvatar = function (btn, emoji) {
+      document.querySelectorAll('.avatar-option').forEach(b => {
+        b.style.border = '2px solid transparent';
+        b.style.opacity = '0.5';
+      });
+      btn.style.border = '2px solid var(--blue-acc)';
+      btn.style.opacity = '1';
+      document.getElementById('edit-parent-avatar').value = emoji;
+    };
+
+    window.saveParentProfile = async function () {
+      if (window.AudioController) AudioController.playClick();
+      const newName = document.getElementById('edit-parent-name').value.trim();
+      const newAvatar = document.getElementById('edit-parent-avatar').value || '👨';
+      if (!newName) return showToast('El nombre es obligatorio', 'warn');
+
+      if (auth.currentUser && window.app_updateParentProfileFS) {
+        try {
+          await window.app_updateParentProfileFS(auth.currentUser.uid, { name: newName, avatar: newAvatar });
+          currentParentProfile.name = newName;
+          currentParentProfile.avatar = newAvatar;
+          renderParentProfile();
+          closeModal();
+          showToast('Perfil actualizado con éxito');
+          if (window.AudioController) AudioController.playSuccess();
+        } catch (e) {
+          showToast('Error al actualizar el perfil', 'danger');
+          console.error(e);
+        }
+      }
+    };
+
+    function renderParentProfile() {
+      const parentName = currentParentProfile?.name || 'Padre';
+      const parentAvatar = currentParentProfile?.avatar || parentName[0].toUpperCase();
+
+      const homeNameEl = document.querySelector('.home-name');
+      const homeAvatarEl = document.getElementById('home-user-avatar');
+      if (homeNameEl) homeNameEl.textContent = parentName;
+      if (homeAvatarEl) {
+        homeAvatarEl.textContent = parentAvatar;
+        homeAvatarEl.innerHTML = ''; // Limpia cualquier imagen previa
+        homeAvatarEl.textContent = parentAvatar;
+      }
+
+      const sideNameEl = document.querySelector('.menu-user-name');
+      const sideEmailEl = document.querySelector('.menu-user-email');
+      const sideAvatarEl = document.querySelector('.menu-user-avatar');
+      if (sideNameEl) sideNameEl.textContent = parentName;
+      if (sideEmailEl) sideEmailEl.textContent = currentParentProfile?.email || '';
+      if (sideAvatarEl) {
+        sideAvatarEl.textContent = parentAvatar;
+        sideAvatarEl.innerHTML = '';
+        sideAvatarEl.textContent = parentAvatar;
+      }
+
+      const settingsAvatarEl = document.getElementById('settings-user-avatar');
+      const settingsNameEl = document.getElementById('settings-user-name');
+      if (settingsNameEl) settingsNameEl.textContent = parentName;
+      if (settingsAvatarEl) {
+        settingsAvatarEl.textContent = parentAvatar;
+        settingsAvatarEl.innerHTML = '';
+        settingsAvatarEl.textContent = parentAvatar;
+      }
+    }
 
     function showModal(key) {
       const m = modals[key];
@@ -6470,51 +6556,10 @@
 
           // 1) Cargar info del perfil del padre desde Firestore
           import('./firebase.js').then(async ({ getUserProfile }) => {
-            const profile = await getUserProfile(user.uid);
-            const parentName = profile?.name || user.displayName || 'Padre';
-
-            // Actualizar Home Header (línea 2417)
-            const homeNameEl = document.querySelector('.home-name');
-            const homeAvatarEl = document.getElementById('home-user-avatar');
-
-            if (homeNameEl) homeNameEl.textContent = parentName;
-            if (homeAvatarEl) {
-              if (user.photoURL) {
-                homeAvatarEl.innerHTML = `<img src="${user.photoURL}" style="width:100%;height:100%;object-fit:cover;">`;
-              } else {
-                homeAvatarEl.textContent = parentName[0].toUpperCase();
-              }
-            }
-
-            // Actualizar Side Menu Header (líneas 2496-2497)
-            const sideNameEl = document.querySelector('.menu-user-name');
-            const sideEmailEl = document.querySelector('.menu-user-email');
-            const sideAvatarEl = document.querySelector('.menu-user-avatar');
-
-            if (sideNameEl) sideNameEl.textContent = parentName;
-            if (sideEmailEl) sideEmailEl.textContent = profile?.email || user.email || '';
-
-            if (sideAvatarEl) {
-              if (user.photoURL) {
-                sideAvatarEl.innerHTML = `<img src="${user.photoURL}" style="width:100%;height:100%;object-fit:cover;">`;
-              } else {
-                sideAvatarEl.textContent = parentName[0].toUpperCase();
-              }
-            }
-
-            // Actualizar Settings Header (líneas 3196-3202)
-            const settingsAvatarEl = document.getElementById('settings-user-avatar');
-            const settingsNameEl = document.getElementById('settings-user-name');
-
-            if (settingsNameEl) settingsNameEl.textContent = parentName;
-
-            if (settingsAvatarEl) {
-              if (user.photoURL) {
-                settingsAvatarEl.innerHTML = `<img src="${user.photoURL}" style="width:100%;height:100%;object-fit:cover;">`;
-              } else {
-                settingsAvatarEl.textContent = parentName[0].toUpperCase();
-              }
-            }
+            currentParentProfile = await getUserProfile(user.uid) || {};
+            if (!currentParentProfile.name) currentParentProfile.name = user.displayName || 'Padre';
+            if (!currentParentProfile.email) currentParentProfile.email = user.email || '';
+            renderParentProfile();
           });
 
           // 2) Suscribirse a los datos de los hijos de este usuario
