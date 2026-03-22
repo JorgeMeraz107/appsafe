@@ -6044,7 +6044,7 @@
         const phone = getStudentPhone(parseInt(id));
         return `
       <div class="settings-item" onclick="openEditStudent(${id})">
-        <div class="avatar" style="width:38px;height:38px;font-size:14px;background:linear-gradient(135deg,#0D2E4F,#1A3358);">${s.avatar || s.initial || '?'}</div>
+        <div class="avatar" style="width:38px;height:38px;font-size:14px;background:linear-gradient(135deg,#0D2E4F,#1A3358);overflow:hidden;">${getStudentAvatarHTML(s)}</div>
         <div class="settings-item-text">
           <div class="settings-item-label">${s.name}</div>
           <div class="settings-item-sub">${s.grade || ''}${phone ? ' · 📱 ' + formatPhoneParent(phone) : ' · Sin número'}</div>
@@ -6287,7 +6287,16 @@
     window.openEditParentProfile = function () {
       const parentName = currentParentProfile?.name || '';
       const parentEmail = currentParentProfile?.email || '';
-      const currentAvatar = currentParentProfile?.avatar || '👨';
+      const parentAvatars = [
+        'https://api.dicebear.com/7.x/micah/svg?seed=Felix&backgroundColor=b6e3f4',
+        'https://api.dicebear.com/7.x/micah/svg?seed=Aneka&backgroundColor=ffdfbf',
+        'https://api.dicebear.com/7.x/micah/svg?seed=Mimi&backgroundColor=c0aede',
+        'https://api.dicebear.com/7.x/micah/svg?seed=Jude&backgroundColor=d1d4f9',
+        'https://api.dicebear.com/7.x/micah/svg?seed=Avery&backgroundColor=b6e3f4',
+        'https://api.dicebear.com/7.x/micah/svg?seed=Leo&backgroundColor=ffdfbf'
+      ];
+      const defaultAva = parentAvatars[0];
+      const currentAvatar = currentParentProfile?.avatar || defaultAva;
 
       modals['edit-profile'] = {
         title: 'Editar Perfil',
@@ -6298,8 +6307,8 @@
         <div class="input-group">
           <label class="input-label">Selecciona tu Avatar</label>
           <div style="display:flex;gap:8px;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;" id="parent-avatar-grid">
-             ${['👨', '👩', '👨‍🦱', '👩‍🦱', '🧔', '👱‍♀️'].map(e =>
-          `<button type="button" class="avatar-option" style="width:40px;height:40px;border-radius:10px;border:${e === currentAvatar ? '2px solid var(--blue-acc)' : '2px solid transparent'};background:var(--bg);font-size:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:${e === currentAvatar ? '1' : '0.5'}" onclick="selectParentAvatar(this, '${e}')">${e}</button>`
+             ${parentAvatars.map(e =>
+          `<button type="button" class="avatar-option" style="width:40px;height:40px;border-radius:10px;border:${e === currentAvatar ? '2px solid var(--blue-acc)' : '2px solid transparent'};background:var(--bg);display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:${e === currentAvatar ? '1' : '0.5'};overflow:hidden;padding:0;" onclick="selectParentAvatar(this, '${e}')"><img src="${e}" style="width:100%;height:100%;object-fit:cover;"></button>`
         ).join('')}
           </div>
         </div>
@@ -6326,9 +6335,10 @@
       const newAvatar = document.getElementById('edit-parent-avatar').value || '👨';
       if (!newName) return showToast('El nombre es obligatorio', 'warn');
 
-      if (auth.currentUser && window.app_updateParentProfileFS) {
+      const user = currentUser();
+      if (user && window.app_updateParentProfileFS) {
         try {
-          await window.app_updateParentProfileFS(auth.currentUser.uid, { name: newName, avatar: newAvatar });
+          await window.app_updateParentProfileFS(user.uid, { name: newName, avatar: newAvatar });
           currentParentProfile.name = newName;
           currentParentProfile.avatar = newAvatar;
           renderParentProfile();
@@ -6345,14 +6355,14 @@
     function renderParentProfile() {
       const parentName = currentParentProfile?.name || 'Padre';
       const parentAvatar = currentParentProfile?.avatar || parentName[0].toUpperCase();
+      const isImg = parentAvatar.startsWith('http') || parentAvatar.startsWith('data:');
+      const avatarHTML = isImg ? `<img src="${parentAvatar}" style="width:100%;height:100%;object-fit:cover;">` : parentAvatar;
 
       const homeNameEl = document.querySelector('.home-name');
       const homeAvatarEl = document.getElementById('home-user-avatar');
       if (homeNameEl) homeNameEl.textContent = parentName;
       if (homeAvatarEl) {
-        homeAvatarEl.textContent = parentAvatar;
-        homeAvatarEl.innerHTML = ''; // Limpia cualquier imagen previa
-        homeAvatarEl.textContent = parentAvatar;
+        homeAvatarEl.innerHTML = avatarHTML;
       }
 
       const sideNameEl = document.querySelector('.menu-user-name');
@@ -6361,18 +6371,14 @@
       if (sideNameEl) sideNameEl.textContent = parentName;
       if (sideEmailEl) sideEmailEl.textContent = currentParentProfile?.email || '';
       if (sideAvatarEl) {
-        sideAvatarEl.textContent = parentAvatar;
-        sideAvatarEl.innerHTML = '';
-        sideAvatarEl.textContent = parentAvatar;
+        sideAvatarEl.innerHTML = avatarHTML;
       }
 
       const settingsAvatarEl = document.getElementById('settings-user-avatar');
       const settingsNameEl = document.getElementById('settings-user-name');
       if (settingsNameEl) settingsNameEl.textContent = parentName;
       if (settingsAvatarEl) {
-        settingsAvatarEl.textContent = parentAvatar;
-        settingsAvatarEl.innerHTML = '';
-        settingsAvatarEl.textContent = parentAvatar;
+        settingsAvatarEl.innerHTML = avatarHTML;
       }
     }
 
