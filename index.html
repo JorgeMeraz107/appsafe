@@ -6288,12 +6288,24 @@
       const parentName = currentParentProfile?.name || '';
       const parentEmail = currentParentProfile?.email || '';
       const parentAvatars = [
-        'https://api.dicebear.com/7.x/micah/svg?seed=Felix&backgroundColor=b6e3f4',
+        // Femeninos
         'https://api.dicebear.com/7.x/micah/svg?seed=Aneka&backgroundColor=ffdfbf',
         'https://api.dicebear.com/7.x/micah/svg?seed=Mimi&backgroundColor=c0aede',
-        'https://api.dicebear.com/7.x/micah/svg?seed=Jude&backgroundColor=d1d4f9',
         'https://api.dicebear.com/7.x/micah/svg?seed=Avery&backgroundColor=b6e3f4',
-        'https://api.dicebear.com/7.x/micah/svg?seed=Leo&backgroundColor=ffdfbf'
+        'https://api.dicebear.com/7.x/micah/svg?seed=Jasmine&backgroundColor=d1d4f9',
+        'https://api.dicebear.com/7.x/micah/svg?seed=Nala&backgroundColor=ffdfbf',
+        'https://api.dicebear.com/7.x/micah/svg?seed=Lilly&backgroundColor=c0aede',
+        'https://api.dicebear.com/7.x/micah/svg?seed=Sophie&backgroundColor=ffdfbf',
+        'https://api.dicebear.com/7.x/micah/svg?seed=Chloe&backgroundColor=b6e3f4',
+        // Masculinos
+        'https://api.dicebear.com/7.x/micah/svg?seed=Felix&backgroundColor=b6e3f4',
+        'https://api.dicebear.com/7.x/micah/svg?seed=Jude&backgroundColor=d1d4f9',
+        'https://api.dicebear.com/7.x/micah/svg?seed=Leo&backgroundColor=ffdfbf',
+        'https://api.dicebear.com/7.x/micah/svg?seed=Oliver&backgroundColor=c0aede',
+        'https://api.dicebear.com/7.x/micah/svg?seed=Max&backgroundColor=b6e3f4',
+        'https://api.dicebear.com/7.x/micah/svg?seed=Jack&backgroundColor=d1d4f9',
+        'https://api.dicebear.com/7.x/micah/svg?seed=Oscar&backgroundColor=ffdfbf',
+        'https://api.dicebear.com/7.x/micah/svg?seed=Caleb&backgroundColor=b6e3f4'
       ];
       const defaultAva = parentAvatars[0];
       const currentAvatar = currentParentProfile?.avatar || defaultAva;
@@ -6306,7 +6318,7 @@
         <div class="input-group"><label class="input-label">Correo (solo lectura)</label><input class="input-field" value="${escapeHTML(parentEmail)}" type="email" disabled></div>
         <div class="input-group">
           <label class="input-label">Selecciona tu Avatar</label>
-          <div style="display:flex;gap:8px;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;" id="parent-avatar-grid">
+          <div style="display:flex;gap:10px;justify-content:center;margin-bottom:10px;flex-wrap:wrap;max-height:160px;overflow-y:auto;padding:5px;" id="parent-avatar-grid">
              ${parentAvatars.map(e =>
           `<button type="button" class="avatar-option" style="width:40px;height:40px;border-radius:10px;border:${e === currentAvatar ? '2px solid var(--blue-acc)' : '2px solid transparent'};background:var(--bg);display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:${e === currentAvatar ? '1' : '0.5'};overflow:hidden;padding:0;" onclick="selectParentAvatar(this, '${e}')"><img src="${e}" style="width:100%;height:100%;object-fit:cover;"></button>`
         ).join('')}
