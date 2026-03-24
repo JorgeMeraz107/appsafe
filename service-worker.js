@@ -5,15 +5,63 @@
    No compatible con: WebViewGold (necesita FCM para APK)
 ═══════════════════════════════════════════════════════ */
 
-const SW_VERSION = 'schoolsafe-sw-v1';
+const SW_VERSION = 'schoolsafe-sw-v2';
+const CACHE_NAME = 'schoolsafe-static-v2';
+
+// Assets to cache for immediate offline load
+const STATIC_ASSETS = [
+  '/',
+  '/index.html',
+  '/firebase.js',
+  '/service-worker.js',
+  'https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Sora:wght@400;600;700;800&display=swap'
+];
 
 /* ── Instalación ─────────────────────────────────────── */
 self.addEventListener('install', e => {
-  self.skipWaiting(); // activa el SW inmediatamente sin esperar
+  e.waitUntil(
+    caches.open(CACHE_NAME).then(cache => {
+      console.log('SW: Precaching assets...');
+      return cache.addAll(STATIC_ASSETS);
+    })
+  );
+  self.skipWaiting();
 });
 
 self.addEventListener('activate', e => {
-  e.waitUntil(clients.claim()); // toma control de todas las tabs abiertas
+  e.waitUntil(
+    caches.keys().then(keys => {
+      return Promise.all(
+        keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
+      );
+    })
+  );
+  e.waitUntil(clients.claim());
+});
+
+/* ── Estrategia de Cache (Offline Support) ───────────── */
+self.addEventListener('fetch', e => {
+  // Evitar interceptar llamadas a Firebase Auth/Firestore directamente
+  // (Firebase ya tiene su propia persistencia interna IndexedDB)
+  if (e.request.url.includes('firestore.googleapis.com') || 
+      e.request.url.includes('identitytoolkit.googleapis.com')) {
+    return;
+  }
+
+  e.respondWith(
+    caches.match(e.request).then(cachedResponse => {
+      if (cachedResponse) {
+        // Stale-while-revalidate: devuelve lo que hay en cache, pero actualiza por detrás
+        fetch(e.request).then(networkResponse => {
+          if (networkResponse && networkResponse.status === 200) {
+            caches.open(CACHE_NAME).then(cache => cache.put(e.request, networkResponse));
+          }
+        }).catch(() => {});
+        return cachedResponse;
+      }
+      return fetch(e.request);
+    })
+  );
 });
 
 /* ── Recibe mensajes desde la app principal ──────────── */

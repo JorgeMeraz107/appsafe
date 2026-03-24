@@ -4138,10 +4138,10 @@
     // Iniciar contexto de audio al primer toque en la pantalla (Bypass Autoplay Policy)
     document.addEventListener('pointerdown', () => AudioController.init(), { once: true });
 
-    let students = {}; // Se poblará desde Firestore
-    let currentParentProfile = {}; // Firestore user profile
+    let students = JSON.parse(localStorage.getItem('ss_students_v1') || '{}');
+    let currentParentProfile = JSON.parse(localStorage.getItem('ss_parent_profile') || '{}');
     let liveData = {}; // Se poblará desde Firestore (por studentId)
-    let historyData = {}; // Se poblará desde Firestore (por studentId)
+    let historyData = JSON.parse(localStorage.getItem('ss_history_v1') || '{}');
     let unsubStudents = null;
     let unsubLive = {};
     let unsubHistory = {};
@@ -4176,39 +4176,66 @@
 
     // Notifications state
     let notifications = [];
-    let unsubNotifs = null;
+    function getAllHistoryEvents() {
+      let allEvents = [];
+      if (!students || !historyData) return [];
+      Object.keys(students).forEach(childId => {
+        const events = historyData[childId] || [];
+        events.forEach(ev => { allEvents.push({ ...ev, childId, childName: students[childId]?.name || 'Hijo' }); });
+      });
+      allEvents.sort((a, b) => {
+        const timeA = a.ts?.toMillis ? a.ts.toMillis() : (a.serverTs?.toMillis() || 0);
+        const timeB = b.ts?.toMillis ? b.ts.toMillis() : (b.serverTs?.toMillis() || 0);
+        return timeB - timeA;
+      });
+      return allEvents;
+    }
 
     function renderNotifications() {
       const list = document.getElementById('notif-list');
       if (!list) return;
-      const unreadCount = notifications.filter(n => n.unread).length;
 
-      if (notifications.length === 0) {
+      const events = getAllHistoryEvents();
+      const lastSeen = parseInt(localStorage.getItem('last_seen_notifs') || '0', 10);
+      
+      const unreadCount = events.filter(e => {
+        const t = e.ts?.toMillis ? e.ts.toMillis() : (e.serverTs?.toMillis() || 0);
+        return t > lastSeen;
+      }).length;
+
+      updateNotifBadges(unreadCount);
+
+      if (events.length === 0) {
         list.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--text-3);">
           <div style="font-size:40px;margin-bottom:12px;">🔕</div>
           <div style="font-size:14px;font-weight:500;">Sin notificaciones nuevas</div>
         </div>`;
-        updateNotifBadges(0);
         return;
       }
 
       const colors = { danger: 'var(--danger-bg)', warn: 'var(--warn-bg)', safe: 'var(--safe-bg)', info: 'rgba(41,121,255,0.1)', sos: 'var(--danger-bg)', impact: 'var(--warn-bg)', battery: 'var(--warn-bg)', checkin: 'var(--safe-bg)', offline: 'rgba(148,163,184,0.15)' };
+      const icons = { sos: '🆘', impact: '💥', battery: '🔋', checkin: '📌', safe: '✅' };
 
-      list.innerHTML = notifications.map(n => {
-        const time = n.ts ? new Date(n.ts.toMillis()).toLocaleTimeString('es-HN', { hour: '2-digit', minute: '2-digit' }) : '';
+      const recentEvents = events.slice(0, 20);
+
+      list.innerHTML = recentEvents.map(ev => {
+        const timeVal = ev.ts?.toMillis ? ev.ts.toMillis() : (ev.serverTs?.toMillis() || 0);
+        const isUnread = timeVal > lastSeen;
+        const time = timeVal ? new Date(timeVal).toLocaleTimeString('es-HN', { hour: '2-digit', minute: '2-digit' }) : '';
+        const color = colors[ev.type] || colors.info;
+        const icon = icons[ev.type] || '🔔';
+
         return `
-    <div class="notif-item ${n.unread ? 'unread' : ''}" onclick="handleNotifTap('${n.id}', '${n.action}', '${n.studentId}')">
-      <div class="notif-icon" style="background:${colors[n.type] || colors.info}; font-size:18px;">${n.icon || '🔔'}</div>
+    <div class="notif-item ${isUnread ? 'unread' : ''}" onclick="handleNotifTap('${ev.type}', '${ev.childId}')">
+      <div class="notif-icon" style="background:${color}; font-size:18px;">${icon}</div>
       <div class="notif-content">
-        <div class="notif-title">${n.title}</div>
-        <div class="notif-body">${n.studentName} · ${n.body}</div>
+        <div class="notif-title">${escapeHTML(ev.title || ev.type.toUpperCase())}</div>
+        <div class="notif-body">${escapeHTML(ev.childName)} · ${ev.placeName || ''}</div>
         <div class="notif-time">${time}</div>
       </div>
-      ${n.unread ? `<div style="width:8px;height:8px;border-radius:50%;background:var(--blue-acc);flex-shrink:0;margin-top:4px;"></div>` : ''}
+      ${isUnread ? `<div style="width:8px;height:8px;border-radius:50%;background:var(--danger);flex-shrink:0;margin-top:4px;"></div>` : ''}
     </div>
   `}).join('');
-
-      updateNotifBadges(unreadCount);
     }
 
     function updateNotifBadges(count) {
@@ -4236,23 +4263,22 @@
       document.getElementById('notif-backdrop')?.classList.remove('open');
     }
 
-    function handleNotifTap(id, action, studentId) {
-      markNotificationRead(id);
+    function handleNotifTap(type, studentId) {
       closeNotifPanel();
-      if (action === 'emergency') navigateTo('emergency', { id: studentId });
-      else if (action === 'map') switchTab('map');
-      else if (action === 'student') navigateTo('student', { id: studentId });
+      if (type === 'sos') navigateTo('emergency', { id: studentId });
+      else navigateTo('student', { id: studentId });
     }
 
     function clearAllNotifs() {
-      if (!auth.currentUser) return;
-      markAllNotificationsRead(auth.currentUser.uid);
+      localStorage.setItem('last_seen_notifs', Date.now().toString());
+      renderNotifications();
+      if(currentScreen === 'alerts') renderAlertsScreen();
     }
 
     function markAllAlertsRead() {
-      notifications.forEach(n => n.unread = false);
+      localStorage.setItem('last_seen_notifs', Date.now().toString());
       renderNotifications();
-
+      renderAlertsScreen();
     }
 
     /* ═══════════════════════════════════════
@@ -4678,19 +4704,21 @@
     function renderAlertsScreen() {
       const container = document.getElementById('alerts-list');
       if (!container) return;
-      let allEvents = [];
-      Object.keys(students).forEach(childId => {
-        const events = historyData[childId] || [];
-        events.forEach(ev => { allEvents.push({ ...ev, childId, childName: students[childId]?.name || 'Hijo' }); });
-      });
-      allEvents.sort((a, b) => (b.ts || b.serverTs?.toMillis() || 0) - (a.ts || a.serverTs?.toMillis() || 0));
+      
+      const allEvents = getAllHistoryEvents();
+      const lastSeen = parseInt(localStorage.getItem('last_seen_notifs') || '0', 10);
+      
+      const unreadCount = allEvents.filter(e => {
+        const t = e.ts?.toMillis ? e.ts.toMillis() : (e.serverTs?.toMillis() || 0);
+        return t > lastSeen;
+      }).length;
 
       // Update Topbar Badge
       const subEl = document.querySelector('#screen-alerts .topbar-sub');
-      const activeAlerts = allEvents.filter(ev => ev.type === 'sos' || ev.type === 'impact');
-      if (subEl) subEl.textContent = `${activeAlerts.length} alertas activas`;
+      if (subEl) subEl.textContent = unreadCount > 0 ? `${unreadCount} nuevas` : 'Al día';
 
       // Update Banner
+      const activeAlerts = allEvents.filter(ev => ev.type === 'sos' || ev.type === 'impact');
       const bannerTitle = document.getElementById('alert-banner-title');
       const bannerSub = document.getElementById('alert-banner-sub');
       if (activeAlerts.length > 0) {
@@ -4711,8 +4739,10 @@
       container.innerHTML = allEvents.map(ev => {
         const color = colors[ev.type] || colors.info;
         const icon = icons[ev.type] || '🔔';
-        const time = (ev.ts || ev.serverTs?.toMillis()) ? new Date(ev.ts || ev.serverTs.toMillis()).toLocaleTimeString('es-HN', { hour: '2-digit', minute: '2-digit' }) : '';
-        const date = (ev.ts || ev.serverTs?.toMillis()) ? new Date(ev.ts || ev.serverTs.toMillis()).toLocaleDateString('es-HN', { day: 'numeric', month: 'short' }) : '';
+        const timeVal = ev.ts?.toMillis ? ev.ts.toMillis() : (ev.serverTs?.toMillis() || 0);
+        const time = timeVal ? new Date(timeVal).toLocaleTimeString('es-HN', { hour: '2-digit', minute: '2-digit' }) : '';
+        const date = timeVal ? new Date(timeVal).toLocaleDateString('es-HN', { day: 'numeric', month: 'short' }) : '';
+        
         return `
           <div class="card alert-item card-pressable anim-item" style="margin-bottom:10px;" 
                onclick="${ev.type === 'sos' ? `navigateTo('emergency',{id:'${ev.childId}'})` : `navigateTo('student',{id:'${ev.childId}'})`}">
@@ -6560,6 +6590,11 @@
       // Registra SW al cargar
       registerServiceWorker();
 
+      // Carga inicial desde caché (offline)
+      if (Object.keys(currentParentProfile).length > 0) renderParentProfile();
+      if (Object.keys(students).length > 0) renderChildrenList();
+      renderNotifications();
+
       // ──── Firebase: Sesión persistente ───────────────────────────
       onAuthChange(async user => {
         const loader = document.getElementById('initial-loader');
@@ -6577,6 +6612,7 @@
             currentParentProfile = await getUserProfile(user.uid) || {};
             if (!currentParentProfile.name) currentParentProfile.name = user.displayName || 'Padre';
             if (!currentParentProfile.email) currentParentProfile.email = user.email || '';
+            localStorage.setItem('ss_parent_profile', JSON.stringify(currentParentProfile));
             renderParentProfile();
           });
 
@@ -6584,6 +6620,7 @@
           if (unsubStudents) unsubStudents();
           unsubStudents = subscribeStudents(user.uid, (data) => {
             students = data;
+            localStorage.setItem('ss_students_v1', JSON.stringify(students));
 
             // Actualizar badge de hijos vinculados en settings
             const settingsRoleEl = document.getElementById('settings-user-role');
@@ -6638,6 +6675,7 @@
               if (!unsubHistory[childId]) {
                 unsubHistory[childId] = subscribeStudentHistory(childId, (events) => {
                   historyData[childId] = events;
+                  localStorage.setItem('ss_history_v1', JSON.stringify(historyData));
 
                   // Verificar si hay eventos nuevos de alta prioridad (SOS, Impacto)
                   // NOTA: Ahora las notificaciones principales vienen de la coleccion 'notifications'
@@ -6647,6 +6685,9 @@
                   if (currentStudentId == childId && currentScreen === 'student') {
                     renderStudentHistory(childId);
                   }
+                  // Actualizar UI de notificaciones/alertas en cualquier pantalla
+                  renderNotifications();
+                  if (currentScreen === 'alerts') renderAlertsScreen();
                   renderHomeScreen();
                 });
               }
