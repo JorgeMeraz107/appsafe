@@ -2670,7 +2670,7 @@
     <!-- ══════════════════════════════
        SCREEN: LOGIN
   ══════════════════════════════ -->
-    <div class="screen active" id="screen-login">
+    <div class="screen" id="screen-login">
       <div class="login-bg"></div>
       <div class="login-brand">
         <div class="brand-shield">
@@ -4197,7 +4197,7 @@
 
       const events = getAllHistoryEvents();
       const lastSeen = parseInt(localStorage.getItem('last_seen_notifs') || '0', 10);
-      
+
       const unreadCount = events.filter(e => {
         const t = e.ts?.toMillis ? e.ts.toMillis() : (e.serverTs?.toMillis() || 0);
         return t > lastSeen;
@@ -4272,7 +4272,7 @@
     function clearAllNotifs() {
       localStorage.setItem('last_seen_notifs', Date.now().toString());
       renderNotifications();
-      if(currentScreen === 'alerts') renderAlertsScreen();
+      if (currentScreen === 'alerts') renderAlertsScreen();
     }
 
     function markAllAlertsRead() {
@@ -4288,8 +4288,8 @@
       const screenEl = document.getElementById(`screen-${screen}`);
       if (!screenEl) return;
 
-      const current = document.getElementById(`screen-${currentScreen}`);
-      if (current) current.classList.remove('active');
+      // Desactivar todas las pantallas previas para evitar superposiciones (Bug Fix)
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
 
       prevScreen = currentScreen;
       currentScreen = screen;
@@ -4704,10 +4704,10 @@
     function renderAlertsScreen() {
       const container = document.getElementById('alerts-list');
       if (!container) return;
-      
+
       const allEvents = getAllHistoryEvents();
       const lastSeen = parseInt(localStorage.getItem('last_seen_notifs') || '0', 10);
-      
+
       const unreadCount = allEvents.filter(e => {
         const t = e.ts?.toMillis ? e.ts.toMillis() : (e.serverTs?.toMillis() || 0);
         return t > lastSeen;
@@ -4742,7 +4742,7 @@
         const timeVal = ev.ts?.toMillis ? ev.ts.toMillis() : (ev.serverTs?.toMillis() || 0);
         const time = timeVal ? new Date(timeVal).toLocaleTimeString('es-HN', { hour: '2-digit', minute: '2-digit' }) : '';
         const date = timeVal ? new Date(timeVal).toLocaleDateString('es-HN', { day: 'numeric', month: 'short' }) : '';
-        
+
         return `
           <div class="card alert-item card-pressable anim-item" style="margin-bottom:10px;" 
                onclick="${ev.type === 'sos' ? `navigateTo('emergency',{id:'${ev.childId}'})` : `navigateTo('student',{id:'${ev.childId}'})`}">
