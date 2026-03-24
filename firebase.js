@@ -32,6 +32,9 @@ import {
     orderBy,
     limit,
     serverTimestamp,
+    initializeFirestore,
+    persistentLocalCache,
+    persistentMultipleTabManager
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 /* ── Configuración del proyecto ────────────────────────────────── */
@@ -49,15 +52,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 const auth = getAuth(app);
-const db = getFirestore(app);
-
-// Enable offline persistence
-enableIndexedDbPersistence(db).catch((err) => {
-    if (err.code == 'failed-precondition') {
-        console.warn("Firestore persistence target already active in another tab.");
-    } else if (err.code == 'unimplemented') {
-        console.warn("Firestore persistence not supported by this browser.");
-    }
+const db = initializeFirestore(app, {
+    localCache: persistentLocalCache({tabManager: persistentMultipleTabManager()})
 });
 
 /* ═══════════════════════════════════════════════════════════════
