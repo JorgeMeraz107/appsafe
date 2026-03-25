@@ -2600,8 +2600,8 @@
       position: fixed;
       inset: 0;
       z-index: 10000;
-      background: rgba(10, 22, 40, 0.7);
-      backdrop-filter: blur(2px);
+      background: rgba(10, 22, 40, 0.4);
+      /* Fondo más claro para mayor nitidez */
       display: none;
       opacity: 0;
       transition: opacity 0.3s ease;
@@ -6726,11 +6726,13 @@
       step: 0,
       steps: [
         { title: '¡Bienvenido!', body: 'Esta es tu central de seguridad. Vamos a darte un breve recorrido por las funciones clave.', target: null },
-        { title: 'Notificaciones', body: 'Aquí recibirás alertas instantáneas de SOS, batería baja y cuando tus hijos lleguen a zonas seguras.', target: '#top-notif-btn' },
+        { title: 'Notificaciones Rápidas', body: 'Aquí podrás ver las últimas alertas sin salir de donde estés.', target: '#top-notif-btn' },
         { title: 'Tus Hijos', body: 'En estas tarjetas verás el estado actual, batería y última ubicación de cada uno de tus hijos.', target: '#home-students-list' },
-        { title: 'Mapa en Vivo', body: 'Sigue la ubicación de todos tus hijos simultáneamente en el mapa interactivo.', target: '#nav-map', tab: 'map' },
-        { title: 'Historial', body: 'En esta sección puedes revisar todos los eventos pasados y registros de entrada/salida.', target: '#nav-alerts', tab: 'alerts' },
-        { title: 'Ajustes', body: 'Personaliza tu perfil, elige tu avatar y gestiona la configuración de los dispositivos.', target: '#nav-settings', tab: 'settings' }
+        { title: 'Detalles del Hijo', body: 'Toca cualquier tarjeta para ver el historial específico, las zonas seguras y los contactos de emergencia de ese hijo.', target: '#home-students-list' },
+        { title: 'Seguimiento en Vivo', body: 'En la pestaña Mapa puedes ver la ubicación de todos tus hijos simultáneamente y en tiempo real.', target: '#nav-map', tab: 'map' },
+        { title: 'Filtros de Actividad', body: '¿Buscas algo específico? Usa los filtros para ver solo SOS, cambios de zona o alertas de batería.', target: '#nav-alerts', tab: 'alerts' },
+        { title: 'Tu Perfil y Avatares', body: 'Aquí puedes cambiar tu nombre y seleccionar entre 16 avatares profesionales para personalizar tu cuenta.', target: '#settings-user-avatar', tab: 'settings' },
+        { title: 'Configuración de Dispositivos', body: 'Gestiona los horarios de monitoreo y los PIN de seguridad desde esta sección.', target: '#nav-settings', tab: 'settings' }
       ],
       start() {
         if (currentScreen !== 'home') navigateTo('home');
