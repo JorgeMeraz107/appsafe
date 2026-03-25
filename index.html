@@ -2592,6 +2592,7 @@
       font-weight: 600;
       white-space: nowrap;
     }
+
     /* ═══════════════════════════════════════
        TUTORIAL / ONBOARDING
     ═══════════════════════════════════════ */
@@ -2606,10 +2607,12 @@
       transition: opacity 0.3s ease;
       overflow: hidden;
     }
+
     .tutorial-overlay.active {
       display: block;
       opacity: 1;
     }
+
     .tutorial-spotlight {
       position: absolute;
       width: 0;
@@ -2620,22 +2623,25 @@
       pointer-events: none;
       z-index: 10001;
     }
+
     .tutorial-card {
       position: absolute;
       background: var(--surface);
       border-radius: 20px;
       padding: 20px;
       width: 280px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
       z-index: 10002;
       transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
       transform: translateY(20px);
       opacity: 0;
     }
+
     .tutorial-card.active {
       transform: translateY(0);
       opacity: 1;
     }
+
     .tutorial-title {
       font-family: 'Sora', sans-serif;
       font-size: 18px;
@@ -2643,32 +2649,38 @@
       margin-bottom: 8px;
       color: var(--text-1);
     }
+
     .tutorial-body {
       font-size: 14px;
       line-height: 1.5;
       color: var(--text-2);
       margin-bottom: 16px;
     }
+
     .tutorial-footer {
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
+
     .tutorial-dots {
       display: flex;
       gap: 6px;
     }
+
     .tutorial-dot {
       width: 6px;
       height: 6px;
       border-radius: 50%;
       background: var(--border);
     }
+
     .tutorial-dot.active {
       background: var(--blue-acc);
       width: 12px;
       border-radius: 10px;
     }
+
     .tutorial-btn {
       padding: 8px 16px;
       border-radius: 10px;
@@ -2677,8 +2689,16 @@
       cursor: pointer;
       border: none;
     }
-    .tutorial-btn-primary { background: var(--blue-acc); color: white; }
-    .tutorial-btn-ghost { background: transparent; color: var(--text-3); }
+
+    .tutorial-btn-primary {
+      background: var(--blue-acc);
+      color: white;
+    }
+
+    .tutorial-btn-ghost {
+      background: transparent;
+      color: var(--text-3);
+    }
 
     .tutorial-arrow {
       position: absolute;
@@ -2736,7 +2756,8 @@
           <div class="tutorial-dots" id="tut-dots"></div>
           <div style="display:flex; gap:8px;">
             <button class="tutorial-btn tutorial-btn-ghost" onclick="TutorialController.skip()">Omitir</button>
-            <button class="tutorial-btn tutorial-btn-primary" onclick="TutorialController.next()" id="tut-next-btn">Siguiente</button>
+            <button class="tutorial-btn tutorial-btn-primary" onclick="TutorialController.next()"
+              id="tut-next-btn">Siguiente</button>
           </div>
         </div>
       </div>
@@ -4383,9 +4404,17 @@
     }
 
     function clearAllNotifs() {
-      localStorage.setItem('last_seen_notifs', Date.now().toString());
-      renderNotifications();
-      if (currentScreen === 'alerts') renderAlertsScreen();
+      showConfirm({
+        title: 'Limpiar notificaciones',
+        sub: '¿Estás seguro de que quieres marcar todas las notificaciones como leídas? Esta acción no se puede deshacer.',
+        okText: 'Limpiar todo',
+        onOk: () => {
+          localStorage.setItem('last_seen_notifs', Date.now().toString());
+          renderNotifications();
+          if (currentScreen === 'alerts') renderAlertsScreen();
+          showToast('Notificaciones limpiadas');
+        }
+      });
     }
 
     function markAllAlertsRead() {
@@ -5217,13 +5246,21 @@
 
     /* ── Cerrar sesión — Firebase ─────────── */
     async function logoutUser() {
-      try {
-        await fbLogout();
-        // onAuthChange detecta el cambio y navega al login automáticamente
-        showToast('Sesión cerrada');
-      } catch (e) {
-        showToast('Error al cerrar sesión');
-      }
+      showConfirm({
+        title: 'Cerrar Sesión',
+        sub: '¿Estás seguro de que quieres salir de la aplicación?',
+        okText: 'Cerrar Sesión',
+        okClass: 'btn-danger',
+        onOk: async () => {
+          try {
+            await fbLogout();
+            // onAuthChange detecta el cambio y navega al login automáticamente
+            showToast('Sesión cerrada');
+          } catch (e) {
+            showToast('Error al cerrar sesión', 'danger');
+          }
+        }
+      });
     }
 
 
@@ -6152,24 +6189,31 @@
     function confirmDeleteStudent() {
       if (!editingStudentId || !currentUser()) return;
       const s = students[editingStudentId];
-      if (!confirm(`¿Eliminar a ${s?.name || 'este hijo'}? Esta acción no se puede deshacer.`)) return;
 
-      const btn = document.querySelector('#es-danger-zone button');
-      const originalText = btn ? btn.textContent : '';
-      if (btn) { btn.disabled = true; btn.textContent = 'Eliminando...'; }
+      showConfirm({
+        title: 'Eliminar Hijo',
+        sub: `¿Estás seguro de que quieres eliminar a <b>${s?.name || 'este hijo'}</b>? Esta acción no se puede deshacer.`,
+        okText: 'Eliminar para siempre',
+        okClass: 'btn-danger',
+        onOk: () => {
+          const btn = document.querySelector('#es-danger-zone button');
+          const originalText = btn ? btn.textContent : '';
+          if (btn) { btn.disabled = true; btn.textContent = 'Eliminando...'; }
 
-      deleteStudentFS(editingStudentId)
-        .then(() => {
-          showToast('Alumno eliminado');
-          navigateTo('children');
-        })
-        .catch(err => {
-          showToast('Error al eliminar');
-          console.error(err);
-        })
-        .finally(() => {
-          if (btn) { btn.disabled = false; btn.textContent = originalText; }
-        });
+          deleteStudentFS(editingStudentId)
+            .then(() => {
+              showToast('Alumno eliminado');
+              navigateTo('children');
+            })
+            .catch(err => {
+              showToast('Error al eliminar');
+              console.error(err);
+            })
+            .finally(() => {
+              if (btn) { btn.disabled = false; btn.textContent = originalText; }
+            });
+        }
+      });
     }
 
     /* ── Actualiza la lista de hijos en Ajustes ─ */
@@ -6537,6 +6581,26 @@
       }
     }
 
+    function showConfirm(options) {
+      const { title, sub, okText, okClass, onOk } = options;
+      const sheet = document.getElementById('modal-sheet');
+      if (!sheet) return;
+      sheet.innerHTML = `
+        <div class="sheet-handle"></div>
+        <div class="modal-title">${title}</div>
+        <div class="modal-sub">${sub}</div>
+        <div style="display:flex; flex-direction:column; gap:10px; margin-top:10px;">
+          <button class="btn ${okClass || 'btn-primary'} btn-full" id="confirm-ok-btn" style="height:52px;">${okText || 'Confirmar'}</button>
+          <button class="btn btn-ghost btn-full" onclick="closeModal()" style="height:44px;">Cancelar</button>
+        </div>
+      `;
+      document.getElementById('modal-overlay')?.classList.add('open');
+      document.getElementById('confirm-ok-btn').onclick = () => {
+        closeModal();
+        if (onOk) onOk();
+      };
+    }
+
     function showModal(key) {
       const m = modals[key];
       if (!m) return;
@@ -6692,7 +6756,7 @@
 
         // Spotlight
         if (s.tab) switchTab(s.tab);
-        
+
         setTimeout(() => {
           const el = s.target ? document.querySelector(s.target) : null;
           if (el && el.offsetParent !== null) {
@@ -6700,7 +6764,7 @@
             const cx = rect.left + rect.width / 2;
             const cy = rect.top + rect.height / 2;
             const size = Math.max(rect.width, rect.height) + 20;
-            
+
             spotlight.style.width = size + 'px';
             spotlight.style.height = size + 'px';
             spotlight.style.left = (cx - size / 2) + 'px';
@@ -6710,9 +6774,9 @@
             // Card Position
             const screenH = window.innerHeight;
             if (cy > screenH / 2) {
-              card.style.top = (cy - size/2 - 200) + 'px';
+              card.style.top = (cy - size / 2 - 200) + 'px';
             } else {
-              card.style.top = (cy + size/2 + 20) + 'px';
+              card.style.top = (cy + size / 2 + 20) + 'px';
             }
             card.style.left = 'calc(50% - 140px)';
           } else {
