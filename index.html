@@ -2592,6 +2592,102 @@
       font-weight: 600;
       white-space: nowrap;
     }
+    /* ═══════════════════════════════════════
+       TUTORIAL / ONBOARDING
+    ═══════════════════════════════════════ */
+    .tutorial-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      background: rgba(10, 22, 40, 0.7);
+      backdrop-filter: blur(2px);
+      display: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      overflow: hidden;
+    }
+    .tutorial-overlay.active {
+      display: block;
+      opacity: 1;
+    }
+    .tutorial-spotlight {
+      position: absolute;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      box-shadow: 0 0 0 9999px rgba(10, 22, 40, 0.85);
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: none;
+      z-index: 10001;
+    }
+    .tutorial-card {
+      position: absolute;
+      background: var(--surface);
+      border-radius: 20px;
+      padding: 20px;
+      width: 280px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+      z-index: 10002;
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    .tutorial-card.active {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .tutorial-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text-1);
+    }
+    .tutorial-body {
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--text-2);
+      margin-bottom: 16px;
+    }
+    .tutorial-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .tutorial-dots {
+      display: flex;
+      gap: 6px;
+    }
+    .tutorial-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--border);
+    }
+    .tutorial-dot.active {
+      background: var(--blue-acc);
+      width: 12px;
+      border-radius: 10px;
+    }
+    .tutorial-btn {
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+    }
+    .tutorial-btn-primary { background: var(--blue-acc); color: white; }
+    .tutorial-btn-ghost { background: transparent; color: var(--text-3); }
+
+    .tutorial-arrow {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: var(--surface);
+      transform: rotate(45deg);
+      z-index: 10001;
+    }
   </style>
 </head>
 
@@ -2630,6 +2726,21 @@
   </div>
 
   <div id="app-shell">
+    <!-- TUTORIAL OVERLAY -->
+    <div id="tutorial-overlay" class="tutorial-overlay">
+      <div id="tutorial-spotlight" class="tutorial-spotlight"></div>
+      <div id="tutorial-card" class="tutorial-card">
+        <div class="tutorial-title" id="tut-title">¡Bienvenido!</div>
+        <div class="tutorial-body" id="tut-body">Estamos aquí para ayudarte a proteger a tu familia.</div>
+        <div class="tutorial-footer">
+          <div class="tutorial-dots" id="tut-dots"></div>
+          <div style="display:flex; gap:8px;">
+            <button class="tutorial-btn tutorial-btn-ghost" onclick="TutorialController.skip()">Omitir</button>
+            <button class="tutorial-btn tutorial-btn-primary" onclick="TutorialController.next()" id="tut-next-btn">Siguiente</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <!-- LOADING OVERLAY -->
     <div id="initial-loader"
       style="position:absolute; inset:0; background:var(--navy); z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px;">
@@ -2769,7 +2880,7 @@
                   fill="rgba(255,255,255,0.8)" />
               </svg>
             </button>
-            <button class="icon-btn" onclick="openNotifPanel()">
+            <button class="icon-btn" onclick="openNotifPanel()" id="top-notif-btn">
               <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
                 <path d="M11 2C7.13 2 4 5.13 4 9V16L2 18V19H20V18L18 16V9C18 5.13 14.87 2 11 2Z"
                   fill="rgba(255,255,255,0.6)" />
@@ -4007,14 +4118,14 @@
        BOTTOM NAVIGATION
   ══════════════════════════════ -->
     <nav id="bottom-nav" style="display: none;">
-      <button class="nav-item active" data-tab="home" onclick="switchTab('home')">
+      <button class="nav-item active" id="nav-home" data-tab="home" onclick="switchTab('home')">
         <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
           <path d="M11 2L3 8V20H9V14H13V20H19V8L11 2Z" fill="#94A3B8" />
         </svg>
         <span class="nav-label">Inicio</span>
       </button>
 
-      <button class="nav-item" data-tab="children" onclick="switchTab('children')">
+      <button class="nav-item" id="nav-children" data-tab="children" onclick="switchTab('children')">
         <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
           <circle cx="11" cy="8" r="4" fill="#94A3B8" />
           <path d="M3 20C3 16.13 6.13 13 10 13H12C15.87 13 19 16.13 19 20" stroke="#94A3B8" stroke-width="1.8"
@@ -4023,7 +4134,7 @@
         <span class="nav-label">Hijos</span>
       </button>
 
-      <button class="nav-item" data-tab="map" onclick="switchTab('map')">
+      <button class="nav-item" id="nav-map" data-tab="map" onclick="switchTab('map')">
         <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
           <path
             d="M11 2C8.24 2 6 4.24 6 7C6 10.75 11 17 11 17C11 17 16 10.75 16 7C16 4.24 13.76 2 11 2ZM11 8.5C10.17 8.5 9.5 7.83 9.5 7C9.5 6.17 10.17 5.5 11 5.5C11.83 5.5 12.5 6.17 12.5 7C12.5 7.83 11.83 8.5 11 8.5Z"
@@ -4033,7 +4144,7 @@
         <span class="nav-label">Mapa</span>
       </button>
 
-      <button class="nav-item" data-tab="alerts" onclick="switchTab('alerts')">
+      <button class="nav-item" id="nav-alerts" data-tab="alerts" onclick="switchTab('alerts')">
         <div class="nav-badge">2</div>
         <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
           <path d="M11 2C7.13 2 4 5.13 4 9V16L2 18V19H20V18L18 16V9C18 5.13 14.87 2 11 2Z" fill="#94A3B8" />
@@ -4042,7 +4153,7 @@
         <span class="nav-label">Notificaciones</span>
       </button>
 
-      <button class="nav-item" data-tab="settings" onclick="switchTab('settings')">
+      <button class="nav-item" id="nav-settings" data-tab="settings" onclick="switchTab('settings')">
         <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
           <path d="M11 14C12.66 14 14 12.66 14 11C14 9.34 12.66 8 11 8C9.34 8 8 9.34 8 11C8 12.66 9.34 14 11 14Z"
             fill="#94A3B8" />
@@ -4063,11 +4174,12 @@
     import {
       loginWithEmail, registerWithEmail, loginWithGoogle, logout as fbLogout, onAuthChange, currentUser,
       getStudentsFS, subscribeStudents, subscribeStudentLive, subscribeStudentHistory,
-      getUserProfile, saveStudentFS, deleteStudentFS,
+      getUserProfile, saveStudentFS, deleteStudentFS, setTutorialSeenFS,
       subscribeNotifications, markNotificationRead, markAllNotificationsRead, updateParentProfileFS
     } from './firebase.js';
 
     window.app_updateParentProfileFS = updateParentProfileFS;
+    window.app_setTutorialSeenFS = setTutorialSeenFS;
 
     /* ═══════════════════════════════════════
        APP STATE
@@ -6544,6 +6656,98 @@
     }
 
     /* ═══════════════════════════════════════
+       TUTORIAL CONTROLLER
+    ═══════════════════════════════════════ */
+    const TutorialController = {
+      step: 0,
+      steps: [
+        { title: '¡Bienvenido!', body: 'Esta es tu central de seguridad. Vamos a darte un breve recorrido por las funciones clave.', target: null },
+        { title: 'Notificaciones', body: 'Aquí recibirás alertas instantáneas de SOS, batería baja y cuando tus hijos lleguen a zonas seguras.', target: '#top-notif-btn' },
+        { title: 'Tus Hijos', body: 'En estas tarjetas verás el estado actual, batería y última ubicación de cada uno de tus hijos.', target: '#home-students-list' },
+        { title: 'Mapa en Vivo', body: 'Sigue la ubicación de todos tus hijos simultáneamente en el mapa interactivo.', target: '#nav-map', tab: 'map' },
+        { title: 'Historial', body: 'En esta sección puedes revisar todos los eventos pasados y registros de entrada/salida.', target: '#nav-alerts', tab: 'alerts' },
+        { title: 'Ajustes', body: 'Personaliza tu perfil, elige tu avatar y gestiona la configuración de los dispositivos.', target: '#nav-settings', tab: 'settings' }
+      ],
+      start() {
+        if (currentScreen !== 'home') navigateTo('home');
+        this.step = 0;
+        document.getElementById('tutorial-overlay').classList.add('active');
+        this.render();
+      },
+      render() {
+        const s = this.steps[this.step];
+        const card = document.getElementById('tutorial-card');
+        const spotlight = document.getElementById('tutorial-spotlight');
+        const nextBtn = document.getElementById('tut-next-btn');
+
+        // Update content
+        document.getElementById('tut-title').textContent = s.title;
+        document.getElementById('tut-body').textContent = s.body;
+        nextBtn.textContent = this.step === this.steps.length - 1 ? 'Finalizar' : 'Siguiente';
+
+        // Dots
+        document.getElementById('tut-dots').innerHTML = this.steps.map((_, i) =>
+          `<div class="tutorial-dot ${i === this.step ? 'active' : ''}"></div>`
+        ).join('');
+
+        // Spotlight
+        if (s.tab) switchTab(s.tab);
+        
+        setTimeout(() => {
+          const el = s.target ? document.querySelector(s.target) : null;
+          if (el && el.offsetParent !== null) {
+            const rect = el.getBoundingClientRect();
+            const cx = rect.left + rect.width / 2;
+            const cy = rect.top + rect.height / 2;
+            const size = Math.max(rect.width, rect.height) + 20;
+            
+            spotlight.style.width = size + 'px';
+            spotlight.style.height = size + 'px';
+            spotlight.style.left = (cx - size / 2) + 'px';
+            spotlight.style.top = (cy - size / 2) + 'px';
+            spotlight.style.opacity = '1';
+
+            // Card Position
+            const screenH = window.innerHeight;
+            if (cy > screenH / 2) {
+              card.style.top = (cy - size/2 - 200) + 'px';
+            } else {
+              card.style.top = (cy + size/2 + 20) + 'px';
+            }
+            card.style.left = 'calc(50% - 140px)';
+          } else {
+            spotlight.style.opacity = '0';
+            card.style.top = '30%';
+            card.style.left = 'calc(50% - 140px)';
+          }
+          card.classList.add('active');
+        }, 100);
+      },
+      next() {
+        document.getElementById('tutorial-card').classList.remove('active');
+        if (this.step < this.steps.length - 1) {
+          this.step++;
+          this.render();
+        } else {
+          this.finish();
+        }
+      },
+      skip() {
+        this.finish();
+      },
+      async finish() {
+        document.getElementById('tutorial-overlay').classList.remove('active');
+        const u = currentUser();
+        if (u && window.app_setTutorialSeenFS) {
+          await window.app_setTutorialSeenFS(u.uid);
+          currentParentProfile.tutorialSeen = true;
+          navigateTo('home');
+        }
+      }
+    };
+    window.TutorialController = TutorialController;
+
+    /* ═══════════════════════════════════════
        FIREBASE CONNECTION
     ═══════════════════════════════════════ */
 
@@ -6725,6 +6929,10 @@
           // Solo navegamos a home si estamos en login
           if (currentScreen === 'login') {
             navigateTo('home');
+            // Trigger Tutorial if first time
+            if (currentParentProfile.tutorialSeen !== true) {
+              setTimeout(() => TutorialController.start(), 1500);
+            }
           }
           renderNotifications();
         } else {

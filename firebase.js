@@ -167,6 +167,15 @@ export async function saveUserProfile(uid, data) {
     }, { merge: true });
 }
 
+/**
+ * Marca que el usuario ya vio el tutorial de bienvenida.
+ */
+export async function setTutorialSeenFS(uid) {
+    await setDoc(doc(db, "users", uid), {
+        tutorialSeen: true
+    }, { merge: true });
+}
+
 export async function updateParentProfileFS(uid, data) {
     await setDoc(doc(db, "users", uid), data, { merge: true });
 }
