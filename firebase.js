@@ -330,7 +330,7 @@ export async function getStudentLiveFS(studentId) {
  * @param {function} onChange — callback con array de notificaciones
  * @returns {function} unsubscribe
  */
-export function subscribeNotifications(uid, onChange) {
+export function subscribeNotifications(uid, onChange, onError) {
     const q = query(
         collection(db, "notifications"),
         where("parentid", "==", uid),
@@ -340,6 +340,9 @@ export function subscribeNotifications(uid, onChange) {
     return onSnapshot(q, snap => {
         const notifs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         onChange(notifs);
+    }, err => {
+        if (onError) onError(err);
+        else console.error("Error en subscribeNotifications:", err);
     });
 }
 

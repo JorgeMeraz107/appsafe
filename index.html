@@ -7003,6 +7003,7 @@
 
       // ──── Firebase: Sesión persistente ───────────────────────────
       onAuthChange(async user => {
+        // 1) Quitar el loader de forma segura y rápida
         const loader = document.getElementById('initial-loader');
         if (loader) {
           loader.style.opacity = '0';
@@ -7013,127 +7014,111 @@
         if (user) {
           if (nav) nav.style.display = 'flex';
 
-          // 1) Cargar info del perfil del padre desde Firestore
-          import('./firebase.js').then(async ({ getUserProfile }) => {
-            currentParentProfile = await getUserProfile(user.uid) || {};
-            if (!currentParentProfile.name) currentParentProfile.name = user.displayName || 'Padre';
-            if (!currentParentProfile.email) currentParentProfile.email = user.email || '';
-            localStorage.setItem('ss_parent_profile', JSON.stringify(currentParentProfile));
-            renderParentProfile();
-          });
-
-          // 2) Suscribirse a los datos de los hijos de este usuario
-          if (unsubStudents) unsubStudents();
-          unsubStudents = subscribeStudents(user.uid, (data) => {
-            students = data;
-            localStorage.setItem('ss_students_v1', JSON.stringify(students));
-
-            // Actualizar badge de hijos vinculados en settings
-            const settingsRoleEl = document.getElementById('settings-user-role');
-            const count = Object.keys(students).length;
-            if (settingsRoleEl) settingsRoleEl.textContent = `Cuenta de Padre · ${count} ${count === 1 ? 'hijo vinculado' : 'hijos vinculados'}`;
-
-            // Suscribirse a los sensores en vivo de cada hijo
-            Object.keys(students).forEach(childId => {
-              if (!unsubLive[childId]) {
-                unsubLive[childId] = subscribeStudentLive(childId, (liveInfo) => {
-                  const prevLive = liveData[childId] || {};
-                  liveData[childId] = liveInfo;
-
-                  // 🔥 AUTO-NAVEGACIÓN A PANTALLA ROJA en caso de SOS
-                  // Si el SOS acaba de cambiar de false a true, interrumpimos al padre
-                  if (liveInfo && liveInfo.sos && !prevLive.sos) {
-                    sendPushNotification({
-                      type: 'sos',
-                      title: `🆘 SOS ACTIVADO: ${students[childId]?.name || 'Tu hijo'}`,
-                      body: 'Toca aquí para ver ubicación y llamar'
-                    });
-
-                    // Solo navegamos si no está ya en la pantalla de emergencia
-                    if (currentScreen !== 'emergency' || emergencyChildId !== childId) {
-                      navigateTo('emergency', { id: childId });
-                    }
-                  }
-
-                  // 🔥 DETECCIÓN RÁPIDA DE IMPACTO (Opcional navegación)
-                  if (liveInfo && liveInfo.impact && !prevLive.impact) {
-                    sendPushNotification({
-                      type: 'impact',
-                      title: `💥 IMPACTO FUERTE DETECTADO`,
-                      body: `${students[childId]?.name || 'Tu hijo'} registró un golpe. Toca para ver info.`
-                    });
-                  }
-
-                  // Si estamos viendo a este hijo, actualiza la UI
-                  if (currentStudentId == childId && currentScreen === 'student') {
-                    updateSensors();
-                    updateSafeZonesDisplay(childId, liveInfo);
-                  }
-                  // Si el mapa general está abierto, actualiza
-                  if (currentScreen === 'map') {
-                    loadParentMap();
-                  }
-                  renderHomeScreen();
-                });
-              }
-
-              // Suscribirse al historial de cada hijo
-              if (!unsubHistory[childId]) {
-                unsubHistory[childId] = subscribeStudentHistory(childId, (events) => {
-                  historyData[childId] = events;
-                  localStorage.setItem('ss_history_v1', JSON.stringify(historyData));
-
-                  // Verificar si hay eventos nuevos de alta prioridad (SOS, Impacto)
-                  // NOTA: Ahora las notificaciones principales vienen de la coleccion 'notifications'
-                  // pero mantenemos esto para actualizar el timeline y alerts screen local.
-
-                  // Si estamos viendo a este hijo, actualiza el timeline
-                  if (currentStudentId == childId && currentScreen === 'student') {
-                    renderStudentHistory(childId);
-                  }
-                  // Actualizar UI de notificaciones/alertas en cualquier pantalla
-                  renderNotifications();
-                  if (currentScreen === 'alerts') renderAlertsScreen();
-                  renderHomeScreen();
-                });
-              }
-            });
-
-            // Actualizar la UI de Hijos si está abierta
-            if (currentScreen === 'children') renderChildrenList();
-            if (currentScreen === 'settings') updateSettingsStudentList();
-            if (currentScreen === 'map') renderMapTabs();
-            if (currentScreen === 'alerts') renderAlertsScreen();
-            // Siempre actualiza el dashboard de Home (sin coste extra de red)
-            renderHomeScreen();
-          });
-
-          // 3) Suscribirse a NOTIFICACIONES (NUEVO)
-          if (unsubNotifs) unsubNotifs();
-          unsubNotifs = subscribeNotifications(user.uid, (data) => {
-            // Detectar nuevas notificaciones para lanzar sonido y Toast
-            const newCritical = data.find(n => n.unread && !notifications.some(old => old.id === n.id) && (n.type === 'sos' || n.type === 'impact'));
-            const newGeneric = data.find(n => n.unread && !notifications.some(old => old.id === n.id) && n.type !== 'sos' && n.type !== 'impact');
-
-            notifications = data;
-            renderNotifications();
-
-            if (newCritical) {
-              const icon = newCritical.icon || (newCritical.type === 'sos' ? '🆘' : '💥');
-              showToast(`${icon} ${newCritical.title}: ${newCritical.studentName || 'Hijo'}`, newCritical.type === 'sos' ? 'danger' : 'warn');
-              if (window.AudioController) AudioController.playSOS();
-            } else if (newGeneric) {
-              if (window.AudioController) AudioController.playNotification();
-            }
-          });
-
-          // Solo navegamos a home si estamos en login
+          // Asegurar navegación inmediata a Home si estamos en el inicio
           if (currentScreen === 'login') {
             navigateTo('home');
-            // Trigger Tutorial if first time
-            if (currentParentProfile.tutorialSeen !== true) {
-              setTimeout(() => TutorialController.start(), 1500);
-            }
+          }
+
+          // Iniciar carga de datos de forma paralela y resiliente
+          try {
+            // 1) Info del perfil del padre
+            import('./firebase.js').then(async ({ getUserProfile }) => {
+              try {
+                currentParentProfile = await getUserProfile(user.uid) || {};
+                if (!currentParentProfile.name) currentParentProfile.name = user.displayName || 'Padre';
+                if (!currentParentProfile.email) currentParentProfile.email = user.email || '';
+                localStorage.setItem('ss_parent_profile', JSON.stringify(currentParentProfile));
+                renderParentProfile();
+              } catch (e) { console.warn("Error cargando perfil:", e); }
+            });
+          } catch (e) { console.error("Error crítico en inicialización:", e); }
+
+          // 2) Suscribirse a los datos de los hijos
+          try {
+            if (unsubStudents) unsubStudents();
+            unsubStudents = subscribeStudents(user.uid, (data) => {
+              students = data;
+              localStorage.setItem('ss_students_v1', JSON.stringify(students));
+
+              // Actualizaciones de UI seguras
+              const settingsRoleEl = document.getElementById('settings-user-role');
+              const count = Object.keys(students).length;
+              if (settingsRoleEl) settingsRoleEl.textContent = `Cuenta de Padre · ${count} ${count === 1 ? 'hijo vinculado' : 'hijos vinculados'}`;
+
+              Object.keys(students).forEach(childId => {
+                if (!unsubLive[childId]) {
+                  unsubLive[childId] = subscribeStudentLive(childId, (liveInfo) => {
+                    const prevLive = liveData[childId] || {};
+                    liveData[childId] = liveInfo;
+
+                    if (liveInfo && liveInfo.sos && !prevLive.sos) {
+                      sendPushNotification({
+                        type: 'sos',
+                        title: `🆘 SOS ACTIVADO: ${students[childId]?.name || 'Tu hijo'}`,
+                        body: 'Toca aquí para ver ubicación y llamar'
+                      });
+                      if (currentScreen !== 'emergency' || emergencyChildId !== childId) {
+                        navigateTo('emergency', { id: childId });
+                      }
+                    }
+
+                    if (liveInfo && liveInfo.impact && !prevLive.impact) {
+                      sendPushNotification({ type: 'impact', title: `💥 IMPACTO FUERTE DETECTADO`, body: `${students[childId]?.name || 'Tu hijo'} registró un golpe.` });
+                    }
+
+                    if (currentStudentId == childId && currentScreen === 'student') {
+                      updateSensors();
+                      updateSafeZonesDisplay(childId, liveInfo);
+                    }
+                    if (currentScreen === 'map') loadParentMap();
+                    renderHomeScreen();
+                  });
+                }
+
+                if (!unsubHistory[childId]) {
+                  unsubHistory[childId] = subscribeStudentHistory(childId, (events) => {
+                    historyData[childId] = events;
+                    localStorage.setItem('ss_history_v1', JSON.stringify(historyData));
+                    if (currentStudentId == childId && currentScreen === 'student') renderStudentHistory(childId);
+                    renderNotifications();
+                    if (currentScreen === 'alerts') renderAlertsScreen();
+                    renderHomeScreen();
+                  });
+                }
+              });
+
+              if (currentScreen === 'children') renderChildrenList();
+              if (currentScreen === 'settings') updateSettingsStudentList();
+              if (currentScreen === 'map') renderMapTabs();
+              if (currentScreen === 'alerts') renderAlertsScreen();
+              renderHomeScreen();
+            });
+          } catch (e) { console.warn("Error en suscripción de alumnos:", e); }
+
+          // 3) Suscribirse a NOTIFICACIONES (con manejo de error por índice faltante)
+          try {
+            if (unsubNotifs) unsubNotifs();
+            unsubNotifs = subscribeNotifications(user.uid, (data) => {
+              const newCritical = data.find(n => n.unread && !notifications.some(old => old.id === n.id) && (n.type === 'sos' || n.type === 'impact'));
+              const newGeneric = data.find(n => n.unread && !notifications.some(old => old.id === n.id) && n.type !== 'sos' && n.type !== 'impact');
+
+              notifications = data;
+              renderNotifications();
+
+              if (newCritical) {
+                showToast(`${newCritical.icon || '🆘'} ${newCritical.title}`, 'danger');
+                if (window.AudioController) AudioController.playSOS();
+              } else if (newGeneric) {
+                if (window.AudioController) AudioController.playNotification();
+              }
+            }, (err) => {
+              console.warn("Falta índice de Firestore para notificaciones. Funcionalidad reducida.", err);
+            });
+          } catch (e) { console.warn("Error notificaciones:", e); }
+
+          // Tutorial si es primera vez
+          if (currentParentProfile.tutorialSeen !== true && currentScreen === 'home') {
+            setTimeout(() => TutorialController.start(), 2000);
           }
           renderNotifications();
         } else {

@@ -73,20 +73,20 @@ async function askGemini(prompt, retryCount = 0) {
  * @returns {Promise<string>}
  */
 async function generateSafetySummary(studentData) {
-    const systemPrompt = `ASISTENTE DE SEGURIDAD PROFESIONAL.
-Analiza y genera un reporte consiso para el padre.
-REGLAS:
-- Máximo 45 palabras.
-- Solo texto plano profesional.
-- No uses emojis, iconos ni markdown.
-- Tono directo y serio.
+    const systemPrompt = `ACTÚA COMO UN ASISTENTE DE SEGURIDAD EMPÁTICO Y PROFESIONAL.
+Responde al padre sobre el estado de su hijo(a) ${studentData.name}.
+ESTILO:
+- Tono humano, cálido y tranquilizador, pero muy profesional.
+- Usa saltos de línea para que NO sea un párrafo pegado.
+- Máximo 60 palabras.
+- Sin emojis, sin iconos, solo texto profesional.
 
-DATOS:
+DATOS PARA ANALIZAR:
 Alumno: ${studentData.name}
-SOS: ${studentData.sos ? "ACTIVO/PELIGRO" : "Inactivo"}
+SOS: ${studentData.sos ? "ALERTA SOS ACTIVA (Peligro)" : "Normal (sin alertas)"}
 Batería: ${Math.round(studentData.battery * 100)}%
 Ubicación: ${studentData.location || "No disponible"}
-Estado: ${studentData.motion || "Normal"}
+Movimiento: ${studentData.motion || "Reposo/Normal"}
 `;
 
     return await askGemini(systemPrompt);
@@ -97,7 +97,7 @@ Estado: ${studentData.motion || "Normal"}
  * @returns {Promise<string>}
  */
 async function getSafetyTip() {
-    const prompt = "Genera un consejo de seguridad escolar profesional y muy breve para un padre (máximo 12 palabras, sin emojis).";
+    const prompt = "Genera un consejo de seguridad escolar breve, cálido y humano para un padre (máximo 15 palabras, sin emojis).";
     return await askGemini(prompt);
 }
 
