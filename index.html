@@ -6654,19 +6654,26 @@
        ASISTENTE DE SEGURIDAD IA (GEMINI)
        ─────────────────────────────────────
     ═══════════════════════════════════════ */
+    let aiCooldown = false;
+
     window.openAiAssistant = async function () {
+      if (aiCooldown) {
+        showToast('El asistente está procesando datos. Intenta en 2 minutos.', 'warn');
+        return;
+      }
+
       if (window.AudioController) AudioController.playClick();
 
       const student = students[currentStudentId] || { name: 'Estudiante' };
       const live = liveData[currentStudentId] || {};
 
       showModalContent({
-        title: 'Asistente IA SchoolSafe',
-        sub: 'Analizando seguridad con Gemini Flash...',
+        title: 'Asistente de Seguridad IA',
+        sub: 'Analizando telemetría en tiempo real...',
         content: `
           <div style="display:flex;flex-direction:column;align-items:center;padding:20px;gap:15px;text-align:center;">
             <div class="loader" style="width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--blue-acc);border-radius:50%;animation:spin 1s linear infinite;"></div>
-            <div style="font-size:14px;color:var(--text-3);">Consultando bases de seguridad y telemetría en tiempo real...</div>
+            <div style="font-size:14px;color:var(--text-3);font-weight:500;">Generando reporte profesional...</div>
           </div>
         `
       });
@@ -6675,29 +6682,46 @@
         name: student.name,
         sos: !!live.sos,
         battery: live.battery || 0,
-        location: live.lat ? 'Localizado en mapa' : 'Ubicación no disponible',
-        motion: live.impact ? '🚨 IMPACTO DETECTADO' : (live.motion ? 'En movimiento' : 'Reposo')
+        location: live.lat ? 'Localizado' : 'No disponible',
+        motion: live.impact ? 'Impacto Detectado' : (live.motion ? 'En movimiento' : 'Reposo')
       };
 
       try {
         const report = await window.ss_gemini.summarize(dataContext);
 
+        // Activar Cooldown tras éxito
+        aiCooldown = true;
+        setTimeout(() => { aiCooldown = false; }, 120000); // 2 min
+
         showModalContent({
-          title: 'Análisis Inteligente',
-          sub: `Reporte generado para ${student.name}`,
+          title: 'Resumen de Seguridad',
+          sub: `Análisis para ${student.name}`,
           content: `
-            <div style="padding:15px; background:rgba(255,255,255,0.7); backdrop-filter:blur(10px); border:1px solid rgba(107,77,255,0.2); border-radius:12px; font-size:14px; line-height:1.6; color:var(--text-1); max-height:300px; overflow-y:auto; text-align:left; border-left:4px solid var(--blue-acc);">
-              ${report.replace(/\n/g, '<br>')}
-            </div>
+            <div style="padding:18px; background:var(--card); border:1px solid var(--border); border-radius:12px; font-size:14px; line-height:1.6; color:var(--text-1); max-height:350px; overflow-y:auto; text-align:left; white-space: pre-wrap; font-family: inherit;">${report.trim()}</div>
             <div style="margin-top:20px; display:flex; gap:10px;">
-              <button class="btn btn-primary btn-full" style="background: linear-gradient(135deg, var(--blue-acc), #6B4DFF); border:none;" onclick="closeModal()">Entendido</button>
+              <button class="btn btn-primary btn-full" style="height:48px; font-weight:600;" onclick="closeModal()">Cerrar Reporte</button>
             </div>
           `
         });
         if (window.AudioController) AudioController.playSuccess();
       } catch (err) {
-        showToast('Error en la IA: ' + err.message, 'danger');
-        closeModal();
+        let msg = "El sistema de IA está en mantenimiento breve. Por favor, intenta más tarde.";
+        if (err.message === "RESTRICCION_DE_USO") {
+          msg = "Has alcanzado el límite de consultas diarias del asistente. Vuelve pronto para más análisis.";
+        }
+
+        showModalContent({
+          title: 'Asistente Temporalmente Ocupado',
+          sub: 'Optimización de seguridad en curso',
+          content: `
+            <div style="padding:20px; text-align:center;">
+              <div style="font-size:15px; color:var(--text-2); line-height:1.6; margin-bottom:20px;">
+                ${msg}
+              </div>
+              <button class="btn btn-ghost btn-full" onclick="closeModal()">Entendido</button>
+            </div>
+          `
+        });
       }
     };
 

@@ -3,17 +3,29 @@
  * Handles communication with Google Gemini Flash API
  */
 
-const GEMINI_API_KEY = "AIzaSyA8E7RHyHsKcaJyw5njcBFtCX5dn7A_zIk";
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
+const GEMINI_API_KEYS = [
+    "AIzaSyA8E7RHyHsKcaJyw5njcBFtCX5dn7A_zIk", // Key 1
+    "AIzaSyB74PgDbik7wVEkkZy5HR_D5EWIXwjZ7ko", // Key 2
+    "AIzaSyBYn93oGfTwA4f9pu3yD5F7vhL1sJl6jWM", // Key 3
+    "AIzaSyDMlB_JIfi2coXFSchPGkbmjZl9VEgFMbI"  // Key 4
+];
+
+let currentKeyIndex = 0;
 
 /**
  * Sends a prompt to Gemini and returns the text response.
- * @param {string} prompt - The user or system prompt.
- * @returns {Promise<string>} - The AI response text.
+ * Implements key rotation for reliability.
  */
-async function askGemini(prompt) {
+async function askGemini(prompt, retryCount = 0) {
+    if (retryCount >= GEMINI_API_KEYS.length) {
+        throw new Error("RESTRICCION_DE_USO");
+    }
+
+    const currentKey = GEMINI_API_KEYS[currentKeyIndex];
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${currentKey}`;
+
     try {
-        const response = await fetch(GEMINI_URL, {
+        const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -27,16 +39,31 @@ async function askGemini(prompt) {
 
         if (!response.ok) {
             const err = await response.json();
-            throw new Error(err.error?.message || "Error en la API de Gemini");
+            const errMsg = err.error?.message || "";
+            
+            // Si la cuota se excedió (429) o la llave es inválida, rotar y reintentar
+            if (response.status === 429 || errMsg.includes("API_KEY_INVALID") || response.status === 400) {
+                console.warn(`Llave ${currentKeyIndex} falló. Rotando...`);
+                currentKeyIndex = (currentKeyIndex + 1) % GEMINI_API_KEYS.length;
+                return await askGemini(prompt, retryCount + 1);
+            }
+            throw new Error(errMsg || "Error en la API de Gemini");
         }
 
         const data = await response.json();
-        // Extract the text from the response structure
         const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-        return resultText || "No recibí respuesta de la IA.";
+        return resultText || "Resumen no disponible en este momento.";
     } catch (error) {
-        console.error("Gemini Error:", error);
-        return `Lo siento, hubo un problema al conectar con mi cerebro de IA: ${error.message}`;
+        if (error.message === "RESTRICCION_DE_USO") throw error;
+        
+        // Reintento genérico para errores de conexión
+        if (retryCount < GEMINI_API_KEYS.length - 1) {
+            currentKeyIndex = (currentKeyIndex + 1) % GEMINI_API_KEYS.length;
+            return await askGemini(prompt, retryCount + 1);
+        }
+        
+        console.error("Gemini Critical Error:", error);
+        throw new Error("El sistema de inteligencia está en mantenimiento técnico.");
     }
 }
 
@@ -46,25 +73,21 @@ async function askGemini(prompt) {
  * @returns {Promise<string>}
  */
 async function generateSafetySummary(studentData) {
-    const systemPrompt = `
-    Actúa como el Asistente Inteligente de SchoolSafe. Tu objetivo es informar al padre de familia
-    sobre la seguridad de su hijo de forma moderna, empática y profesional.
-    
-    DATOS ACTUALES DEL ESTUDIANTE:
-    - Nombre: ${studentData.name}
-    - Estado de Alerta: ${studentData.sos ? "🚨 SOS ACTIVADO" : "✅ SEGURO"}
-    - Batería: ${Math.round(studentData.battery * 100)}%
-    - Última Ubicación: ${studentData.location || "Desconocida"}
-    - Movimiento: ${studentData.motion || "Reposo"}
-    
-    INSTRUCCIONES:
-    1. Si hay un SOS, sé urgente pero calmado, dando recomendaciones de seguridad.
-    2. Si todo está bien, sé positivo y breve.
-    3. Usa iconos (emojis) para que sea visualmente moderno.
-    4. El reporte debe ser corto (máximo 3 párrafos).
-    5. No inventes datos que no se mencionan.
-    6. Habla directamente al padre/madre.
-    `;
+    const systemPrompt = `ASISTENTE DE SEGURIDAD PROFESIONAL.
+Analiza y genera un reporte consiso para el padre.
+REGLAS:
+- Máximo 45 palabras.
+- Solo texto plano profesional.
+- No uses emojis, iconos ni markdown.
+- Tono directo y serio.
+
+DATOS:
+Alumno: ${studentData.name}
+SOS: ${studentData.sos ? "ACTIVO/PELIGRO" : "Inactivo"}
+Batería: ${Math.round(studentData.battery * 100)}%
+Ubicación: ${studentData.location || "No disponible"}
+Estado: ${studentData.motion || "Normal"}
+`;
 
     return await askGemini(systemPrompt);
 }
@@ -74,7 +97,7 @@ async function generateSafetySummary(studentData) {
  * @returns {Promise<string>}
  */
 async function getSafetyTip() {
-    const prompt = "Genera un consejo de seguridad escolar corto y útil para un padre de familia. Usa un emoji. Máximo 15 palabras.";
+    const prompt = "Genera un consejo de seguridad escolar profesional y muy breve para un padre (máximo 12 palabras, sin emojis).";
     return await askGemini(prompt);
 }
 
