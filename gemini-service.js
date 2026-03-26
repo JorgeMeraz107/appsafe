@@ -3,8 +3,8 @@
  * Handles communication with Google Gemini Flash API
  */
 
-const GEMINI_API_KEY = "AIzaSyDIMOuo0I9XP9FLFe8EykKA9AETFCmwvR8";
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+const GEMINI_API_KEY = "AIzaSyA8E7RHyHsKcaJyw5njcBFtCX5dn7A_zIk";
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
 
 /**
  * Sends a prompt to Gemini and returns the text response.
