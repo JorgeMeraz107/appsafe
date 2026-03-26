@@ -2989,6 +2989,24 @@
           </div>
         </div>
 
+        <!-- AI Safety Tip of the Day -->
+        <div id="ai-safety-tip-container" class="anim-item" style="margin: 0 20px; display: none;">
+          <div class="card"
+            style="padding: 16px; background: linear-gradient(135deg, rgba(107, 77, 255, 0.1), rgba(41, 121, 255, 0.05)); border: 1px solid rgba(107, 77, 255, 0.2); border-radius: var(--radius); display: flex; align-items: center; gap: 15px;">
+            <div
+              style="font-size: 24px; background: white; width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+              💡</div>
+            <div style="flex: 1;">
+              <div
+                style="font-size: 11px; font-weight: 700; color: #6B4DFF; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">
+                Consejo de Seguridad IA</div>
+              <div id="ai-safety-tip-text"
+                style="font-size: 13px; color: var(--text-2); line-height: 1.4; font-weight: 500;">Generando consejo del
+                día...</div>
+            </div>
+          </div>
+        </div>
+
         <!-- Students -->
         <div class="section-header" style="padding-top:24px;">
           <div class="section-title">Mis Hijos</div>
@@ -3117,6 +3135,18 @@
               Obteniendo ubicación...
             </div>
           </div>
+        </div>
+
+        <!-- Inteligencia Artificial: Botón de Reporte -->
+        <div style="padding:16px 20px 0;">
+          <button class="btn btn-primary btn-full anim-item"
+            style="height:54px; gap:12px; background: linear-gradient(135deg, var(--blue-acc), #6B4DFF); border:none; box-shadow: 0 4px 15px rgba(107, 77, 255, 0.3);"
+            onclick="openAiAssistant()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2L14.85 9.15L22 12L14.85 14.85L12 22L9.15 14.85L2 12L9.15 9.15L12 2Z" fill="white" />
+            </svg>
+            Generar Resumen con IA
+          </button>
         </div>
 
         <!-- Info tiles -->
@@ -4187,6 +4217,7 @@
     </nav>
   </div>
 
+  <script src="gemini-service.js"></script>
   <script type="module">
     /* ── Firebase — importado desde firebase.js ─────────────────────
        El archivo firebase.js vive en la misma carpeta y usa ESModules.
@@ -6620,6 +6651,83 @@
     }
 
     /* ═══════════════════════════════════════
+       ASISTENTE DE SEGURIDAD IA (GEMINI)
+       ─────────────────────────────────────
+    ═══════════════════════════════════════ */
+    window.openAiAssistant = async function () {
+      if (window.AudioController) AudioController.playClick();
+
+      const student = students[currentStudentId] || { name: 'Estudiante' };
+      const live = liveData[currentStudentId] || {};
+
+      showModalContent({
+        title: 'Asistente IA SchoolSafe',
+        sub: 'Analizando seguridad con Gemini Flash...',
+        content: `
+          <div style="display:flex;flex-direction:column;align-items:center;padding:20px;gap:15px;text-align:center;">
+            <div class="loader" style="width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--blue-acc);border-radius:50%;animation:spin 1s linear infinite;"></div>
+            <div style="font-size:14px;color:var(--text-3);">Consultando bases de seguridad y telemetría en tiempo real...</div>
+          </div>
+        `
+      });
+
+      const dataContext = {
+        name: student.name,
+        sos: !!live.sos,
+        battery: live.battery || 0,
+        location: live.lat ? 'Localizado en mapa' : 'Ubicación no disponible',
+        motion: live.impact ? '🚨 IMPACTO DETECTADO' : (live.motion ? 'En movimiento' : 'Reposo')
+      };
+
+      try {
+        const report = await window.ss_gemini.summarize(dataContext);
+
+        showModalContent({
+          title: 'Análisis Inteligente',
+          sub: `Reporte generado para ${student.name}`,
+          content: `
+            <div style="padding:15px; background:rgba(255,255,255,0.7); backdrop-filter:blur(10px); border:1px solid rgba(107,77,255,0.2); border-radius:12px; font-size:14px; line-height:1.6; color:var(--text-1); max-height:300px; overflow-y:auto; text-align:left; border-left:4px solid var(--blue-acc);">
+              ${report.replace(/\n/g, '<br>')}
+            </div>
+            <div style="margin-top:20px; display:flex; gap:10px;">
+              <button class="btn btn-primary btn-full" style="background: linear-gradient(135deg, var(--blue-acc), #6B4DFF); border:none;" onclick="closeModal()">Entendido</button>
+            </div>
+          `
+        });
+        if (window.AudioController) AudioController.playSuccess();
+      } catch (err) {
+        showToast('Error en la IA: ' + err.message, 'danger');
+        closeModal();
+      }
+    };
+
+    window.loadSafetyTip = async function () {
+      const tipText = document.getElementById('ai-safety-tip-text');
+      const tipContainer = document.getElementById('ai-safety-tip-container');
+      if (!tipText || !tipContainer) return;
+
+      try {
+        tipContainer.style.display = 'block';
+        const tip = await window.ss_gemini.getTip();
+        tipText.textContent = tip;
+      } catch (e) {
+        tipContainer.style.display = 'none';
+      }
+    };
+
+    function showModalContent(m) {
+      const sheet = document.getElementById('modal-sheet');
+      if (!sheet) return;
+      sheet.innerHTML = `
+        <div class="sheet-handle"></div>
+        <div class="modal-title">${m.title}</div>
+        <div class="modal-sub">${m.sub}</div>
+        ${m.content}
+      `;
+      document.getElementById('modal-overlay')?.classList.add('open');
+    }
+
+    /* ═══════════════════════════════════════
        SISTEMA DE NOTIFICACIONES PUSH
        ─────────────────────────────────────
        Estado actual (sin Firebase):
@@ -6865,6 +6973,9 @@
       if (Object.keys(currentParentProfile).length > 0) renderParentProfile();
       if (Object.keys(students).length > 0) renderChildrenList();
       renderNotifications();
+
+      // IA: Cargar consejo del día
+      setTimeout(() => loadSafetyTip(), 2000);
 
       // ──── Firebase: Sesión persistente ───────────────────────────
       onAuthChange(async user => {
