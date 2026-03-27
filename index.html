@@ -3239,6 +3239,22 @@
           </div>
         </div>
 
+        <!-- ── Mapa del Corredor Seguro Hogar→Escuela ── -->
+        <div class="card anim-item" id="safe-zone-route-container"
+          style="margin: 20px 20px 0; border:1px solid var(--safe); display:none; overflow:hidden;">
+          <div
+            style="background:var(--safe-bg); color:var(--safe); font-weight:700; font-size:12px; padding:8px 16px; display:flex; align-items:center; gap:8px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+            Corredor Seguro Establecido
+          </div>
+          <iframe id="safe-zone-route-map" width="100%" height="200" frameborder="0" style="border:0;"
+            allowfullscreen></iframe>
+        </div>
+
         <!-- Actividad del día -->
         <div class="section-header" style="padding-top:20px;">
           <div class="section-title">Actividad de Hoy</div>
@@ -3372,8 +3388,8 @@
 
             <button class="btn btn-ghost btn-full"
               style="height:44px;margin-top:12px;font-size:12px;border:1px dashed var(--border);"
-              onclick="useCurrentStudentLoc()">
-              📍 Usar ubicación actual del alumno
+              onclick="useMyGPSLocation()">
+              📍 Usar mi ubicación GPS actual
             </button>
           </div>
         </div>
@@ -5956,41 +5972,78 @@
       }
     }
 
-    function useCurrentStudentLocPicker() {
-      const live = getStudentLive(editingStudentId || currentStudentId);
-      if (!live || live.lat == null) {
-        showToast("No hay ubicación actual disponible.");
+    function useMyGPSLocationPicker() {
+      if (!('geolocation' in navigator)) {
+        showToast("GPS no disponible en este dispositivo.");
         return;
       }
-      pickerLat = live.lat;
-      pickerLng = live.lng;
-      updatePickerUI();
-      showToast("Usando ubicación del alumno.");
+      showToast("Obteniendo tu ubicación...", "info");
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          pickerLat = pos.coords.latitude;
+          pickerLng = pos.coords.longitude;
+          updatePickerUI();
+          showToast("Usando tu ubicación GPS.");
+        },
+        (err) => showToast("Error al obtener GPS.", "danger"),
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
     }
 
-    // Helper para el botón rápido en el formulario de edición
-    function useCurrentStudentLoc() {
-      const live = getStudentLive(editingStudentId || currentStudentId);
-      if (!live || live.lat == null) {
-        showToast("No hay ubicación actual disponible.");
+    // Botón rápido en el formulario (fuera del picker)
+    function useMyGPSLocation() {
+      if (!('geolocation' in navigator)) {
+        showToast("GPS no disponible en este dispositivo.");
         return;
       }
-      // Si el hogar no está definido, configuramos Hogar, sino Escuela
-      const homeLat = document.getElementById('es-home-lat')?.value;
-      const type = (homeLat && homeLat !== '') ? 'school' : 'home';
-      openLocationPicker(type); // Abre el nuevo selector profesional
+      showToast("Obteniendo tu ubicación...", "info");
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          // Si el hogar no está definido, configuramos Hogar, sino Escuela
+          const homeLat = document.getElementById('es-home-lat')?.value;
+          const type = (homeLat && homeLat !== '') ? 'school' : 'home';
+
+          pickerLat = pos.coords.latitude;
+          pickerLng = pos.coords.longitude;
+
+          const latInput = document.getElementById(`es-${type}-lat`);
+          const lngInput = document.getElementById(`es-${type}-lng`);
+          const addrText = document.getElementById(`es-${type}-addr`);
+
+          if (latInput) latInput.value = pickerLat;
+          if (lngInput) lngInput.value = pickerLng;
+          if (addrText) {
+            addrText.textContent = `${pickerLat.toFixed(6)}, ${pickerLng.toFixed(6)}`;
+            addrText.style.color = 'var(--safe)';
+          }
+          showToast(`Ubicación de ${type === 'home' ? 'Hogar' : 'Escuela'} actualizada.`, 'safe');
+        },
+        (err) => showToast("Error al obtener GPS.", "danger"),
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
     }
 
-    function searchInPicker() {
+    async function searchInPicker() {
       const q = document.getElementById('picker-search')?.value.trim();
       if (!q) return;
-      const iframe = document.getElementById('picker-iframe');
-      if (iframe) {
-        iframe.src = `https://maps.google.com/maps?q=${encodeURIComponent(q)}&z=17&output=embed`;
+
+      showToast("Buscando dirección...");
+      try {
+        // API gratuita OpenStreetMap (Nominatim) para traducir texto a GPS
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1`);
+        const data = await res.json();
+
+        if (data && data.length > 0) {
+          pickerLat = parseFloat(data[0].lat);
+          pickerLng = parseFloat(data[0].lon);
+          updatePickerUI();
+          showToast("Ubicación encontrada.", "safe");
+        } else {
+          showToast("Lugar no encontrado. Intenta otra dirección.", "warn");
+        }
+      } catch (e) {
+        showToast("Error de conexión al buscar.", "danger");
       }
-      showToast("Buscando...");
-      // Nota: Sin API de JS no se pueden recuperar las coordenadas exactas de la búsqueda directamente.
-      // Se recomienda al usuario usar la posición del alumno para mayor precisión.
     }
 
     function recenterPicker() {
@@ -6174,6 +6227,8 @@
         { id: 'school', lat: s.schoolLat, lng: s.schoolLng, name: 'Escuela' }
       ];
 
+      let configuredZones = 0;
+
       zones.forEach(z => {
         const distEl = document.getElementById(`${z.id}-distance`);
         const statusEl = document.getElementById(`${z.id}-status`);
@@ -6187,6 +6242,8 @@
           statusEl.className = 'safe-zone-status sz-pending';
           return;
         }
+
+        configuredZones++;
 
         if (live && live.lat != null) {
           const d = haversine(live.lat, live.lng, z.lat, z.lng);
@@ -6203,6 +6260,23 @@
           }
         }
       });
+
+      // ── Lógica del Corredor Seguro (Mapa de Ruta) ──
+      const routeContainer = document.getElementById('safe-zone-route-container');
+      const routeMap = document.getElementById('safe-zone-route-map');
+
+      if (routeContainer && routeMap) {
+        if (configuredZones === 2) {
+          routeContainer.style.display = 'block';
+          // Solo recargar el iframe si la URL cambia (para no parpadear en cada sync gps)
+          const newUrl = `https://maps.google.com/maps?saddr=${s.homeLat},${s.homeLng}&daddr=${s.schoolLat},${s.schoolLng}&z=14&output=embed`;
+          if (routeMap.src !== newUrl) {
+            routeMap.src = newUrl;
+          }
+        } else {
+          routeContainer.style.display = 'none';
+        }
+      }
     }
 
     /* ── Eliminar alumno ─────────────────── */
