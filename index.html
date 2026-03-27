@@ -2898,22 +2898,21 @@
           </div>
         </div>
 
-        <!-- Status summary -->
-        <div class="status-summary-card status-summary-safe" style="margin:0; border-radius:var(--radius);">
+        <!-- Status summary — Estado inicial neutro hasta que JS cargue los hijos -->
+        <div class="status-summary-card status-summary-warn" style="margin:0; border-radius:var(--radius);">
           <div class="summary-icon">
             <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
               <path d="M11 2L3 5V11C3 15.95 6.55 20.59 11 22C15.45 20.59 19 15.95 19 11V5L11 2Z"
                 fill="rgba(255,255,255,0.9)" />
-              <path d="M8 11L10 13L14 9" stroke="#0FBF7A" stroke-width="2" stroke-linecap="round"
-                stroke-linejoin="round" />
+              <path d="M11 8V12M11 15V15.5" stroke="#F5A623" stroke-width="2" stroke-linecap="round" />
             </svg>
           </div>
           <div class="summary-text">
-            <div class="summary-title">Todos los hijos están seguros</div>
-            <div class="summary-sub">Última actualización hace 2 min • Día escolar activo</div>
+            <div class="summary-title">Sin hijos vinculados aún</div>
+            <div class="summary-sub">Agrega a tus hijos en la sección "Mis Hijos"</div>
           </div>
           <div style="color:rgba(255,255,255,0.7); font-size:12px; font-weight:600; text-align:right; line-height:1.4;">
-            Mié<br>Mar 9
+            —
           </div>
         </div>
       </div>
@@ -6988,8 +6987,37 @@
       if (Object.keys(students).length > 0) renderChildrenList();
       renderNotifications();
 
+      // ── Pre-render del banner de estado desde caché ────────────────
+      // Evita el flash incorrecto: lee localStorage ANTES de que Firebase
+      // responda y actualiza el banner al estado correcto de inmediato.
+      (function preRenderStatusBanner() {
+        try {
+          const cached = localStorage.getItem('ss_students_v1');
+          const cachedStudents = cached ? JSON.parse(cached) : {};
+          const total = Object.keys(cachedStudents).length;
+          const card = document.querySelector('.status-summary-card');
+          const titleEl = document.querySelector('.summary-title');
+          const subEl = document.querySelector('.status-summary-card .summary-sub');
+
+          if (!card || !titleEl) return;
+
+          if (total === 0) {
+            // Sin hijos: amarillo (ya está en el HTML, pero por si acaso)
+            card.className = 'status-summary-card status-summary-warn';
+            titleEl.textContent = 'Sin hijos vinculados aún';
+            if (subEl) subEl.textContent = 'Agrega a tus hijos en la sección "Mis Hijos"';
+          } else {
+            // Con hijos en caché: verde inmediato
+            card.className = 'status-summary-card status-summary-safe';
+            titleEl.textContent = 'Todos los hijos están seguros';
+            if (subEl) subEl.textContent = 'Sincronizando datos en vivo...';
+          }
+        } catch (e) { /* Silencioso si el caché está corrupto */ }
+      })();
+
       // IA: Cargar consejo del día
       setTimeout(() => loadSafetyTip(), 2000);
+
 
       // ──── Firebase: Sesión persistente ───────────────────────────
       onAuthChange(async user => {
