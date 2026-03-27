@@ -5514,14 +5514,19 @@
             allEvents.push({ ...ev, childId, childName: students[childId]?.name || 'Hijo' });
           });
         });
-        allEvents.sort((a, b) => (b.ts || b.serverTs?.toMillis() || 0) - (a.ts || a.serverTs?.toMillis() || 0));
+        allEvents.sort((a, b) => {
+          const tA = getMillis(a.ts) || getMillis(a.serverTs);
+          const tB = getMillis(b.ts) || getMillis(b.serverTs);
+          return tB - tA;
+        });
         const recent = allEvents.slice(0, 3);
 
         if (recent.length === 0) {
           activityList.innerHTML = `<div style="padding:16px 16px 4px;font-size:13px;font-weight:600;color:var(--text-3);">Sin actividad reciente</div>`;
         } else {
           activityList.innerHTML = recent.map(ev => {
-            const time = (ev.ts || ev.serverTs?.toMillis()) ? new Date(ev.ts || ev.serverTs.toMillis()).toLocaleTimeString('es-HN', { hour: '2-digit', minute: '2-digit' }) : '';
+            const timeVal = getMillis(ev.ts) || getMillis(ev.serverTs);
+            const time = timeVal ? new Date(timeVal).toLocaleTimeString('es-HN', { hour: '2-digit', minute: '2-digit' }) : '';
             const icons = { sos: '🆘', impact: '💥', battery: '🔋', checkin: '📌', safe: '✅' };
             const icon = icons[ev.type] || '🔔';
             return `
