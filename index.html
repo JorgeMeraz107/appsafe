@@ -5437,12 +5437,18 @@
 
       // Cards de hijos
       if (!homeList) return;
+      const aiTipContainer = document.getElementById('ai-safety-tip-container');
       if (total === 0) {
         homeList.innerHTML = '';
         if (noChildren) noChildren.style.display = 'block';
+        // Sin hijos: ocultar tarjeta de IA completamente
+        if (aiTipContainer) aiTipContainer.style.display = 'none';
         return;
       }
       if (noChildren) noChildren.style.display = 'none';
+      // Con hijos: mostrar tarjeta de IA (ya se llenará con el consejo)
+      if (aiTipContainer) aiTipContainer.style.display = 'block';
+
 
       homeList.innerHTML = ids.map(id => {
         const s = students[id];
