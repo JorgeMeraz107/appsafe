@@ -4340,6 +4340,14 @@
     // Notifications state
     let notifications = [];
     let unsubNotifs = null;
+    function getMillis(val) {
+      if (!val) return 0;
+      if (typeof val.toMillis === 'function') return val.toMillis();
+      if (typeof val === 'string' || typeof val === 'number') return new Date(val).getTime();
+      if (val.seconds) return val.seconds * 1000;
+      return 0;
+    }
+
     function getAllHistoryEvents() {
       let allEvents = [];
       if (!students || !historyData) return [];
@@ -4348,8 +4356,8 @@
         events.forEach(ev => { allEvents.push({ ...ev, childId, childName: students[childId]?.name || 'Hijo' }); });
       });
       allEvents.sort((a, b) => {
-        const timeA = a.ts?.toMillis ? a.ts.toMillis() : (a.serverTs?.toMillis() || 0);
-        const timeB = b.ts?.toMillis ? b.ts.toMillis() : (b.serverTs?.toMillis() || 0);
+        const timeA = getMillis(a.ts) || getMillis(a.serverTs);
+        const timeB = getMillis(b.ts) || getMillis(b.serverTs);
         return timeB - timeA;
       });
       return allEvents;
@@ -4363,7 +4371,7 @@
       const lastSeen = parseInt(localStorage.getItem('last_seen_notifs') || '0', 10);
 
       const unreadCount = events.filter(e => {
-        const t = e.ts?.toMillis ? e.ts.toMillis() : (e.serverTs?.toMillis() || 0);
+        const t = getMillis(e.ts) || getMillis(e.serverTs);
         return t > lastSeen;
       }).length;
 
@@ -4383,7 +4391,7 @@
       const recentEvents = events.slice(0, 20);
 
       list.innerHTML = recentEvents.map(ev => {
-        const timeVal = ev.ts?.toMillis ? ev.ts.toMillis() : (ev.serverTs?.toMillis() || 0);
+        const timeVal = getMillis(ev.ts) || getMillis(ev.serverTs);
         const isUnread = timeVal > lastSeen;
         const time = timeVal ? new Date(timeVal).toLocaleTimeString('es-HN', { hour: '2-digit', minute: '2-digit' }) : '';
         const color = colors[ev.type] || colors.info;
@@ -7271,8 +7279,7 @@
     window.openEditPhone = openEditPhone;
     window.setFilter = setFilter;
     window.openLocationPicker = openLocationPicker;
-    window.useCurrentStudentLoc = useCurrentStudentLoc;
-    window.useCurrentStudentLocPicker = useCurrentStudentLocPicker;
+    window.useMyGPSLocation = useMyGPSLocation;
     window.searchInPicker = searchInPicker;
     window.confirmPickerLocation = confirmPickerLocation;
     window.recenterPicker = recenterPicker;
