@@ -4,10 +4,9 @@
  */
 
 const GEMINI_API_KEYS = [
-    "AIzaSyA8E7RHyHsKcaJyw5njcBFtCX5dn7A_zIk", // Key 1
-    "AIzaSyB74PgDbik7wVEkkZy5HR_D5EWIXwjZ7ko", // Key 2
-    "AIzaSyBYn93oGfTwA4f9pu3yD5F7vhL1sJl6jWM", // Key 3
-    "AIzaSyDMlB_JIfi2coXFSchPGkbmjZl9VEgFMbI"  // Key 4
+    "AIzaSyDrBf97fISf8FfNC9HL03WRrxv00begO9M", // Key 1
+    "AIzaSyDHfax49kOT8EeUznoZc_Ub6X1qbA1q3ck", // Key 2
+    "AIzaSyAlLFDkgvGobDZm_QxEGu7JyZRmqGEQZ8o"  // Key 3
 ];
 
 let currentKeyIndex = 0;
