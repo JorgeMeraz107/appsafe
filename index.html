@@ -6682,9 +6682,14 @@
 
       const settingsAvatarEl = document.getElementById('settings-user-avatar');
       const settingsNameEl = document.getElementById('settings-user-name');
+      const settingsRoleEl = document.getElementById('settings-user-role');
       if (settingsNameEl) settingsNameEl.textContent = parentName;
       if (settingsAvatarEl) {
         settingsAvatarEl.innerHTML = avatarHTML;
+      }
+      if (settingsRoleEl) {
+        const count = Object.keys(students || {}).length;
+        settingsRoleEl.textContent = `Cuenta de Padre · ${count} ${count === 1 ? 'hijo vinculado' : 'hijos vinculados'}`;
       }
     }
 
