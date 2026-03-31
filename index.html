@@ -4339,12 +4339,13 @@
     const AudioController = {
       ctx: null,
       init() {
+        if (this.ctx && this.ctx.state === 'running') return;
         if (!this.ctx) {
           this.ctx = new (window.AudioContext || window.webkitAudioContext)();
         }
         if (this.ctx.state === 'suspended') {
           this.ctx.resume().then(() => {
-            // Unlocked! Let's also ensure Voice is ready
+            console.log("🔊 AudioContext desbloqueado con éxito.");
             if (window.speechSynthesis) window.speechSynthesis.getVoices();
           });
         }
@@ -4386,8 +4387,20 @@
     // En APKs, intentamos en cada toque hasta que esté activo
     const unlockAudio = () => {
       AudioController.init();
+      // Unlock SpeechSynthesis as well with a silent utterance
+      if (window.speechSynthesis) {
+        const dummy = new SpeechSynthesisUtterance("");
+        window.speechSynthesis.speak(dummy);
+        console.log("🗣️ SpeechSynthesis preparado para hablar.");
+      }
+
       if (AudioController.ctx && AudioController.ctx.state === 'running') {
         document.removeEventListener('pointerdown', unlockAudio);
+        // Process any queued greetings once unlocked
+        if (VoiceAssistant.pendingMessage) {
+          setTimeout(() => VoiceAssistant.speak(VoiceAssistant.pendingMessage), 200);
+          VoiceAssistant.pendingMessage = null;
+        }
       }
     };
     document.addEventListener('pointerdown', unlockAudio);
@@ -4396,22 +4409,31 @@
     const VoiceAssistant = {
       enabled: localStorage.getItem('ss_voice_assistant') === 'true',
       voice: null,
+      pendingMessage: null,
 
       init() {
         if (!window.speechSynthesis) return;
         const loadVoices = () => {
           const voices = window.speechSynthesis.getVoices();
-          // Prioridad: Google Español, Microsoft Sabina/Helena, o cualquier Español
-          this.voice = voices.find(v => v.name.includes('Google') && (v.lang.startsWith('es'))) ||
+          if (voices.length === 0) return;
+
+          // Prioridad: Español Latino (México, US, Colombia) > Google Español > Cualquier Español
+          this.voice = voices.find(v => v.lang.includes('es-MX')) ||
+            voices.find(v => v.lang.includes('es-US')) ||
+            voices.find(v => v.lang.includes('es-CO')) ||
+            voices.find(v => v.name.includes('Google') && v.lang.startsWith('es')) ||
             voices.find(v => v.lang.startsWith('es')) ||
             voices[0];
+
+          if (this.voice) {
+            console.log(`🎤 TTS: Voz seleccionada en español (${this.voice.lang}): ${this.voice.name}`);
+          }
         };
         loadVoices();
         if (speechSynthesis.onvoiceschanged !== undefined) {
           speechSynthesis.onvoiceschanged = loadVoices;
         }
 
-        // Sincronizar UI del toggle
         setTimeout(() => {
           const t = document.getElementById('voice-assistant-toggle');
           if (t) t.classList.toggle('on', this.enabled);
@@ -4421,16 +4443,27 @@
       speak(text, priority = 'normal') {
         if (!this.enabled || !window.speechSynthesis) return;
 
+        // Si no hemos tenido interacción del usuario, guardamos el mensaje para después
+        if (!AudioController.ctx || AudioController.ctx.state !== 'running') {
+          console.log("⏳ Voz en espera: esperando primer toque del usuario...");
+          this.pendingMessage = text;
+          return;
+        }
+
         if (priority === 'high') {
           window.speechSynthesis.cancel();
         }
 
         const utterance = new SpeechSynthesisUtterance(text);
-        if (this.voice) utterance.voice = this.voice;
-        utterance.lang = 'es-ES';
+        if (this.voice) {
+          utterance.voice = this.voice;
+          utterance.lang = this.voice.lang;
+        } else {
+          utterance.lang = 'es-MX';
+        }
+
         utterance.rate = 1.0;
         utterance.pitch = 1.0;
-
         window.speechSynthesis.speak(utterance);
       }
     };
