@@ -21,7 +21,7 @@ async function askGemini(prompt, retryCount = 0) {
     }
 
     const currentKey = GEMINI_API_KEYS[currentKeyIndex];
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${currentKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${currentKey}`;
 
     try {
         const response = await fetch(url, {
@@ -40,9 +40,12 @@ async function askGemini(prompt, retryCount = 0) {
             const err = await response.json();
             const errMsg = err.error?.message || "";
             
+            // Log detallado para que el usuario sepa por qué falla realmente
+            console.error(`❌ Error en IA (Llave ${currentKeyIndex}): Status ${response.status}`, err);
+            
             // Si la cuota se excedió (429) o la llave es inválida, rotar y reintentar
             if (response.status === 429 || errMsg.includes("API_KEY_INVALID") || response.status === 400) {
-                console.warn(`Llave ${currentKeyIndex} falló. Rotando...`);
+                console.warn(`🔄 Rotando llave ${currentKeyIndex}...`);
                 currentKeyIndex = (currentKeyIndex + 1) % GEMINI_API_KEYS.length;
                 return await askGemini(prompt, retryCount + 1);
             }
