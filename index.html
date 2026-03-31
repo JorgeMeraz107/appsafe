@@ -329,6 +329,10 @@
     .swipe-content {
       position: relative;
       z-index: 2;
+      background: var(--card);
+      border: 1px solid var(--navy-light);
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow);
       transition: transform 0.2s ease-out;
       margin-bottom: 0 !important;
     }
@@ -3041,7 +3045,15 @@
 
         <!-- Si no hay hijos -->
         <div id="home-no-children" style="display:none;text-align:center;padding:32px 20px;">
-          <div style="font-size:40px;margin-bottom:12px;">👨‍👩‍👧</div>
+          <div style="margin-bottom:16px;opacity:0.3;display:flex;justify-content:center;">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+          </div>
           <div style="font-weight:700;color:var(--text-1);margin-bottom:8px;">Aún no tienes hijos vinculados</div>
           <div style="font-size:13px;color:var(--text-3);margin-bottom:20px;">Agrega a tus hijos para comenzar a
             monitorearlos.</div>
@@ -3367,8 +3379,8 @@
             <div class="input-group" style="margin-bottom:0;">
               <label class="input-label">Género (Avatar Predeterminado)</label>
               <select class="input-field" id="es-gender" style="background:var(--bg-app);">
-                <option value="boy">Niño 👦</option>
-                <option value="girl">Niña 👧</option>
+                <option value="boy">Niño</option>
+                <option value="girl">Niña</option>
                 <option value="other">Otro / Prefiero no decir</option>
               </select>
             </div>
@@ -3429,7 +3441,12 @@
             <button class="btn btn-ghost btn-full"
               style="height:44px;margin-top:12px;font-size:12px;border:1px dashed var(--border);"
               onclick="useMyGPSLocation()">
-              📍 Usar mi ubicación GPS actual
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round"
+                style="margin-right:6px;vertical-align:middle;margin-top:-2px;">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                <circle cx="12" cy="10" r="3" />
+              </svg> Usar mi ubicación GPS actual
             </button>
           </div>
         </div>
@@ -4179,7 +4196,12 @@
           <button class="btn btn-ghost"
             style="flex:1;background:var(--bg);box-shadow:var(--shadow-sm);font-size:11px;height:36px;"
             onclick="useCurrentStudentLocPicker()">
-            📍 Usar ubicación del alumno
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round"
+              style="margin-right:6px;vertical-align:middle;margin-top:-2px;">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg> Usar ubicación del alumno
           </button>
         </div>
       </div>
@@ -4930,7 +4952,11 @@
           fillEl.style.width = batt + '%';
           fillEl.style.background = batt > 30 ? 'var(--safe)' : batt > 15 ? 'var(--warn)' : 'var(--danger)';
         }
-        if (chargEl) chargEl.textContent = data.charging ? 'Cargando ⚡' : (batt >= 100 ? 'Cargado ✅' : 'Sin cargador');
+        if (chargEl) {
+          const checkIcon = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-left:4px;vertical-align:middle;"><polyline points="20 6 9 17 4 12"/></svg>';
+          const boltIcon = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:4px;vertical-align:middle;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>';
+          chargEl.innerHTML = data.charging ? `Cargando ${boltIcon}` : (batt >= 100 ? `Cargado ${checkIcon}` : 'Sin cargador');
+        }
       } else {
         if (battEl) battEl.textContent = '—';
         if (chargEl) chargEl.textContent = 'Sin datos';
@@ -5026,13 +5052,25 @@
         container.innerHTML = `<div style="text-align:center;padding:24px;color:var(--text-3);font-size:13px;">Sin actividad registrada aún.</div>`;
         return;
       }
-      const TYPE_ICON = { gps: '📍', motion: '🚶', sos: '🆘', safe: '✅', battery: '🔋', charging: '⚡', network: '📶', checkin: '📌', app: '📱', impact: '💥', info: 'ℹ️' };
+      const icons = {
+        sos: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+        impact: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
+        battery: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="6" width="18" height="12" rx="2" ry="2"/><line x1="23" y1="13" x2="23" y2="11"/></svg>',
+        checkin: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>',
+        safe: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>',
+        gps: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>',
+        motion: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1l-4 4 4 4h1"/><path d="M14 10h-1l-4 4 4 4h1"/><path d="M10 10h-1l-4 4 4 4h1"/></svg>',
+        charging: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
+        network: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>',
+        app: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>',
+        info: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>'
+      };
       container.innerHTML = events.map(ev => {
-        const icon = TYPE_ICON[ev.type] || 'ℹ️';
+        const icon = icons[ev.type] || icons.info;
         const time = (ev.ts || ev.serverTs) ? new Date(ev.ts || ev.serverTs.toDate()).toLocaleTimeString('es-HN', { hour: '2-digit', minute: '2-digit' }) : '';
         const color = ev.type === 'sos' ? 'var(--danger)' : ev.type === 'safe' ? 'var(--safe)' : ev.type === 'impact' ? 'var(--warn)' : 'var(--blue-acc)';
         const dotBg = ev.type === 'sos' ? 'var(--danger-bg)' : ev.type === 'safe' ? 'var(--safe-bg)' : ev.type === 'impact' ? 'var(--warn-bg)' : 'rgba(41,121,255,0.1)';
-        return `<div class="timeline-item"><div class="timeline-dot" style="background:${dotBg};"><svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="5" fill="${color}"/></svg></div><div class="timeline-content"><div class="timeline-title">${icon} ${ev.title || ev.label || ev.type}</div><div class="timeline-time">${time}${ev.placeName ? ' · ' + ev.placeName : ''}</div></div></div>`;
+        return `<div class="timeline-item"><div class="timeline-dot" style="background:${dotBg};"><svg width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="5" fill="${color}"/></svg></div><div class="timeline-content"><div class="timeline-title" style="display:flex;align-items:center;gap:6px;">${icon} ${ev.title || ev.label || ev.type}</div><div class="timeline-time">${time}${ev.placeName ? ' · ' + ev.placeName : ''}</div></div></div>`;
       }).join('');
     }
 
@@ -5176,7 +5214,10 @@
       const avatarEl = document.getElementById('map-student-avatar');
 
       if (nameEl) nameEl.textContent = student?.name || 'Alumno';
-      if (locEl) locEl.textContent = data?.placeName ? '📍 ' + data.placeName : '📍 Obteniendo ubicación...';
+      if (locEl) {
+        const pinIcon = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>';
+        locEl.innerHTML = data?.placeName ? `${pinIcon} ${data.placeName}` : `${pinIcon} Obteniendo ubicación...`;
+      }
       if (avatarEl && student?.name) avatarEl.textContent = student.name[0].toUpperCase();
     }
 
@@ -5513,7 +5554,11 @@
       if (ids.length === 0) {
         container.innerHTML = `
       <div style="text-align:center;padding:60px 20px;color:var(--text-3);">
-        <div style="font-size:52px;margin-bottom:16px;">👨‍👩‍👧</div>
+        <div style="margin-bottom:16px;opacity:0.3;display:flex;justify-content:center;">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
         <div style="font-size:16px;font-weight:700;color:var(--text-2);margin-bottom:8px;">Sin hijos agregados</div>
         <div style="font-size:13px;margin-bottom:24px;">Agrega a tu primer hijo para empezar a monitorearle</div>
         <button onclick="openEditStudent(null)" style="background:var(--blue-acc);border:none;border-radius:14px;padding:14px 28px;font-size:14px;font-weight:700;color:white;cursor:pointer;font-family:'DM Sans',sans-serif;">+ Agregar primer hijo</button>
@@ -5526,9 +5571,13 @@
         const isSafe = s.status !== 'danger';
         const ring = isSafe ? 'avatar-ring-safe' : 'avatar-ring-danger';
         const pillClass = isSafe ? 'status-pill status-safe' : 'status-pill status-danger';
-        const pillText = isSafe ? '● Seguro/a' : '🆘 SOS Activo';
+        const pillText = isSafe ? 'Seguro/a' : 'SOS Activo';
+        const pillIcon = isSafe ?
+          '<div class="status-dot"></div>' :
+          '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
         const sched = getStudentSchedule(parseInt(id));
-        const schedText = sched?.enabled ? `⏰ ${sched.start} – ${sched.end}` : '⏰ Monitoreo 24/7';
+        const clockIcon = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:3px;margin-top:-2px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
+        const schedText = sched?.enabled ? `${clockIcon} ${sched.start} – ${sched.end}` : `${clockIcon} Monitoreo 24/7`;
         const metaText = [escapeHTML(s.grade), escapeHTML(s.school)].filter(Boolean).join(' · ') || 'Sin información';
 
         return `
@@ -5542,7 +5591,7 @@
           <div class="student-name">${escapeHTML(s.name)}</div>
           <div class="student-meta">${metaText}</div>
           <div class="student-status-row">
-            <div class="${pillClass}"><div class="status-dot"></div>${pillText}</div>
+            <div class="${pillClass}">${pillIcon}${pillText}</div>
             <div style="font-size:11px;color:var(--text-3);">${schedText}</div>
           </div>
         </div>
@@ -5652,10 +5701,18 @@
         const isSafe = s.status !== 'danger';
         const ring = isSafe ? 'avatar-ring-safe' : 'avatar-ring-danger';
         const pillClass = isSafe ? 'status-pill status-safe' : 'status-pill status-danger';
-        const pillText = isSafe ? '● Seguro/a' : '🆘 SOS Activo';
+        const pillText = isSafe ? 'Seguro/a' : 'SOS Activo';
+        const pillIcon = isSafe ?
+          '<div class="status-dot"></div>' :
+          '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
         const arrowColor = isSafe ? 'currentColor' : 'var(--danger)';
         const metaText = [escapeHTML(s.grade), escapeHTML(s.school)].filter(Boolean).join(' · ') || 'Sin información';
         const initial = s.name ? s.name[0].toUpperCase() : '?';
+
+        const linkIcon = s.linked ?
+          '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-right:3px;vertical-align:middle;margin-top:-2px;"><polyline points="20 6 9 17 4 12"/></svg>' :
+          '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:3px;vertical-align:middle;margin-top:-2px;"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
+        const linkLabel = s.linked ? 'Vinculado' : 'Pendiente vincular';
 
         return `
       <div class="card card-pressable student-card anim-item"
@@ -5668,8 +5725,8 @@
           <div class="student-name">${escapeHTML(s.name || 'Sin nombre')}</div>
           <div class="student-meta">${metaText}</div>
           <div class="student-status-row">
-            <div class="${pillClass}"><div class="status-dot"></div>${pillText}</div>
-            <div style="font-size:11px;color:var(--text-3);">${s.linked ? '✅ Vinculado' : '🔗 Pendiente vincular'}</div>
+            <div class="${pillClass}">${pillIcon}${pillText}</div>
+            <div style="font-size:11px;color:var(--text-3); display:flex; align-items:center;">${linkIcon}${linkLabel}</div>
           </div>
         </div>
         <svg class="student-card-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -5701,11 +5758,21 @@
           activityList.innerHTML = recent.map(ev => {
             const timeVal = getMillis(ev.ts) || getMillis(ev.serverTs);
             const time = timeVal ? new Date(timeVal).toLocaleTimeString('es-HN', { hour: '2-digit', minute: '2-digit' }) : '';
-            const icons = { sos: '🆘', impact: '💥', battery: '🔋', checkin: '📌', safe: '✅' };
-            const icon = icons[ev.type] || '🔔';
+            const textColors = { sos: 'var(--danger)', impact: 'var(--warn)', battery: 'var(--warn)', checkin: 'var(--safe)', safe: 'var(--safe)' };
+            const icons = {
+              sos: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+              impact: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
+              battery: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="6" width="18" height="12" rx="2" ry="2"/><line x1="23" y1="13" x2="23" y2="11"/></svg>',
+              checkin: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>',
+              safe: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>'
+            };
+            const defaultIcon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>';
+
+            const textColor = textColors[ev.type] || 'var(--blue-acc)';
+            const icon = icons[ev.type] || defaultIcon;
             return `
-               <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);" onclick="navigateTo('student',{id:'${ev.childId}'})">
-                 <div style="font-size:18px;">${icon}</div>
+               <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer;" onclick="navigateTo('student',{id:'${ev.childId}'})">
+                 <div style="width:32px;height:32px;background:var(--bg-item);color:${textColor};display:flex;align-items:center;justify-content:center;border-radius:10px;flex-shrink:0;">${icon}</div>
                  <div style="flex:1;">
                    <div style="font-size:13px;font-weight:600;color:var(--text-1);">${ev.title || ev.type.toUpperCase()}</div>
                    <div style="font-size:11px;color:var(--text-3);">${ev.childName} • ${time}</div>
@@ -5755,7 +5822,10 @@
       const statEl = document.getElementById('student-hero-status');
       if (statEl) {
         statEl.className = `status-pill ${isSafe ? 'status-safe' : 'status-danger'}`;
-        statEl.innerHTML = `<div class="status-dot"></div> ${isSafe ? 'Seguro/a' : 'SOS Activo'}`;
+        const sIcon = isSafe ?
+          '<div class="status-dot"></div>' :
+          '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+        statEl.innerHTML = `${sIcon} ${isSafe ? 'Seguro/a' : 'SOS Activo'}`;
       }
 
       // Carga mapa mini con la última posición conocida del alumno
@@ -5836,7 +5906,11 @@
           linkSection.innerHTML = `
             <div class="card" style="padding:20px;border-left:4px solid var(--warn);">
               <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
-                <div style="font-size:22px;">🔗</div>
+                <div style="width:40px;height:40px;background:var(--warn-bg);color:var(--warn);display:flex;align-items:center;justify-content:center;border-radius:12px;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                  </svg>
+                </div>
                 <div>
                   <div style="font-weight:700;font-size:14px;color:var(--text-1);">Código de vinculación</div>
                   <div style="font-size:12px;color:var(--text-3);">Dáselo a ${escapeHTML(s.name)} para que lo ingrese en su app</div>
@@ -6233,6 +6307,15 @@
           if (addrText) {
             addrText.textContent = `${pickerLat.toFixed(6)}, ${pickerLng.toFixed(6)}`;
             addrText.style.color = 'var(--safe)';
+          }
+          if (d <= 150) {
+            statusEl.innerHTML = `
+              <div style="display:flex;align-items:center;gap:4px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                </svg> En zona
+              </div>`;
+            statusEl.className = 'safe-zone-status sz-at';
           }
           showToast(`Ubicación de ${type === 'home' ? 'Hogar' : 'Escuela'} actualizada.`, 'safe');
         },
@@ -6773,11 +6856,11 @@
         <div style="color:rgba(255,255,255,0.5);font-size:13px;margin-top:4px;">Renueva el 15 de Abril 2026</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;">
-        <div style="display:flex;gap:10px;align-items:center;font-size:14px;color:var(--text-1);">✅ Hasta 5 hijos monitoreados</div>
-        <div style="display:flex;gap:10px;align-items:center;font-size:14px;color:var(--text-1);">✅ Notificaciones ilimitadas</div>
-        <div style="display:flex;gap:10px;align-items:center;font-size:14px;color:var(--text-1);">✅ Historial de 30 días</div>
-        <div style="display:flex;gap:10px;align-items:center;font-size:14px;color:var(--text-1);">✅ Soporte prioritario</div>
-        <div style="display:flex;gap:10px;align-items:center;font-size:14px;color:var(--text-1);">✅ Compatible con pulsera</div>
+        <div style="display:flex;gap:10px;align-items:center;font-size:14px;color:var(--text-1);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--safe)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Hasta 5 hijos monitoreados</div>
+        <div style="display:flex;gap:10px;align-items:center;font-size:14px;color:var(--text-1);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--safe)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Notificaciones ilimitadas</div>
+        <div style="display:flex;gap:10px;align-items:center;font-size:14px;color:var(--text-1);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--safe)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Historial de 30 días</div>
+        <div style="display:flex;gap:10px;align-items:center;font-size:14px;color:var(--text-1);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--safe)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Soporte prioritario</div>
+        <div style="display:flex;gap:10px;align-items:center;font-size:14px;color:var(--text-1);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--safe)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Compatible con pulsera</div>
       </div>
       <button class="btn btn-ghost btn-full" style="height:48px;" onclick="closeModal()">Cerrar</button>`
       }
@@ -7118,12 +7201,12 @@
         renotify: type === 'sos',          // SOS siempre vibra de nuevo
         requireInteraction: type === 'sos',          // SOS no desaparece solo
         vibrate: type === 'sos' ? [300, 100, 300, 100, 300] : [150],
-        data: { type },
+        data: { type, title: type === 'sos' ? `SOS ACTIVADO: ${students[currentStudentId]?.name || 'Tu hijo'}` : title },
       };
 
       // Vía Service Worker — funciona en background
       if (swRegistration?.active) {
-        swRegistration.active.postMessage({ type: 'PUSH_NOTIFICATION', payload: { title, ...options } });
+        swRegistration.active.postMessage({ type: 'PUSH_NOTIFICATION', payload: { title: options.data.title, ...options } });
         return;
       }
 
@@ -7371,7 +7454,7 @@
                     }
 
                     if (liveInfo && liveInfo.impact && !prevLive.impact) {
-                      sendPushNotification({ type: 'impact', title: `💥 IMPACTO FUERTE DETECTADO`, body: `${students[childId]?.name || 'Tu hijo'} registró un golpe.` });
+                      sendPushNotification({ type: 'impact', title: `IMPACTO FUERTE DETECTADO`, body: `${students[childId]?.name || 'Tu hijo'} registró un golpe.` });
                     }
 
                     if (currentStudentId == childId && currentScreen === 'student') {
@@ -7414,7 +7497,7 @@
               renderNotifications();
 
               if (newCritical) {
-                showToast(`${newCritical.icon || '🆘'} ${newCritical.title}`, 'danger');
+                showToast(`${newCritical.title}`, 'danger');
                 if (window.AudioController) AudioController.playSOS();
               } else if (newGeneric) {
                 if (window.AudioController) AudioController.playNotification();
