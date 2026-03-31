@@ -298,6 +298,45 @@
       background: var(--bg);
     }
 
+    /* ═══════════════════════════════════════
+       SWIPE TO DISMISS
+    ═══════════════════════════════════════ */
+    .swipe-container {
+      position: relative;
+      margin-bottom: 10px;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), margin 0.3s;
+    }
+
+    .swipe-container.dismissed {
+      height: 0 !important;
+      opacity: 0 !important;
+      margin-bottom: 0 !important;
+    }
+
+    .swipe-background {
+      position: absolute;
+      inset: 0;
+      background: var(--danger);
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      padding-right: 20px;
+      color: white;
+    }
+
+    .swipe-content {
+      position: relative;
+      z-index: 2;
+      transition: transform 0.2s ease-out;
+      margin-bottom: 0 !important;
+    }
+
+    .swipe-content.swiping {
+      transition: none;
+    }
+
     .screen.active {
       opacity: 1;
       pointer-events: all;
@@ -4195,7 +4234,7 @@
       </button>
 
       <button class="nav-item" id="nav-alerts" data-tab="alerts" onclick="switchTab('alerts')">
-        <div class="nav-badge">2</div>
+        <div class="nav-badge" style="display:none;"></div>
         <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
           <path d="M11 2C7.13 2 4 5.13 4 9V16L2 18V19H20V18L18 16V9C18 5.13 14.87 2 11 2Z" fill="#94A3B8" />
           <path d="M11 22C12.1 22 13 21.1 13 20H9C9 21.1 9.9 22 11 22Z" fill="#94A3B8" />
@@ -4348,12 +4387,42 @@
       return 0;
     }
 
+    function getDismissedAlerts() {
+      return JSON.parse(localStorage.getItem('ss_dismissed_alerts_v1') || '[]');
+    }
+
+    function dismissAlert(id) {
+      const dismissed = getDismissedAlerts();
+      if (!dismissed.includes(id.toString())) {
+        dismissed.push(id.toString());
+        localStorage.setItem('ss_dismissed_alerts_v1', JSON.stringify(dismissed));
+      }
+      const el = document.querySelector(`.swipe-container[data-id="${id}"]`);
+      if (el) {
+        el.classList.add('dismissed');
+        setTimeout(() => {
+          renderNotifications();
+          renderAlertsScreen();
+        }, 300);
+      } else {
+        renderNotifications();
+        renderAlertsScreen();
+      }
+    }
+
     function getAllHistoryEvents() {
       let allEvents = [];
       if (!students || !historyData) return [];
+      const dismissed = getDismissedAlerts();
       Object.keys(students).forEach(childId => {
         const events = historyData[childId] || [];
-        events.forEach(ev => { allEvents.push({ ...ev, childId, childName: students[childId]?.name || 'Hijo' }); });
+        events.forEach(ev => {
+          const t = getMillis(ev.ts) || getMillis(ev.serverTs);
+          const evId = ev.id || t.toString();
+          if (!dismissed.includes(evId.toString())) {
+            allEvents.push({ ...ev, childId, childName: students[childId]?.name || 'Hijo', _stableId: evId });
+          }
+        });
       });
       allEvents.sort((a, b) => {
         const timeA = getMillis(a.ts) || getMillis(a.serverTs);
@@ -4361,6 +4430,62 @@
         return timeB - timeA;
       });
       return allEvents;
+    }
+
+
+    window.dismissAlert = dismissAlert;
+
+    function setupSwipeEvents(container) {
+      if (!container) return;
+      let startX = 0;
+      let currentX = 0;
+      let isDragging = false;
+      let activeSwipeEl = null;
+
+      container.querySelectorAll('.swipe-content').forEach(el => {
+        el.addEventListener('touchstart', e => {
+          if (e.touches.length > 1) return;
+          startX = e.touches[0].clientX;
+          isDragging = true;
+          activeSwipeEl = el;
+          el.classList.add('swiping');
+          el.style.transform = 'translateX(0px)';
+        }, { passive: true });
+
+        el.addEventListener('touchmove', e => {
+          if (!isDragging || activeSwipeEl !== el) return;
+          currentX = e.touches[0].clientX;
+          let diff = currentX - startX;
+          // Only allow swiping left
+          if (diff > 0) diff = 0;
+          if (diff < -80) diff = -80 + (diff + 80) * 0.2; // Resist pulling too far
+
+          Object.assign(el.style, {
+            transform: `translateX(${diff}px)`,
+          });
+        }, { passive: true });
+
+        el.addEventListener('touchend', e => {
+          if (!isDragging || activeSwipeEl !== el) return;
+          isDragging = false;
+          el.classList.remove('swiping');
+
+          let diff = currentX - startX;
+          if (diff < -50) {
+            // Dismiss triggered! Slide out completely
+            el.style.transform = `translateX(-100%)`;
+            const containerEl = el.closest('.swipe-container');
+            if (containerEl) {
+              const eventId = containerEl.getAttribute('data-id');
+              setTimeout(() => dismissAlert(eventId), 200);
+            }
+          } else {
+            // Rebound back
+            el.style.transform = `translateX(0px)`;
+          }
+          activeSwipeEl = null;
+        });
+      });
     }
 
     function renderNotifications() {
@@ -4397,17 +4522,27 @@
         const color = colors[ev.type] || colors.info;
         const icon = icons[ev.type] || '🔔';
 
+        const eventId = ev._stableId;
         return `
-    <div class="notif-item ${isUnread ? 'unread' : ''}" onclick="handleNotifTap('${ev.type}', '${ev.childId}')">
-      <div class="notif-icon" style="background:${color}; font-size:18px;">${icon}</div>
-      <div class="notif-content">
-        <div class="notif-title">${escapeHTML(ev.title || ev.type.toUpperCase())}</div>
-        <div class="notif-body">${escapeHTML(ev.childName)} · ${ev.placeName || ''}</div>
-        <div class="notif-time">${time}</div>
+    <div class="swipe-container" data-id="${eventId}">
+      <div class="swipe-background" onclick="dismissAlert('${eventId}')">
+         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+         </svg>
       </div>
-      ${isUnread ? `<div style="width:8px;height:8px;border-radius:50%;background:var(--danger);flex-shrink:0;margin-top:4px;"></div>` : ''}
+      <div class="notif-item swipe-content ${isUnread ? 'unread' : ''}" onclick="setTimeout(()=>handleNotifTap('${ev.type}', '${ev.childId}'), 50)">
+        <div class="notif-icon" style="background:${color}; font-size:18px;">${icon}</div>
+        <div class="notif-content">
+          <div class="notif-title">${escapeHTML(ev.title || ev.type.toUpperCase())}</div>
+          <div class="notif-body">${escapeHTML(ev.childName)} · ${ev.placeName || ''}</div>
+          <div class="notif-time">${time}</div>
+        </div>
+        ${isUnread ? `<div style="width:8px;height:8px;border-radius:50%;background:var(--danger);flex-shrink:0;margin-top:4px;"></div>` : ''}
+      </div>
     </div>
   `}).join('');
+      setupSwipeEvents(list);
     }
 
     function updateNotifBadges(count) {
@@ -4456,7 +4591,16 @@
     }
 
     function markAllAlertsRead() {
-      localStorage.setItem('last_seen_notifs', Date.now().toString());
+      const allEvents = getAllHistoryEvents();
+      const lastSeen = Date.now();
+      localStorage.setItem('last_seen_notifs', lastSeen.toString());
+
+      const dismissed = getDismissedAlerts();
+      allEvents.forEach(ev => {
+        // Opcional: podemos marcarlas como "leídas" y desaparecen del nav-badge
+        // No las borramos para que queden en el historial
+      });
+
       renderNotifications();
       renderAlertsScreen();
     }
@@ -4919,23 +5063,33 @@
       container.innerHTML = allEvents.map(ev => {
         const color = colors[ev.type] || colors.info;
         const icon = icons[ev.type] || '🔔';
-        const timeVal = ev.ts?.toMillis ? ev.ts.toMillis() : (ev.serverTs?.toMillis() || 0);
+        const timeVal = getMillis(ev.ts) || getMillis(ev.serverTs);
         const time = timeVal ? new Date(timeVal).toLocaleTimeString('es-HN', { hour: '2-digit', minute: '2-digit' }) : '';
         const date = timeVal ? new Date(timeVal).toLocaleDateString('es-HN', { day: 'numeric', month: 'short' }) : '';
 
+        const eventId = ev._stableId;
         return `
-          <div class="card alert-item card-pressable anim-item" style="margin-bottom:10px;" 
-               onclick="${ev.type === 'sos' ? `navigateTo('emergency',{id:'${ev.childId}'})` : `navigateTo('student',{id:'${ev.childId}'})`}">
-            <div class="alert-item-icon" style="background:${color};">
-              <span style="font-size:18px;">${icon}</span>
+          <div class="swipe-container" data-id="${eventId}">
+            <div class="swipe-background" onclick="dismissAlert('${eventId}')">
+               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+               </svg>
             </div>
-            <div class="alert-item-content">
-              <div class="alert-item-title">${escapeHTML(ev.title || ev.type.toUpperCase())}</div>
-              <div class="alert-item-meta">${escapeHTML(ev.childName)} · ${time} · ${date}</div>
+            <div class="card alert-item card-pressable anim-item swipe-content"
+                 onclick="setTimeout(()=>${ev.type === 'sos' ? `navigateTo('emergency',{id:'${ev.childId}'})` : `navigateTo('student',{id:'${ev.childId}'})`},50)">
+              <div class="alert-item-icon" style="background:${color};">
+                <span style="font-size:18px;">${icon}</span>
+              </div>
+              <div class="alert-item-content">
+                <div class="alert-item-title">${escapeHTML(ev.title || ev.type.toUpperCase())}</div>
+                <div class="alert-item-meta">${escapeHTML(ev.childName)} · ${time} · ${date}</div>
+              </div>
+              ${ev.type === 'sos' ? '<div class="alert-item-badge badge-active">Activo</div>' : ''}
             </div>
-            ${ev.type === 'sos' ? '<div class="alert-item-badge badge-active">Activo</div>' : ''}
           </div>`;
       }).join('');
+      setupSwipeEvents(container);
     }
 
     /* ═══════════════════════════════════════
