@@ -21,7 +21,7 @@ async function askGemini(prompt, retryCount = 0) {
     }
 
     const currentKey = GEMINI_API_KEYS[currentKeyIndex];
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${currentKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${currentKey}`;
 
     try {
         const response = await fetch(url, {

@@ -4343,12 +4343,14 @@
           this.ctx = new (window.AudioContext || window.webkitAudioContext)();
         }
         if (this.ctx.state === 'suspended') {
-          this.ctx.resume();
+          this.ctx.resume().then(() => {
+            // Unlocked! Let's also ensure Voice is ready
+            if (window.speechSynthesis) window.speechSynthesis.getVoices();
+          });
         }
       },
       playTone(freq, type, duration, vol = 0.1) {
-        if (!this.ctx) this.init();
-        if (this.ctx.state === 'suspended') this.ctx.resume();
+        if (!this.ctx || this.ctx.state === 'suspended') this.init();
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
         osc.type = type;
@@ -4381,7 +4383,14 @@
     };
 
     // Iniciar contexto de audio al primer toque en la pantalla (Bypass Autoplay Policy)
-    document.addEventListener('pointerdown', () => AudioController.init(), { once: true });
+    // En APKs, intentamos en cada toque hasta que esté activo
+    const unlockAudio = () => {
+      AudioController.init();
+      if (AudioController.ctx && AudioController.ctx.state === 'running') {
+        document.removeEventListener('pointerdown', unlockAudio);
+      }
+    };
+    document.addEventListener('pointerdown', unlockAudio);
 
     /* ── Voice Assistant Service ── */
     const VoiceAssistant = {
