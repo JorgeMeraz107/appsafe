@@ -4504,14 +4504,24 @@
 
       if (events.length === 0) {
         list.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--text-3);">
-          <div style="font-size:40px;margin-bottom:12px;">🔕</div>
+          <div style="margin-bottom:12px;opacity:0.5;display:flex;justify-content:center;">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13.73 21a2 2 0 0 1-3.46 0"/><path d="M18.63 13A17.89 17.89 0 0 1 18 8"/><path d="M6.26 6.26A5.86 5.86 0 0 0 6 8c0 7-3 9-3 9h14"/><path d="M18 8a6 6 0 0 0-9.33-5"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+          </div>
           <div style="font-size:14px;font-weight:500;">Sin notificaciones nuevas</div>
         </div>`;
         return;
       }
 
       const colors = { danger: 'var(--danger-bg)', warn: 'var(--warn-bg)', safe: 'var(--safe-bg)', info: 'rgba(41,121,255,0.1)', sos: 'var(--danger-bg)', impact: 'var(--warn-bg)', battery: 'var(--warn-bg)', checkin: 'var(--safe-bg)', offline: 'rgba(148,163,184,0.15)' };
-      const icons = { sos: '🆘', impact: '💥', battery: '🔋', checkin: '📌', safe: '✅' };
+      const textColors = { sos: 'var(--danger)', impact: 'var(--warn)', battery: 'var(--warn)', checkin: 'var(--safe)', safe: 'var(--safe)' };
+      const icons = { 
+        sos: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>', 
+        impact: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>', 
+        battery: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="6" width="18" height="12" rx="2" ry="2"/><line x1="23" y1="13" x2="23" y2="11"/></svg>', 
+        checkin: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>', 
+        safe: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>' 
+      };
+      const defaultIcon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>';
 
       const recentEvents = events.slice(0, 20);
 
@@ -4520,7 +4530,8 @@
         const isUnread = timeVal > lastSeen;
         const time = timeVal ? new Date(timeVal).toLocaleTimeString('es-HN', { hour: '2-digit', minute: '2-digit' }) : '';
         const color = colors[ev.type] || colors.info;
-        const icon = icons[ev.type] || '🔔';
+        const textColor = textColors[ev.type] || 'var(--blue-acc)';
+        const icon = icons[ev.type] || defaultIcon;
 
         const eventId = ev._stableId;
         return `
@@ -4532,7 +4543,7 @@
          </svg>
       </div>
       <div class="notif-item swipe-content ${isUnread ? 'unread' : ''}" onclick="setTimeout(()=>handleNotifTap('${ev.type}', '${ev.childId}'), 50)">
-        <div class="notif-icon" style="background:${color}; font-size:18px;">${icon}</div>
+        <div class="notif-icon" style="background:${color}; color:${textColor}; display:flex; align-items:center; justify-content:center;">${icon}</div>
         <div class="notif-content">
           <div class="notif-title">${escapeHTML(ev.title || ev.type.toUpperCase())}</div>
           <div class="notif-body">${escapeHTML(ev.childName)} · ${ev.placeName || ''}</div>
@@ -5047,7 +5058,8 @@
       const bannerSub = document.getElementById('alert-banner-sub');
       if (activeAlerts.length > 0) {
         const top = activeAlerts[0];
-        if (bannerTitle) bannerTitle.textContent = `${top.type === 'sos' ? '🆘 SOS' : '💥 IMPACTO'}: ${top.childName}`;
+        const titlePrefix = top.type === 'sos' ? 'SOS' : 'IMPACTO';
+        if (bannerTitle) bannerTitle.textContent = `${titlePrefix}: ${top.childName}`;
         if (bannerSub) bannerSub.textContent = `Evento detectado hace poco. Toca para ver detalle.`;
       } else {
         if (bannerTitle) bannerTitle.textContent = 'Sin alertas activas';
@@ -5055,41 +5067,46 @@
       }
 
       if (allEvents.length === 0) {
-        container.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--text-3);"><div style="font-size:40px;margin-bottom:12px;">🔔</div><div style="font-size:14px;font-weight:500;">No hay alertas recientes</div></div>`;
+        container.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--text-3);">
+          <div style="margin-bottom:12px;opacity:0.5;display:flex;justify-content:center;">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13.73 21a2 2 0 0 1-3.46 0"/><path d="M18.63 13A17.89 17.89 0 0 1 18 8"/><path d="M6.26 6.26A5.86 5.86 0 0 0 6 8c0 7-3 9-3 9h14"/><path d="M18 8a6 6 0 0 0-9.33-5"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+          </div>
+          <div style="font-size:14px;font-weight:500;">No hay alertas recientes</div>
+        </div>`;
         return;
       }
       const colors = { sos: 'var(--danger-bg)', impact: 'var(--warn-bg)', safe: 'var(--safe-bg)', info: 'rgba(41,121,255,0.1)' };
-      const icons = { sos: '🆘', impact: '💥', battery: '🔋', checkin: '📌', safe: '✅' };
+      const textColors = { sos: 'var(--danger)', impact: 'var(--warn)', battery: 'var(--warn)', checkin: 'var(--safe)', safe: 'var(--safe)' };
+      const icons = { 
+        sos: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>', 
+        impact: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>', 
+        battery: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="6" width="18" height="12" rx="2" ry="2"/><line x1="23" y1="13" x2="23" y2="11"/></svg>', 
+        checkin: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>', 
+        safe: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>' 
+      };
+      const defaultIcon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>';
       container.innerHTML = allEvents.map(ev => {
         const color = colors[ev.type] || colors.info;
-        const icon = icons[ev.type] || '🔔';
+        const textColor = textColors[ev.type] || 'var(--blue-acc)';
+        const icon = icons[ev.type] || defaultIcon;
         const timeVal = getMillis(ev.ts) || getMillis(ev.serverTs);
         const time = timeVal ? new Date(timeVal).toLocaleTimeString('es-HN', { hour: '2-digit', minute: '2-digit' }) : '';
         const date = timeVal ? new Date(timeVal).toLocaleDateString('es-HN', { day: 'numeric', month: 'short' }) : '';
 
         const eventId = ev._stableId;
         return `
-          <div class="swipe-container" data-id="${eventId}">
-            <div class="swipe-background" onclick="dismissAlert('${eventId}')">
-               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="3 6 5 6 21 6"></polyline>
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-               </svg>
+          <div class="card alert-item card-pressable anim-item" style="margin-bottom:10px;" 
+               onclick="${ev.type === 'sos' ? `navigateTo('emergency',{id:'${ev.childId}'})` : `navigateTo('student',{id:'${ev.childId}'})`}">
+            <div class="alert-item-icon" style="background:${color}; color:${textColor}; display:flex; align-items:center; justify-content:center;">
+              ${icon}
             </div>
-            <div class="card alert-item card-pressable anim-item swipe-content"
-                 onclick="setTimeout(()=>${ev.type === 'sos' ? `navigateTo('emergency',{id:'${ev.childId}'})` : `navigateTo('student',{id:'${ev.childId}'})`},50)">
-              <div class="alert-item-icon" style="background:${color};">
-                <span style="font-size:18px;">${icon}</span>
-              </div>
-              <div class="alert-item-content">
-                <div class="alert-item-title">${escapeHTML(ev.title || ev.type.toUpperCase())}</div>
-                <div class="alert-item-meta">${escapeHTML(ev.childName)} · ${time} · ${date}</div>
-              </div>
-              ${ev.type === 'sos' ? '<div class="alert-item-badge badge-active">Activo</div>' : ''}
+            <div class="alert-item-content">
+              <div class="alert-item-title">${escapeHTML(ev.title || ev.type.toUpperCase())}</div>
+              <div class="alert-item-meta">${escapeHTML(ev.childName)} · ${time} · ${date}</div>
             </div>
+            ${ev.type === 'sos' ? '<div class="alert-item-badge badge-active">Activo</div>' : ''}
           </div>`;
       }).join('');
-      setupSwipeEvents(container);
     }
 
     /* ═══════════════════════════════════════
