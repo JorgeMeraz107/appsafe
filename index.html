@@ -3981,18 +3981,18 @@
         <div class="settings-section">
           <div class="settings-section-title">Apariencia</div>
           <div class="card">
-            <div class="settings-item">
+            <div class="settings-item" id="dark-mode-item">
               <div class="settings-item-icon" id="dark-mode-icon" style="background:rgba(10,22,40,0.07);">
                 <svg id="dark-icon-moon" width="18" height="18" viewBox="0 0 18 18" fill="none">
                   <path
-                    d="M15.5 9.5C14.8 12.8 11.8 15.3 8.2 15.3C4.2 15.3 1 12.1 1 8.1C1 4.5 3.5 1.5 6.8 0.8C5.4 2.5 4.6 4.7 4.6 7.1C4.6 11.3 8 14.7 12.2 14.7C13.4 14.7 14.5 14.4 15.5 13.9V9.5Z"
-                    fill="var(--text-2)" />
+                    d="M15.3 9.45C14.58 12.78 11.61 15.3 8.1 15.3C4.14 15.3 0.9 12.06 0.9 8.1C0.9 4.59 3.42 1.62 6.75 0.9C5.31 2.7 4.5 5.04 4.5 7.65C4.5 11.88 7.92 15.3 12.15 15.3C13.32 15.3 14.4 15.03 15.3 14.58V9.45Z"
+                    fill="var(--text-1)" />
                 </svg>
                 <svg id="dark-icon-sun" width="18" height="18" viewBox="0 0 18 18" fill="none" style="display:none;">
-                  <circle cx="9" cy="9" r="3.5" fill="var(--warn)" />
+                  <circle cx="9" cy="9" r="3.6" fill="#F5A623" />
                   <path
-                    d="M9 1.5V3M9 15V16.5M1.5 9H3M15 9H16.5M3.9 3.9L4.97 4.97M13.03 13.03L14.1 14.1M3.9 14.1L4.97 13.03M13.03 4.97L14.1 3.9"
-                    stroke="var(--warn)" stroke-width="1.4" stroke-linecap="round" />
+                    d="M9 1.8V3.6M9 14.4V16.2M1.8 9H3.6M14.4 9H16.2M4.437 4.437L5.7 5.7M12.3 12.3L13.563 13.563M4.437 13.563L5.7 12.3M12.3 5.7L13.563 4.437"
+                    stroke="#F5A623" stroke-width="1.35" stroke-linecap="round" />
                 </svg>
               </div>
               <div class="settings-item-text">
@@ -4000,6 +4000,26 @@
                 <div class="settings-item-sub" id="dark-mode-sub">Tema claro activo</div>
               </div>
               <div class="toggle" id="dark-mode-toggle" onclick="toggleDarkMode()">
+                <div class="toggle-thumb"></div>
+              </div>
+            </div>
+
+            <!-- Asistente de Voz -->
+            <div class="settings-item">
+              <div class="settings-item-icon" style="background:rgba(45,212,191,0.12);">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2DD4BF" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path>
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                  <line x1="12" y1="19" x2="12" y2="22"></line>
+                  <line x1="8" y1="22" x2="16" y2="22"></line>
+                </svg>
+              </div>
+              <div class="settings-item-text">
+                <div class="settings-item-label">Asistente de Voz</div>
+                <div class="settings-item-sub">Alertas críticas parlantes</div>
+              </div>
+              <div class="toggle" id="voice-assistant-toggle" onclick="toggleVoiceAssistant()">
                 <div class="toggle-thumb"></div>
               </div>
             </div>
@@ -4362,6 +4382,63 @@
 
     // Iniciar contexto de audio al primer toque en la pantalla (Bypass Autoplay Policy)
     document.addEventListener('pointerdown', () => AudioController.init(), { once: true });
+
+    /* ── Voice Assistant Service ── */
+    const VoiceAssistant = {
+      enabled: localStorage.getItem('ss_voice_assistant') === 'true',
+      voice: null,
+
+      init() {
+        if (!window.speechSynthesis) return;
+        const loadVoices = () => {
+          const voices = window.speechSynthesis.getVoices();
+          // Prioridad: Google Español, Microsoft Sabina/Helena, o cualquier Español
+          this.voice = voices.find(v => v.name.includes('Google') && (v.lang.startsWith('es'))) ||
+            voices.find(v => v.lang.startsWith('es')) ||
+            voices[0];
+        };
+        loadVoices();
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+          speechSynthesis.onvoiceschanged = loadVoices;
+        }
+
+        // Sincronizar UI del toggle
+        setTimeout(() => {
+          const t = document.getElementById('voice-assistant-toggle');
+          if (t) t.classList.toggle('on', this.enabled);
+        }, 100);
+      },
+
+      speak(text, priority = 'normal') {
+        if (!this.enabled || !window.speechSynthesis) return;
+
+        if (priority === 'high') {
+          window.speechSynthesis.cancel();
+        }
+
+        const utterance = new SpeechSynthesisUtterance(text);
+        if (this.voice) utterance.voice = this.voice;
+        utterance.lang = 'es-ES';
+        utterance.rate = 1.0;
+        utterance.pitch = 1.0;
+
+        window.speechSynthesis.speak(utterance);
+      }
+    };
+
+    function toggleVoiceAssistant() {
+      VoiceAssistant.enabled = !VoiceAssistant.enabled;
+      localStorage.setItem('ss_voice_assistant', VoiceAssistant.enabled);
+
+      const toggle = document.getElementById('voice-assistant-toggle');
+      if (toggle) toggle.classList.toggle('on', VoiceAssistant.enabled);
+
+      if (VoiceAssistant.enabled) {
+        VoiceAssistant.speak("Asistente de voz activado. Te avisaré de cualquier emergencia.");
+      } else {
+        window.speechSynthesis.cancel();
+      }
+    }
 
     let students = JSON.parse(localStorage.getItem('ss_students_v1') || '{}');
     let currentParentProfile = JSON.parse(localStorage.getItem('ss_parent_profile') || '{}');
@@ -5874,7 +5951,7 @@
           linkSection.innerHTML = `
             <div class="card" style="padding:20px;display:flex;align-items:center;gap:16px;background:var(--safe-bg);border:1px solid rgba(15,191,122,0.2);position:relative;overflow:hidden;">
               <div style="width:48px;height:48px;background:var(--safe);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 12px rgba(15,191,122,0.3);">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
               </div>
@@ -6307,15 +6384,6 @@
           if (addrText) {
             addrText.textContent = `${pickerLat.toFixed(6)}, ${pickerLng.toFixed(6)}`;
             addrText.style.color = 'var(--safe)';
-          }
-          if (d <= 150) {
-            statusEl.innerHTML = `
-              <div style="display:flex;align-items:center;gap:4px;">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
-                </svg> En zona
-              </div>`;
-            statusEl.className = 'safe-zone-status sz-at';
           }
           showToast(`Ubicación de ${type === 'home' ? 'Hogar' : 'Escuela'} actualizada.`, 'safe');
         },
@@ -7315,43 +7383,6 @@
     window.TutorialController = TutorialController;
 
     /* ═══════════════════════════════════════
-       FIREBASE CONNECTION
-    ═══════════════════════════════════════ */
-
-
-    /*
-      ════════════════════════════════════════════════
-      CÓMO CONECTAR CON FIREBASE (cuando esté listo)
-      ════════════════════════════════════════════════
-    
-      // En el listener de Firestore del alumno:
-      db.collection('students').doc(studentId).onSnapshot(doc => {
-        const data = doc.data();
-    
-        // SOS activado
-        if (data.sos && !lastSosState) {
-          sendPushNotification({
-            type:  'sos',
-            title: `SOS — ${data.name}`,
-            body:  'Presionó el botón de emergencia.',
-          });
-        }
-        lastSosState = data.sos;
-    
-        // Batería baja
-        if (data.battery <= 0.15 && !battAlerted) {
-          battAlerted = true;
-          sendPushNotification({
-            type:  'battery',
-            title: 'Batería baja',
-            body:  `${data.name} tiene ${Math.round(data.battery*100)}% de batería.`,
-          });
-        }
-      });
-      ════════════════════════════════════════════════
-    */
-
-    /* ═══════════════════════════════════════
        INIT
     ═══════════════════════════════════════ */
     document.addEventListener('DOMContentLoaded', () => {
@@ -7362,14 +7393,30 @@
       // Registra SW al cargar
       registerServiceWorker();
 
+      // Init Voice
+      VoiceAssistant.init();
+
+      // Welcome Greeting (Debounced)
+      setTimeout(() => {
+        if (VoiceAssistant.enabled && students) {
+          const ids = Object.keys(students);
+          if (ids.length > 0) {
+            const alerts = ids.filter(id => students[id].status === 'danger').length;
+            if (alerts > 0) {
+              VoiceAssistant.speak(`Atención. Tienes ${alerts} alertas activas. Por favor revisa el panel.`);
+            } else {
+              VoiceAssistant.speak(`Hola. Tus hijos están seguros.`);
+            }
+          }
+        }
+      }, 1500);
+
       // Carga inicial desde caché (offline)
       if (Object.keys(currentParentProfile).length > 0) renderParentProfile();
       if (Object.keys(students).length > 0) renderChildrenList();
       renderNotifications();
 
       // ── Pre-render del banner de estado desde caché ────────────────
-      // Evita el flash incorrecto: lee localStorage ANTES de que Firebase
-      // responda y actualiza el banner al estado correcto de inmediato.
       (function preRenderStatusBanner() {
         try {
           const cached = localStorage.getItem('ss_students_v1');
@@ -7382,17 +7429,15 @@
           if (!card || !titleEl) return;
 
           if (total === 0) {
-            // Sin hijos: amarillo (ya está en el HTML, pero por si acaso)
             card.className = 'status-summary-card status-summary-warn';
             titleEl.textContent = 'Sin hijos vinculados aún';
             if (subEl) subEl.textContent = 'Agrega a tus hijos en la sección "Mis Hijos"';
           } else {
-            // Con hijos en caché: verde inmediato
             card.className = 'status-summary-card status-summary-safe';
             titleEl.textContent = 'Todos los hijos están seguros';
             if (subEl) subEl.textContent = 'Sincronizando datos en vivo...';
           }
-        } catch (e) { /* Silencioso si el caché está corrupto */ }
+        } catch (e) { }
       })();
 
       // IA: Cargar consejo del día
@@ -7405,14 +7450,11 @@
         if (user) {
           if (nav) nav.style.display = 'flex';
 
-          // Asegurar navegación inmediata a Home si estamos en el inicio
           if (currentScreen === 'login') {
             navigateTo('home');
           }
 
-          // Iniciar carga de datos de forma paralela y resiliente
           try {
-            // 1) Info del perfil del padre
             import('./firebase.js').then(async ({ getUserProfile }) => {
               try {
                 currentParentProfile = await getUserProfile(user.uid) || {};
@@ -7424,14 +7466,12 @@
             });
           } catch (e) { console.error("Error crítico en inicialización:", e); }
 
-          // 2) Suscribirse a los datos de los hijos
           try {
             if (unsubStudents) unsubStudents();
             unsubStudents = subscribeStudents(user.uid, (data) => {
               students = data;
               localStorage.setItem('ss_students_v1', JSON.stringify(students));
 
-              // Actualizaciones de UI seguras
               const settingsRoleEl = document.getElementById('settings-user-role');
               const count = Object.keys(students).length;
               if (settingsRoleEl) settingsRoleEl.textContent = `Cuenta de Padre · ${count} ${count === 1 ? 'hijo vinculado' : 'hijos vinculados'}`;
@@ -7448,6 +7488,7 @@
                         title: `🆘 SOS ACTIVADO: ${students[childId]?.name || 'Tu hijo'}`,
                         body: 'Toca aquí para ver ubicación y llamar'
                       });
+                      VoiceAssistant.speak(`¡Alerta! SOS activado por ${students[childId]?.name || 'tu hijo'}.`, 'high');
                       if (currentScreen !== 'emergency' || emergencyChildId !== childId) {
                         navigateTo('emergency', { id: childId });
                       }
@@ -7455,6 +7496,7 @@
 
                     if (liveInfo && liveInfo.impact && !prevLive.impact) {
                       sendPushNotification({ type: 'impact', title: `IMPACTO FUERTE DETECTADO`, body: `${students[childId]?.name || 'Tu hijo'} registró un golpe.` });
+                      VoiceAssistant.speak(`Aviso: Se ha detectado un impacto en el dispositivo de ${students[childId]?.name || 'tu hijo'}.`, 'high');
                     }
 
                     if (currentStudentId == childId && currentScreen === 'student') {
@@ -7486,7 +7528,6 @@
             });
           } catch (e) { console.warn("Error en suscripción de alumnos:", e); }
 
-          // 3) Suscribirse a NOTIFICACIONES (con manejo de error por índice faltante)
           try {
             if (unsubNotifs) unsubNotifs();
             unsubNotifs = subscribeNotifications(user.uid, (data) => {
@@ -7501,25 +7542,27 @@
                 if (window.AudioController) AudioController.playSOS();
               } else if (newGeneric) {
                 if (window.AudioController) AudioController.playNotification();
+
+                // Intelligent Voice for Geofences
+                if (newGeneric.type === 'checkin' || newGeneric.type === 'safe') {
+                  VoiceAssistant.speak(newGeneric.body || newGeneric.title);
+                }
               }
             }, (err) => {
               console.warn("Falta índice de Firestore para notificaciones. Funcionalidad reducida.", err);
             });
           } catch (e) { console.warn("Error notificaciones:", e); }
 
-          // Tutorial si es primera vez
           if (currentParentProfile.tutorialSeen !== true && currentScreen === 'home') {
             setTimeout(() => TutorialController.start(), 2000);
           }
           renderNotifications();
         } else {
-          // Si no hay usuario y no estamos en login, forzamos login
           if (nav) nav.style.display = 'none';
           if (currentScreen !== 'login') {
             navigateTo('login');
           }
 
-          // Limpiar suscripciones al salir
           if (unsubStudents) { unsubStudents(); unsubStudents = null; }
           if (unsubNotifs) { unsubNotifs(); unsubNotifs = null; }
           Object.values(unsubLive).forEach(un => un());
@@ -7537,7 +7580,7 @@
     });
 
     // ═══════════════════════════════════════
-    // GLOBAL EXPORTS (NECESARIO POR SER MODULE)
+    // GLOBAL EXPORTS
     // ═══════════════════════════════════════
     window.toggleAuthMode = toggleAuthMode;
     window.validateLogin = validateLogin;
@@ -7561,6 +7604,7 @@
     window.callStudent = callStudent;
     window.toggleSwitch = toggleSwitch;
     window.toggleDarkMode = toggleDarkMode;
+    window.toggleVoiceAssistant = toggleVoiceAssistant;
     window.addContactField = addContactField;
     window.removeContactField = removeContactField;
     window.toggleEsSchedule = toggleEsSchedule;
