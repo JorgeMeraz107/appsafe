@@ -4787,7 +4787,7 @@
       const screenEl = document.getElementById(`screen-${screen}`);
       if (!screenEl) return;
 
-      SS_SoundManager.play('nav_page');
+      SS_SoundManager.play('nav_tab');
 
       // Desactivar todas las pantallas previas para evitar superposiciones (Bug Fix)
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -4844,7 +4844,7 @@
     }
 
     function switchTab(tab) {
-      SS_SoundManager.play('nav_page');
+      SS_SoundManager.play('nav_tab');
       updateNavActive(tab);
       navigateTo(tab);
     }
@@ -4856,7 +4856,7 @@
     }
 
     function goBack() {
-      SS_SoundManager.play('nav_page');
+      SS_SoundManager.play('nav_tab');
       stopEmTimer();
       if (prevScreen) navigateTo(prevScreen);
       else navigateTo('home');
@@ -5548,7 +5548,7 @@
     let isRegisterMode = false;
 
     function toggleAuthMode() {
-      SS_SoundManager.play('nav_page');
+      SS_SoundManager.play('nav_tab');
       isRegisterMode = !isRegisterMode;
       const title = document.querySelector('.login-form-title');
       const sub = document.querySelector('.login-form-sub');
@@ -5639,7 +5639,7 @@
 
     /* ── Validación del Login con Google — Firebase Auth ─────────── */
     async function loginGoogle() {
-      SS_SoundManager.play('nav_page');
+      SS_SoundManager.play('nav_tab');
       const btn = document.getElementById('google-login-btn');
       if (btn) { btn.disabled = true; btn.innerHTML = 'Conectando con Google...'; }
 
@@ -6425,7 +6425,7 @@
     }
 
     function useMyGPSLocationPicker() {
-      SS_SoundManager.play('nav_page');
+      SS_SoundManager.play('nav_tab');
       if (!('geolocation' in navigator)) {
         showToast("GPS no disponible en este dispositivo.");
         return;
@@ -6444,7 +6444,7 @@
     }
 
     function useCurrentStudentLocPicker() {
-      SS_SoundManager.play('nav_page');
+      SS_SoundManager.play('nav_tab');
       const data = getStudentLive(editingStudentId || currentStudentId);
       if (data && data.lat != null) {
         pickerLat = data.lat;
@@ -6488,7 +6488,7 @@
     }
 
     async function searchInPicker() {
-      SS_SoundManager.play('nav_page');
+      SS_SoundManager.play('nav_tab');
       const q = document.getElementById('picker-search')?.value.trim();
       if (!q) return;
 
