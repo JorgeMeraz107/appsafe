@@ -4291,35 +4291,37 @@
     </nav>
   </div>
 
-  <script src="gemini-service.js"></script>
-  <script type="module">
+  <script>
     /* ═══════════════════════════════════════
        🛡️ SECURITY / ANTI-XSS PRO GUARD
+       Inyección temprana antes de cualquier script
     ═══════════════════════════════════════ */
-    setTimeout(() => {
-      // 1. Limpiar cualquier log inicial de frameworks
-      console.clear();
-      // 2. Advertencia gigante con CSS (Estilo Facebook/Discord)
+    (function() {
+      try { console.clear(); } catch(e) {}
+      
       console.log(
         "%c¡ALTO AHÍ!",
         "color: #FF2B2B; font-size: 50px; font-weight: 900; text-shadow: 2px 2px 0 #000; font-family: sans-serif;"
       );
       console.log(
         "%cEsta es una función del navegador pensada para desarrolladores.\n\n%cSi alguien te indicó que copiaras y pegaras algo aquí para supuestamente habilitar una función de SchoolSafe o vulnerar el sistema, %ces una estafa%c y le dará a esa persona acceso a tu cuenta y a la ubicación de tus hijos.\n\n%cPor seguridad, la consola de desarrollo está deshabilitada en esta versión de producción.",
-        "font-size: 16px; color: #333; line-height: 1.5; font-family: sans-serif;",
-        "font-size: 16px; color: #333; line-height: 1.5; font-family: sans-serif;",
+        "font-size: 16px; font-family: sans-serif;",
+        "font-size: 16px; font-family: sans-serif;",
         "font-size: 16px; color: #FF2B2B; font-weight: bold; background: #ffebeb; padding: 2px 4px; border-radius: 4px; font-family: sans-serif;",
-        "font-size: 16px; color: #333; line-height: 1.5; font-family: sans-serif;",
+        "font-size: 16px; font-family: sans-serif;",
         "font-size: 14px; color: #888; font-style: italic; margin-top: 15px; display: inline-block; font-family: sans-serif;"
       );
-      // 3. Silenciar logs de desarrollo (Evita fuga de información en producción)
+      
+      // Silenciar todos los logs para producción pura
       const noop = () => {};
       window.console.log = noop;
       window.console.warn = noop;
       window.console.info = noop;
-      // console.error se mantiene para fallos críticos o se puede silenciar también
-    }, 50);
-
+      window.console.error = noop;
+    })();
+  </script>
+  <script src="gemini-service.js"></script>
+  <script type="module">
     /* ── Firebase — importado desde firebase.js ─────────────────────
        El archivo firebase.js vive en la misma carpeta y usa ESModules.
        No edites las credenciales aquí; edítalas en firebase.js.
