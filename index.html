@@ -4552,7 +4552,7 @@
     }
 
     function dismissAlert(id) {
-      SS_SoundManager.play('alert_pop');
+      SS_SoundManager.play('panel_out');
       const dismissed = getDismissedAlerts();
       if (!dismissed.includes(id.toString())) {
         dismissed.push(id.toString());
@@ -4750,7 +4750,7 @@
     }
 
     function clearAllNotifs() {
-      SS_SoundManager.play('alert_pop');
+      SS_SoundManager.play('panel_out');
       showConfirm({
         title: 'Limpiar notificaciones',
         sub: '¿Estás seguro de que quieres marcar todas las notificaciones como leídas? Esta acción no se puede deshacer.',
@@ -4765,7 +4765,7 @@
     }
 
     function markAllAlertsRead() {
-      SS_SoundManager.play('alert_pop');
+      SS_SoundManager.play('panel_out');
       const allEvents = getAllHistoryEvents();
       const lastSeen = Date.now();
       localStorage.setItem('last_seen_notifs', lastSeen.toString());
@@ -6272,7 +6272,7 @@
     }
 
     function removeContactField(i) {
-      SS_SoundManager.play('alert_pop');
+      SS_SoundManager.play('panel_out');
       window.contactFields.splice(i, 1);
       renderContactFields();
     }
