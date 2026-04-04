@@ -3760,11 +3760,6 @@
         <div style="flex:1; position:relative;">
           <div class="profile-name" id="settings-user-name">Perfil de Padre</div>
           <div class="profile-role" id="settings-user-role">Cuenta de Padre · Cargando...</div>
-          <div style="margin-top:8px;">
-            <span
-              style="background:rgba(15,191,122,0.2);color:var(--safe);font-size:11px;font-weight:700;padding:3px 10px;border-radius:100px;border:1px solid rgba(15,191,122,0.3);">Plan
-              Premium</span>
-          </div>
         </div>
         <button class="icon-btn" onclick="openEditParentProfile()">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -4052,20 +4047,6 @@
               </div>
               <div class="settings-item-text">
                 <div class="settings-item-label">Privacidad y Seguridad</div>
-              </div>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M6 4L10 8L6 12" stroke="var(--text-3)" stroke-width="1.5" stroke-linecap="round" />
-              </svg>
-            </div>
-            <div class="settings-item" onclick="showModal('subscription')">
-              <div class="settings-item-icon" style="background:rgba(245,166,35,0.1);">
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                  <path d="M9 1L11 6H17L12.5 9.5L14.5 15.5L9 12L3.5 15.5L5.5 9.5L1 6H7L9 1Z" fill="var(--warn)" />
-                </svg>
-              </div>
-              <div class="settings-item-text">
-                <div class="settings-item-label">Suscripción</div>
-                <div class="settings-item-sub">Premium · Renueva Abr 2026</div>
               </div>
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                 <path d="M6 4L10 8L6 12" stroke="var(--text-3)" stroke-width="1.5" stroke-linecap="round" />
@@ -6882,6 +6863,32 @@
     }
 
     /* ═══════════════════════════════════════
+       BORRAR HISTORIAL LOCAL
+    ═══════════════════════════════════════ */
+    function clearLocationHistory() {
+      closeModal();
+      SS_SoundManager.play('modal_warn');
+      showConfirm({
+        title: 'Borrar historial local',
+        sub: 'Esto eliminará alertas, ubicaciones e historial guardados en este dispositivo. Los datos en la nube no se verán afectados.',
+        okText: 'Borrar todo',
+        okClass: 'btn-danger',
+        onOk: () => {
+          localStorage.removeItem('ss_history_v1');
+          localStorage.removeItem('ss_dismissed_alerts_v1');
+          localStorage.removeItem('last_seen_notifs');
+          historyData = {};
+          renderNotifications();
+          if (currentScreen === 'alerts') renderAlertsScreen();
+          renderHomeScreen();
+          SS_SoundManager.play('save_done');
+          showToast('Historial local eliminado');
+        }
+      });
+    }
+    window.clearLocationHistory = clearLocationHistory;
+
+    /* ═══════════════════════════════════════
        TOAST
     ═══════════════════════════════════════ */
     let toastTimeout = null;
@@ -7001,40 +7008,50 @@
       },
       'security': {
         title: '🔒 Privacidad y Seguridad',
-        sub: 'Controla quién puede acceder a la información de tus hijos.',
+        sub: 'Tu información y la de tus hijos está protegida.',
         content: `
       <div class="card" style="margin-bottom:16px;">
         <div class="settings-item" style="border-bottom:1px solid var(--border);">
-          <div style="flex:1;"><div style="font-size:14px;font-weight:600;color:var(--text-1);">Cambiar contraseña</div></div>
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4L10 8L6 12" stroke="var(--text-3)" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:600;color:var(--text-1);">Cuenta protegida</div>
+            <div style="font-size:12px;color:var(--text-3);" id="security-auth-method">Verificando...</div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--safe)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
         </div>
         <div class="settings-item" style="border-bottom:1px solid var(--border);">
-          <div style="flex:1;"><div style="font-size:14px;font-weight:600;color:var(--text-1);">Autenticación en 2 pasos</div><div style="font-size:12px;color:var(--text-3);">Desactivado</div></div>
-          <div class="toggle" onclick="this.classList.toggle('on')"><div class="toggle-thumb"></div></div>
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:600;color:var(--text-1);">Información recopilada</div>
+            <div style="font-size:12px;color:var(--text-3);">Ubicación, movimiento y batería del alumno</div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--blue-acc)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
         </div>
-        <div class="settings-item">
-          <div style="flex:1;"><div style="font-size:14px;font-weight:600;color:var(--text-1);">Historial de accesos</div></div>
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4L10 8L6 12" stroke="var(--text-3)" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <div class="settings-item" style="border-bottom:1px solid var(--border);">
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:600;color:var(--text-1);">Datos almacenados</div>
+            <div style="font-size:12px;color:var(--text-3);" id="security-data-stats">Calculando...</div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--safe)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="settings-item" style="border-bottom:1px solid var(--border);">
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:600;color:var(--text-1);">Conexión segura</div>
+            <div style="font-size:12px;color:var(--text-3);">Toda la comunicación está cifrada</div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--safe)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="settings-item" onclick="clearLocationHistory()" style="cursor:pointer;">
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:600;color:var(--danger);">Borrar historial local</div>
+            <div style="font-size:12px;color:var(--text-3);">Elimina alertas y ubicaciones de este dispositivo</div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
         </div>
       </div>
-      <button class="btn btn-ghost btn-full" style="height:48px;" onclick="closeModal()">Cerrar</button>`
-      },
-      'subscription': {
-        title: '💎 Suscripción Premium',
-        sub: 'Tu plan actual y beneficios.',
-        content: `
-      <div style="background:linear-gradient(135deg,#0D2E4F,#1A3358);border-radius:16px;padding:20px;margin-bottom:20px;text-align:center;">
-        <div style="font-size:28px;margin-bottom:8px;">⭐</div>
-        <div style="font-family:'Sora',sans-serif;font-size:20px;font-weight:800;color:white;">Plan Premium</div>
-        <div style="color:rgba(255,255,255,0.5);font-size:13px;margin-top:4px;">Renueva el 15 de Abril 2026</div>
+      <div style="font-size:12px;color:var(--text-3);text-align:center;line-height:1.6;padding:0 8px;">
+        SchoolSafe solo recopila datos cuando el monitoreo está activo.<br>
+        La ubicación del alumno nunca se comparte con terceros.
       </div>
-      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;">
-        <div style="display:flex;gap:10px;align-items:center;font-size:14px;color:var(--text-1);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--safe)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Hasta 5 hijos monitoreados</div>
-        <div style="display:flex;gap:10px;align-items:center;font-size:14px;color:var(--text-1);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--safe)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Notificaciones ilimitadas</div>
-        <div style="display:flex;gap:10px;align-items:center;font-size:14px;color:var(--text-1);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--safe)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Historial de 30 días</div>
-        <div style="display:flex;gap:10px;align-items:center;font-size:14px;color:var(--text-1);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--safe)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Soporte prioritario</div>
-        <div style="display:flex;gap:10px;align-items:center;font-size:14px;color:var(--text-1);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--safe)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Compatible con pulsera</div>
-      </div>
+      <div style="height:12px;"></div>
       <button class="btn btn-ghost btn-full" style="height:48px;" onclick="closeModal()">Cerrar</button>`
       }
     };
@@ -7189,6 +7206,26 @@
     ${m.content}
   `;
       document.getElementById('modal-overlay')?.classList.add('open');
+
+      // Datos dinámicos para el modal de Privacidad
+      if (key === 'security') {
+        const user = currentUser();
+        const authEl = document.getElementById('security-auth-method');
+        const statsEl = document.getElementById('security-data-stats');
+
+        if (authEl && user) {
+          const isGoogle = user.providerData?.some(p => p.providerId === 'google.com');
+          authEl.textContent = isGoogle ? 'Inicio de sesión con Google' : 'Correo y contraseña';
+        } else if (authEl) {
+          authEl.textContent = 'Sesión activa';
+        }
+
+        if (statsEl) {
+          const childCount = Object.keys(students).length;
+          const alertCount = getAllHistoryEvents().length;
+          statsEl.textContent = `${childCount} hijo${childCount !== 1 ? 's' : ''} · ${alertCount} alerta${alertCount !== 1 ? 's' : ''} guardada${alertCount !== 1 ? 's' : ''}`;
+        }
+      }
     }
 
     function closeModal() {
