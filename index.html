@@ -7668,10 +7668,14 @@
           renderNotifications();
         } else {
           if (nav) nav.style.display = 'none';
-          if (currentScreen !== 'login') {
-            navigateTo('login');
-          }
 
+          // Navegar al login SIN sonido (es transición automática, no acción del usuario)
+          document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+          const loginScreen = document.getElementById('screen-login');
+          if (loginScreen) loginScreen.classList.add('active');
+          currentScreen = 'login';
+
+          // Limpiar suscripciones de Firebase
           if (unsubStudents) { unsubStudents(); unsubStudents = null; }
           if (unsubNotifs) { unsubNotifs(); unsubNotifs = null; }
           Object.values(unsubLive).forEach(un => un());
@@ -7682,8 +7686,6 @@
           liveData = {};
           historyData = {};
           notifications = [];
-
-          navigateTo('login');
         }
       });
     });
