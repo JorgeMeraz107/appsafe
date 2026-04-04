@@ -2913,6 +2913,14 @@
             </div>
           </div>
           <div style="display:flex; gap:8px;">
+            <button class="theme-toggle-btn" onclick="SS_SoundManager.toggle()" title="Silenciar/Activar Sonido"
+              style="padding: 0 8px;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path class="mute-icon-path"
+                  d="M11 5L6 9H2V15H6L11 19V5Z M15.54 8.46C16.47 9.39 17 10.63 17 12C17 13.37 16.47 14.61 15.54 15.54 M19.07 4.93C20.89 6.75 22 9.25 22 12C22 14.75 20.89 17.25 19.07 19.07"
+                  stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </button>
             <button class="theme-toggle-btn" onclick="toggleDarkMode()" title="Cambiar tema" id="header-theme-btn">
               <!-- Sun icon (shown in dark mode) -->
               <svg class="theme-icon-sun" width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -4019,8 +4027,12 @@
                 <div class="settings-item-label">Asistente de Voz</div>
                 <div class="settings-item-sub">Alertas críticas parlantes</div>
               </div>
-              <div class="toggle" id="voice-assistant-toggle" onclick="toggleVoiceAssistant()">
-                <div class="toggle-thumb"></div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <button class="btn btn-ghost" style="height:32px;font-size:10px;padding:0 8px;border-radius:10px;"
+                  onclick="VoiceAssistant.speak('Prueba de voz exitosa. El sistema está listo.')">Probar</button>
+                <div class="toggle" id="voice-assistant-toggle" onclick="toggleVoiceAssistant()">
+                  <div class="toggle-thumb"></div>
+                </div>
               </div>
             </div>
           </div>
@@ -4334,54 +4346,59 @@
     let editingStudentId = null;
 
     /* ═══════════════════════════════════════
-       AUDIO CONTROLLER (GENERADOR SINTÉTICO PROFESIONAL)
-    ═══════════════════════════════════════ */
-    const AudioController = {
-      ctx: null,
+     SS_SOUND_MANAGER (INTERNAZIONALIZACIÓN ACÚSTICA)
+  ═══════════════════════════════════════ */
+    const SS_SoundManager = {
+      enabled: localStorage.getItem('ss_audio_enabled') !== 'false',
+      sounds: {},
+      files: [
+        'login_welcome.mp3', 'nav_tab.mp3', 'nav_page.mp3', 'ai_magic.mp3',
+        'call_dial.mp3', 'sos_alarm.mp3', 'save_done.mp3',
+        'save_error.mp3', 'panel_in.mp3', 'panel_out.mp3',
+        'alert_pop.mp3', 'alert_new.mp3', 'modal_open.mp3', 'modal_warn.mp3'
+      ],
       init() {
-        if (this.ctx && this.ctx.state === 'running') return;
-        if (!this.ctx) {
-          this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        this.files.forEach(file => {
+          const name = file.replace('.mp3', '');
+          this.sounds[name] = new Audio(`sounds/${file}`);
+          this.sounds[name].preload = 'auto';
+          if (name === 'sos_alarm') this.sounds[name].loop = true;
+        });
+        console.log("🔊 SS_SoundManager: Sistema de audio listo.");
+      },
+      play(name) {
+        if (!this.enabled || !this.sounds[name]) return;
+        try {
+          const audio = this.sounds[name];
+          audio.currentTime = 0;
+          audio.play().catch(e => console.warn("Audio play blocked:", e));
+        } catch (e) {
+          console.error("Error playing sound:", name, e);
         }
-        if (this.ctx.state === 'suspended') {
-          this.ctx.resume().then(() => {
-            console.log("🔊 AudioContext desbloqueado con éxito.");
-            if (window.speechSynthesis) window.speechSynthesis.getVoices();
-          });
+      },
+      stop(name) {
+        if (this.sounds[name]) {
+          this.sounds[name].pause();
+          this.sounds[name].currentTime = 0;
         }
       },
-      playTone(freq, type, duration, vol = 0.1) {
-        if (!this.ctx || this.ctx.state === 'suspended') this.init();
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = type;
-        osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-        gain.gain.setValueAtTime(vol, this.ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start();
-        osc.stop(this.ctx.currentTime + duration);
+      toggle() {
+        this.enabled = !this.enabled;
+        localStorage.setItem('ss_audio_enabled', this.enabled);
+        if (!this.enabled) this.stop('sos_alarm');
+        this.updateUI();
       },
-      playNotification() {
-        this.playTone(523.25, 'sine', 0.1, 0.2); // C5
-        setTimeout(() => this.playTone(659.25, 'sine', 0.2, 0.2), 100); // E5
-        setTimeout(() => this.playTone(783.99, 'sine', 0.4, 0.2), 200); // G5
-      },
-      playSOS() {
-        this.playTone(880, 'square', 0.3, 0.4);
-        setTimeout(() => this.playTone(880, 'square', 0.3, 0.4), 400);
-        setTimeout(() => this.playTone(880, 'square', 0.3, 0.4), 800);
-        setTimeout(() => this.playTone(880, 'square', 0.3, 0.4), 1200);
-      },
-      playClick() {
-        this.playTone(400, 'sine', 0.05, 0.02);
-      },
-      playSuccess() {
-        this.playTone(440, 'sine', 0.1, 0.05);
-        setTimeout(() => this.playTone(880, 'sine', 0.2, 0.05), 100);
+      updateUI() {
+        document.querySelectorAll('.mute-icon-path').forEach(path => {
+          path.setAttribute('d', this.enabled
+            ? 'M11 5L6 9H2V15H6L11 19V5Z M15.54 8.46C16.47 9.39 17 10.63 17 12C17 13.37 16.47 14.61 15.54 15.54 M19.07 4.93C20.89 6.75 22 9.25 22 12C22 14.75 20.89 17.25 19.07 19.07'
+            : 'M11 5L6 9H2V15H6L11 19V5Z M23 9L17 15 M17 9L23 15');
+        });
       }
     };
+
+    // Inicializar sonidos
+    SS_SoundManager.init();
 
     // Iniciar contexto de audio al primer toque en la pantalla (Bypass Autoplay Policy)
     // En APKs, intentamos en cada toque hasta que esté activo
@@ -4469,6 +4486,7 @@
     };
 
     function toggleVoiceAssistant() {
+      SS_SoundManager.play('nav_tab');
       VoiceAssistant.enabled = !VoiceAssistant.enabled;
       localStorage.setItem('ss_voice_assistant', VoiceAssistant.enabled);
 
@@ -4534,6 +4552,7 @@
     }
 
     function dismissAlert(id) {
+      SS_SoundManager.play('alert_pop');
       const dismissed = getDismissedAlerts();
       if (!dismissed.includes(id.toString())) {
         dismissed.push(id.toString());
@@ -4713,11 +4732,13 @@
 
     function openNotifPanel() {
       renderNotifications();
+      SS_SoundManager.play('panel_in');
       document.getElementById('notif-panel')?.classList.add('open');
       document.getElementById('notif-backdrop')?.classList.add('open');
     }
 
     function closeNotifPanel() {
+      SS_SoundManager.play('panel_out');
       document.getElementById('notif-panel')?.classList.remove('open');
       document.getElementById('notif-backdrop')?.classList.remove('open');
     }
@@ -4729,6 +4750,7 @@
     }
 
     function clearAllNotifs() {
+      SS_SoundManager.play('alert_pop');
       showConfirm({
         title: 'Limpiar notificaciones',
         sub: '¿Estás seguro de que quieres marcar todas las notificaciones como leídas? Esta acción no se puede deshacer.',
@@ -4743,6 +4765,7 @@
     }
 
     function markAllAlertsRead() {
+      SS_SoundManager.play('alert_pop');
       const allEvents = getAllHistoryEvents();
       const lastSeen = Date.now();
       localStorage.setItem('last_seen_notifs', lastSeen.toString());
@@ -4763,6 +4786,8 @@
     function navigateTo(screen, data = {}) {
       const screenEl = document.getElementById(`screen-${screen}`);
       if (!screenEl) return;
+
+      SS_SoundManager.play('nav_page');
 
       // Desactivar todas las pantallas previas para evitar superposiciones (Bug Fix)
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -4819,7 +4844,7 @@
     }
 
     function switchTab(tab) {
-      if (window.AudioController) AudioController.playClick();
+      SS_SoundManager.play('nav_page');
       updateNavActive(tab);
       navigateTo(tab);
     }
@@ -4831,6 +4856,7 @@
     }
 
     function goBack() {
+      SS_SoundManager.play('nav_page');
       stopEmTimer();
       if (prevScreen) navigateTo(prevScreen);
       else navigateTo('home');
@@ -4889,6 +4915,7 @@
     }
 
     function toggleDay(chip) {
+      SS_SoundManager.play('nav_tab');
       chip.classList.toggle('on');
       saveScheduleFromUI();
     }
@@ -5100,6 +5127,7 @@
         const isFall = data.fall === true || (data.motion && data.motion.toLowerCase().includes('caida')) || (data.motion && data.motion.toLowerCase().includes('caída'));
 
         if (isImpact || isFall) {
+          SS_SoundManager.play('sos_alarm');
           impStatusEl.textContent = isFall ? '¡CAÍDA DETECTADA!' : '¡IMPACTO!';
           impStatusEl.style.color = 'var(--danger)';
           if (impDetailEl) impDetailEl.textContent = 'Alerta de seguridad activa';
@@ -5108,6 +5136,7 @@
           if (impCardEl) impCardEl.style.border = '1px solid var(--danger)';
           if (impPulseEl) impPulseEl.innerHTML = '<div class="sensor-pulse-dot" style="background:var(--danger);"></div> ALERTA ACTIVA';
         } else {
+          SS_SoundManager.stop('sos_alarm');
           impStatusEl.textContent = 'Normal';
           impStatusEl.style.color = 'var(--text-1)';
           if (impDetailEl) impDetailEl.textContent = 'Sin alertas';
@@ -5302,6 +5331,7 @@
     }
 
     function recenterParentMap() {
+      SS_SoundManager.play('nav_tab');
       const data = getStudentLive();
       if (data && data.lat != null) refreshParentMap(data.lat, data.lng, true);
       else showToast('Sin ubicación disponible aún');
@@ -5341,6 +5371,7 @@
     }
 
     function filterMapStudent(id, btn) {
+      SS_SoundManager.play('nav_tab');
       activeMapStudent = id;
       document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
       if (btn) btn.classList.add('active');
@@ -5436,6 +5467,7 @@
     ═══════════════════════════════════════ */
     function callStudent(studentId) {
       const phone = getStudentPhone(studentId);
+      if (phone) SS_SoundManager.play('call_dial');
       const student = students[studentId];
       if (!phone) {
         showToast(`Sin número guardado para ${student?.name || 'este alumno'}`);
@@ -5516,6 +5548,7 @@
     let isRegisterMode = false;
 
     function toggleAuthMode() {
+      SS_SoundManager.play('nav_page');
       isRegisterMode = !isRegisterMode;
       const title = document.querySelector('.login-form-title');
       const sub = document.querySelector('.login-form-sub');
@@ -5576,9 +5609,11 @@
         } else {
           await loginWithEmail(email, pass);
         }
+        SS_SoundManager.play('login_welcome');
         // onAuthChange (en DOMContentLoaded) maneja la navegación
         await requestNotifPermission().catch(() => { });
       } catch (err) {
+        SS_SoundManager.play('save_error');
         const code = err.code || '';
         let msg = 'Error de autenticación. Intenta de nuevo.';
         if (code === 'auth/user-not-found' || code === 'auth/wrong-password' ||
@@ -5604,6 +5639,7 @@
 
     /* ── Validación del Login con Google — Firebase Auth ─────────── */
     async function loginGoogle() {
+      SS_SoundManager.play('nav_page');
       const btn = document.getElementById('google-login-btn');
       if (btn) { btn.disabled = true; btn.innerHTML = 'Conectando con Google...'; }
 
@@ -5618,6 +5654,7 @@
 
     /* ── Cerrar sesión — Firebase ─────────── */
     async function logoutUser() {
+      SS_SoundManager.play('modal_warn');
       showConfirm({
         title: 'Cerrar Sesión',
         sub: '¿Estás seguro de que quieres salir de la aplicación?',
@@ -6067,6 +6104,7 @@
 
     /* ── Abrir pantalla de edición ──────── */
     function openEditStudent(studentId) {
+      SS_SoundManager.play('panel_in');
       editingStudentId = studentId || null;
 
       const titleEl = document.getElementById('edit-screen-title');
@@ -6221,6 +6259,7 @@
     }
 
     function addContactField() {
+      SS_SoundManager.play('panel_in');
       const emojis = ['👩', '👨', '👴', '👵', '👩‍⚕️', '🧑', '👮', '🚒'];
       window.contactFields.push({
         id: 'contact_' + Date.now(),
@@ -6233,6 +6272,7 @@
     }
 
     function removeContactField(i) {
+      SS_SoundManager.play('alert_pop');
       window.contactFields.splice(i, 1);
       renderContactFields();
     }
@@ -6283,6 +6323,7 @@
     }
 
     function toggleEsSchedule(el) {
+      SS_SoundManager.play('nav_tab');
       el.classList.toggle('on');
       const body = document.getElementById('es-sched-body');
       if (body) body.style.display = el.classList.contains('on') ? 'flex' : 'none';
@@ -6384,6 +6425,7 @@
     }
 
     function useMyGPSLocationPicker() {
+      SS_SoundManager.play('nav_page');
       if (!('geolocation' in navigator)) {
         showToast("GPS no disponible en este dispositivo.");
         return;
@@ -6399,6 +6441,17 @@
         (err) => showToast("Error al obtener GPS.", "danger"),
         { enableHighAccuracy: true, timeout: 10000 }
       );
+    }
+
+    function useCurrentStudentLocPicker() {
+      SS_SoundManager.play('nav_page');
+      const data = getStudentLive(editingStudentId || currentStudentId);
+      if (data && data.lat != null) {
+        pickerLat = data.lat;
+        pickerLng = data.lng;
+        updatePickerUI();
+        showToast("Usando ubicación actual del alumno.");
+      }
     }
 
     // Botón rápido en el formulario (fuera del picker)
@@ -6435,6 +6488,7 @@
     }
 
     async function searchInPicker() {
+      SS_SoundManager.play('nav_page');
       const q = document.getElementById('picker-search')?.value.trim();
       if (!q) return;
 
@@ -6458,10 +6512,12 @@
     }
 
     function recenterPicker() {
+      SS_SoundManager.play('nav_tab');
       updatePickerUI();
     }
 
     function confirmPickerLocation() {
+      SS_SoundManager.play('save_done');
       if (pickerLat == null) return;
       const latInput = document.getElementById(`es-${currentPickerType}-lat`);
       const lngInput = document.getElementById(`es-${currentPickerType}-lng`);
@@ -6617,10 +6673,12 @@
 
       saveStudentFS(studentData, editingStudentId)
         .then(() => {
+          SS_SoundManager.play('save_done');
           showToast(editingStudentId ? 'Cambios guardados' : `${name} agregado`);
           navigateTo('children');
         })
         .catch(err => {
+          SS_SoundManager.play('save_error');
           showToast('Error al guardar hijo');
           console.error(err);
         })
@@ -6692,6 +6750,7 @@
 
     /* ── Eliminar alumno ─────────────────── */
     function confirmDeleteStudent() {
+      SS_SoundManager.play('modal_warn');
       if (!editingStudentId || !currentUser()) return;
       const s = students[editingStudentId];
 
@@ -6793,6 +6852,7 @@
     }
 
     function endCall() {
+      SS_SoundManager.play('panel_out');
       const overlay = document.getElementById('call-overlay');
       overlay.classList.remove('active');
       if (callTimeout) { clearInterval(callTimeout); clearTimeout(callTimeout); callTimeout = null; }
@@ -6826,6 +6886,7 @@
     ═══════════════════════════════════════ */
     let toastTimeout = null;
     function showToast(msg, type = 'info') {
+      if (type === 'info' || type === 'safe') SS_SoundManager.play('alert_new');
       const t = document.getElementById('toast');
       if (!t) return;
       t.textContent = msg;
@@ -6844,6 +6905,7 @@
        DARK MODE — sin flash, suave
     ═══════════════════════════════════════ */
     function toggleDarkMode() {
+      SS_SoundManager.play('nav_tab');
       isDark = !isDark;
 
       // Prevent transition flash by briefly disabling pointer events
@@ -6872,6 +6934,7 @@
        TOGGLE SWITCH
     ═══════════════════════════════════════ */
     function toggleSwitch(el) {
+      SS_SoundManager.play('nav_tab');
       el.classList.toggle('on');
       const label = el.parentElement.querySelector('.settings-item-label');
     }
@@ -7024,6 +7087,7 @@
     };
 
     window.selectParentAvatar = function (btn, emoji) {
+      SS_SoundManager.play('nav_tab');
       document.querySelectorAll('.avatar-option').forEach(b => {
         b.style.border = '2px solid transparent';
         b.style.opacity = '0.5';
@@ -7034,7 +7098,7 @@
     };
 
     window.saveParentProfile = async function () {
-      if (window.AudioController) AudioController.playClick();
+      SS_SoundManager.play('save_done');
       const newName = document.getElementById('edit-parent-name').value.trim();
       const newAvatar = document.getElementById('edit-parent-avatar').value || '👨';
       if (!newName) return showToast('El nombre es obligatorio', 'warn');
@@ -7093,6 +7157,7 @@
 
     function showConfirm(options) {
       const { title, sub, okText, okClass, onOk } = options;
+      SS_SoundManager.play(okClass === 'btn-danger' ? 'modal_warn' : 'modal_open');
       const sheet = document.getElementById('modal-sheet');
       if (!sheet) return;
       sheet.innerHTML = `
@@ -7114,6 +7179,7 @@
     function showModal(key) {
       const m = modals[key];
       if (!m) return;
+      SS_SoundManager.play('modal_open');
       const sheet = document.getElementById('modal-sheet');
       if (!sheet) return;
       sheet.innerHTML = `
@@ -7126,6 +7192,7 @@
     }
 
     function closeModal() {
+      SS_SoundManager.play('panel_out');
       document.getElementById('modal-overlay')?.classList.remove('open');
     }
 
@@ -7141,7 +7208,7 @@
         return;
       }
 
-      if (window.AudioController) AudioController.playClick();
+      SS_SoundManager.play('ai_magic');
 
       const student = students[currentStudentId] || { name: 'Estudiante' };
       const live = liveData[currentStudentId] || {};
@@ -7182,7 +7249,7 @@
             </div>
           `
         });
-        if (window.AudioController) AudioController.playSuccess();
+        SS_SoundManager.play('save_success');
       } catch (err) {
         let msg = "El sistema de IA está en mantenimiento breve. Por favor, intenta más tarde.";
         if (err.message === "RESTRICCION_DE_USO") {
