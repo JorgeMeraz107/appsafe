@@ -4481,6 +4481,57 @@
       }
     };
 
+    /* ═══════════════════════════════════════
+     AUDIO CONTROLLER (GENERADOR SINTÉTICO PROFESIONAL)
+  ═══════════════════════════════════════ */
+    const AudioController = {
+      ctx: null,
+      init() {
+        if (!this.ctx) {
+          try {
+            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+          } catch (e) {
+            console.warn("Web Audio API not supported:", e);
+          }
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      },
+      playTone(freq, type, duration, vol = 0.1) {
+        if (!this.ctx) this.init();
+        if (!this.ctx || this.ctx.state === 'suspended') return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+        gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + duration);
+      },
+      playNotification() {
+        this.playTone(523.25, 'sine', 0.1, 0.2); // C5
+        setTimeout(() => this.playTone(659.25, 'sine', 0.2, 0.2), 100); // E5
+        setTimeout(() => this.playTone(783.99, 'sine', 0.4, 0.2), 200); // G5
+      },
+      playSOS() {
+        this.playTone(880, 'square', 0.3, 0.4);
+        setTimeout(() => this.playTone(880, 'square', 0.3, 0.4), 400);
+        setTimeout(() => this.playTone(880, 'square', 0.3, 0.4), 800);
+        setTimeout(() => this.playTone(880, 'square', 0.3, 0.4), 1200);
+      },
+      playClick() {
+        this.playTone(400, 'sine', 0.05, 0.02);
+      },
+      playSuccess() {
+        this.playTone(440, 'sine', 0.1, 0.05);
+        setTimeout(() => this.playTone(880, 'sine', 0.2, 0.05), 100);
+      }
+    };
+
     // Inicializar sonidos
     SS_SoundManager.init();
 
