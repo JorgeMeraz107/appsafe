@@ -3185,7 +3185,11 @@
           <div class="card"
             style="padding: 16px; background: linear-gradient(135deg, rgba(41, 121, 255, 0.08), rgba(15, 191, 122, 0.05)); border: 1px solid rgba(41, 121, 255, 0.2); border-radius: var(--radius);">
             <div style="display:flex; align-items:center; gap:12px;">
-              <div style="font-size:20px;">🛡️</div>
+              <div style="color: var(--blue-acc); flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+              </div>
               <div style="flex:1;">
                 <div
                   style="font-size:11px; font-weight:700; color:var(--blue-acc); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:2px;">
@@ -5197,23 +5201,27 @@
       const now = new Date();
       const hour = now.getHours();
 
+      const ICON_ALERT = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:4px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
+      const ICON_WARN = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--warn)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:4px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+      const ICON_SHIELD = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--blue-acc)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:4px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`;
+
       // 1. ESCENARIO CRÍTICO: Impacto o Caída
       if (data.impact || data.fall) {
-        return `🚨 ¡ALERTA CRÍTICA! Se detectó un incidente físico fuerte con ${name}. Intenta contactar de inmediato.`;
+        return `${ICON_ALERT} <strong style="color:var(--danger)">¡ALERTA CRÍTICA!</strong> Se detectó un incidente físico fuerte con ${name}. Intenta contactar de inmediato.`;
       }
 
       // 2. ESCENARIO DE CONEXIÓN: Datos antiguos
       const minsAgo = data.ts ? Math.round((Date.now() - data.ts) / 60000) : 999;
       if (minsAgo > 10) {
-        return `⚠️ Conexión perdida. El último reporte de ${name} fue hace ${minsAgo} minutos. Su última ubicación conocida está guardada.`;
+        return `${ICON_WARN} <strong style="color:var(--warn)">Conexión perdida.</strong> El último reporte de ${name} fue hace ${minsAgo} minutos. Su última ubicación conocida está guardada.`;
       }
 
-      let summary = `🛡️ ${name} `;
+      let summary = `${ICON_SHIELD} <strong>${name}</strong> `;
 
       // 3. ESCENARIO DE UBICACIÓN (Contexto de Seguridad)
       const isSafe = document.getElementById('status-badge-top')?.classList.contains('status-badge-safe');
       if (isSafe) {
-        summary += "está en una ZONA SEGURA. ";
+        summary += "está en una <span style='color:var(--safe);font-weight:700;'>ZONA SEGURA</span>. ";
       } else {
         if (hour >= 19 || hour < 6) {
           summary += "está fuera de zona segura en horario nocturno. ";
@@ -5244,9 +5252,9 @@
 
       // 6. ESCENARIO DE BATERÍA
       if (battery < 15) {
-        summary += `🚨 La batería está críticamente baja (${battery}%).`;
+        summary += `<br>${ICON_ALERT} <span style="color:var(--danger);font-weight:700;">La batería está críticamente baja (${battery}%).</span>`;
       } else if (battery < 30) {
-        summary += `⚠️ Batería baja (${battery}%).`;
+        summary += `<br>${ICON_WARN} <span style="color:var(--warn);font-weight:700;">Batería baja (${battery}%).</span>`;
       }
 
       return summary;
@@ -5262,7 +5270,7 @@
 
         // ─── 0. RESUMEN INTELIGENTE ───────────────────
         const smartText = document.getElementById('smart-security-text');
-        if (smartText) smartText.textContent = generateSmartSummary(data);
+        if (smartText) smartText.innerHTML = generateSmartSummary(data);
 
         // ─── 1. TILES SUPERIORES (INFO ORIGINAL) ──────
         const battPct = (data.battery != null) ? Math.round(data.battery * 100) : 0;
