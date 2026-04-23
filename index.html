@@ -3180,16 +3180,22 @@
           </div>
         </div>
 
-        <!-- Inteligencia Artificial: Botón de Reporte -->
-        <div style="padding:16px 20px 0;">
-          <button class="btn btn-primary btn-full anim-item"
-            style="height:54px; gap:12px; background: linear-gradient(135deg, var(--blue-acc), #6B4DFF); border:none; box-shadow: 0 4px 15px rgba(107, 77, 255, 0.3);"
-            onclick="openAiAssistant()">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2L14.85 9.15L22 12L14.85 14.85L12 22L9.15 14.85L2 12L9.15 9.15L12 2Z" fill="white" />
-            </svg>
-            Generar Resumen con IA
-          </button>
+        <!-- Smart Security Summary (NUEVO) -->
+        <div id="smart-security-summary-container" class="anim-item" style="padding: 12px 20px 0;">
+          <div class="card"
+            style="padding: 16px; background: linear-gradient(135deg, rgba(41, 121, 255, 0.08), rgba(15, 191, 122, 0.05)); border: 1px solid rgba(41, 121, 255, 0.2); border-radius: var(--radius);">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <div style="font-size:20px;">🛡️</div>
+              <div style="flex:1;">
+                <div
+                  style="font-size:11px; font-weight:700; color:var(--blue-acc); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:2px;">
+                  Estado Proactivo</div>
+                <div id="smart-security-text"
+                  style="font-size:13px; color:var(--text-1); line-height:1.4; font-weight:600;">Analizando datos del
+                  alumno...</div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Info tiles -->
@@ -3229,113 +3235,170 @@
           </div>
         </div>
 
-        <div class="sensor-grid anim-item">
-          <div class="sensor-card info">
-            <div class="sensor-label">GPS</div>
-            <div class="sensor-value" id="sensor-gps-acc">±8m</div>
-            <div class="sensor-sub" id="sensor-gps-loc">—</div>
-            <div class="sensor-pulse" style="color:var(--blue-acc);margin-top:4px;">
-              <div class="sensor-pulse-dot" style="background:var(--blue-acc);"></div>
-              Señal buena
-            </div>
-          </div>
-          <div class="sensor-card info" id="safe-zone-home-card">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-              <div class="sensor-label">Hogar</div>
-              <button class="btn btn-ghost"
-                style="height:22px;padding:0 6px;font-size:9px;border:1px solid var(--border);border-radius:6px;"
-                onclick="viewZoneOnMap('home')">Ver</button>
-            </div>
-            <div class="sensor-value" id="home-distance">—</div>
-            <div class="safe-zone-status sz-pending" id="home-status">No definido</div>
-          </div>
-          <div class="sensor-card info" id="safe-zone-school-card">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-              <div class="sensor-label">Escuela</div>
-              <button class="btn btn-ghost"
-                style="height:22px;padding:0 6px;font-size:9px;border:1px solid var(--border);border-radius:6px;"
-                onclick="viewZoneOnMap('school')">Ver</button>
-            </div>
-            <div class="sensor-value" id="school-distance">—</div>
-            <div class="safe-zone-status sz-pending" id="school-status">No definido</div>
-          </div>
-          <div class="sensor-card safe">
-            <div class="sensor-label">Movimiento</div>
-            <div class="accel-bars" id="accel-bars">
-              <div class="accel-bar" style="height:40%;"></div>
-              <div class="accel-bar" style="height:60%;"></div>
-              <div class="accel-bar" style="height:30%;"></div>
-              <div class="accel-bar" style="height:80%;"></div>
-              <div class="accel-bar" style="height:50%;"></div>
-              <div class="accel-bar" style="height:70%;"></div>
-            </div>
-            <div class="sensor-sub" id="sensor-motion">Normal</div>
-          </div>
-          <div class="sensor-card safe">
-            <div class="sensor-label">Batería</div>
-            <div class="sensor-value" style="color:var(--safe);" id="sensor-battery">—</div>
-            <div class="battery-bar" style="margin-top:4px;">
-              <div class="battery-fill" id="battery-fill-sensor" style="width:0%;background:var(--safe);"></div>
-            </div>
-            <div class="sensor-sub" id="sensor-charging">—</div>
-          </div>
-          <div class="sensor-card info">
-            <div class="sensor-label">Velocidad</div>
-            <div class="sensor-value" id="sensor-speed">—</div>
-            <div class="sensor-sub">km/h</div>
-            <div class="sensor-pulse" style="color:var(--blue-acc);margin-top:4px;">
-              <div class="sensor-pulse-dot" style="background:var(--blue-acc);"></div>
-              c/5s
-            </div>
-          </div>
-          <div class="sensor-card info" id="sensor-card-impact">
-            <div class="sensor-label">Impacto / Caída</div>
-            <div class="sensor-value" id="sensor-impact-status">Normal</div>
-            <div class="sensor-sub" id="sensor-impact-detail">Sin alertas</div>
-            <div class="sensor-pulse" id="sensor-impact-pulse" style="color:var(--blue-acc);margin-top:4px;">
-              <div class="sensor-pulse-dot" id="sensor-impact-dot" style="background:var(--blue-acc);"></div>
-              Monitoreando
-            </div>
+        <div class="sensor-card info">
+          <div class="sensor-label">GPS</div>
+          <div class="sensor-value" id="sensor-gps-acc">±8m</div>
+          <div class="sensor-sub" id="sensor-gps-loc">—</div>
+          <div class="sensor-pulse" style="color:var(--blue-acc);margin-top:4px;">
+            <div class="sensor-pulse-dot" style="background:var(--blue-acc);"></div>
+            Señal buena
           </div>
         </div>
 
-        <!-- ── Mapa del Corredor Seguro Hogar→Escuela ── -->
-        <div class="card anim-item" id="safe-zone-route-container"
-          style="margin: 20px 20px 0; border:1px solid var(--safe); display:none; overflow:hidden;">
-          <div
-            style="background:var(--safe-bg); color:var(--safe); font-weight:700; font-size:12px; padding:8px 16px; display:flex; align-items:center; gap:8px;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-              stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z" />
-              <circle cx="12" cy="10" r="3" />
-            </svg>
-            Corredor Seguro Establecido
-          </div>
-          <iframe id="safe-zone-route-map" width="100%" height="200" frameborder="0" style="border:0;"
-            allowfullscreen></iframe>
-        </div>
-
-        <!-- Actividad del día -->
-        <div class="section-header" style="padding-top:20px;">
-          <div class="section-title">Actividad de Hoy</div>
-          <div style="font-size:12px;color:var(--blue-acc);cursor:pointer;font-weight:600;"
-            onclick="renderStudentHistory()">↻ Actualizar</div>
-        </div>
-        <div class="card" style="margin:0 20px 100px;" id="student-timeline">
-          <div style="text-align:center;padding:24px;color:var(--text-3);font-size:13px;">
-            Cargando actividad...
+        <!-- Red y Señal (NUEVO) -->
+        <div class="sensor-card info" id="card-network">
+          <div class="sensor-label">Red y Señal</div>
+          <div class="sensor-value" id="s-net-type">4G / Wi-Fi</div>
+          <div class="sensor-sub" id="s-net-status">Conexión Estable</div>
+          <div style="display:flex; gap:2px; margin-top:4px;" id="s-net-bars">
+            <div style="width:3px;height:6px;background:var(--safe);border-radius:1px;"></div>
+            <div style="width:3px;height:9px;background:var(--safe);border-radius:1px;"></div>
+            <div style="width:3px;height:12px;background:var(--safe);border-radius:1px;"></div>
+            <div style="width:3px;height:15px;background:var(--safe);border-radius:1px;"></div>
           </div>
         </div>
 
-        <!-- Código de Vinculación -->
-        <div id="student-linkcode-section" style="margin:0 20px 24px;">
-          <!-- Se carga dinámicamente con loadStudentProfile -->
+        <!-- Ruido Ambiente (NUEVO) -->
+        <div class="sensor-card info" id="card-audio">
+          <div class="sensor-label">Entorno Sonoro</div>
+          <div class="sensor-value" id="s-audio-db">-- dB</div>
+          <div class="sensor-sub" id="s-audio-state">Ambiente Tranquilo</div>
+          <div class="accel-bars" id="s-audio-bars" style="height:15px; margin-top:4px;">
+            <div class="accel-bar" style="height:20%; background:var(--safe);"></div>
+            <div class="accel-bar" style="height:40%; background:var(--safe);"></div>
+            <div class="accel-bar" style="height:30%; background:var(--safe);"></div>
+          </div>
         </div>
 
+        <!-- Salud del Sistema (NUEVO) -->
+        <div class="sensor-card info" id="card-system">
+          <div class="sensor-label">Estado Celular</div>
+          <div class="sensor-value" id="s-sys-storage">-- %</div>
+          <div class="sensor-sub" id="s-sys-status">Sistema Optimizado</div>
+          <div style="width:100%; height:4px; background:var(--border); border-radius:2px; margin-top:6px;">
+            <div id="s-sys-bar" style="width:10%; height:100%; background:var(--blue-acc); border-radius:2px;"></div>
+          </div>
+        </div>
+
+        <!-- Brújula / Dirección (NUEVO) -->
+        <div class="sensor-card info" id="card-compass">
+          <div class="sensor-label">Dirección</div>
+          <div class="sensor-value" id="s-compass-deg">--°</div>
+          <div class="sensor-sub" id="s-compass-dir">Norte</div>
+          <div id="compass-viz-parent"
+            style="width:30px;height:30px;border:2px solid var(--border);border-radius:50%;margin-top:4px;display:flex;align-items:center;justify-content:center;transition:transform 0.3s;margin-left:auto;">
+            <div style="width:2px;height:12px;background:var(--danger);border-radius:2px;"></div>
+          </div>
+        </div>
+
+        <!-- Luz Ambiente (NUEVO) -->
+        <div class="sensor-card info" id="card-light">
+          <div class="sensor-label">Luz Ambiente</div>
+          <div class="sensor-value" id="s-light-val">-- lx</div>
+          <div class="sensor-sub" id="s-light-state">Analizando...</div>
+          <div style="display:flex; align-items:center; gap:4px; margin-top:4px;">
+            <div id="light-dot" style="width:8px; height:8px; border-radius:50%; background:var(--safe);"></div>
+            <span style="font-size:10px; color:var(--text-3);" id="light-label">Luz Normal</span>
+          </div>
+        </div>
+        <!-- Zonas Seguras -->
+        <div class="sensor-card info" id="safe-zone-home-card">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <div class="sensor-label">Hogar</div>
+            <button class="btn btn-ghost"
+              style="height:22px;padding:0 6px;font-size:9px;border:1px solid var(--border);border-radius:6px;"
+              onclick="viewZoneOnMap('home')">Ver</button>
+          </div>
+          <div class="sensor-value" id="home-distance">—</div>
+          <div class="safe-zone-status sz-pending" id="home-status">No definido</div>
+        </div>
+        <div class="sensor-card info" id="safe-zone-school-card">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <div class="sensor-label">Escuela</div>
+            <button class="btn btn-ghost"
+              style="height:22px;padding:0 6px;font-size:9px;border:1px solid var(--border);border-radius:6px;"
+              onclick="viewZoneOnMap('school')">Ver</button>
+          </div>
+          <div class="sensor-value" id="school-distance">—</div>
+          <div class="safe-zone-status sz-pending" id="school-status">No definido</div>
+        </div>
+
+        <!-- Movimiento -->
+        <div class="accel-bars" id="accel-bars">
+          <div class="accel-bar" style="height:40%;"></div>
+          <div class="accel-bar" style="height:60%;"></div>
+          <div class="accel-bar" style="height:30%;"></div>
+          <div class="accel-bar" style="height:80%;"></div>
+          <div class="accel-bar" style="height:50%;"></div>
+          <div class="accel-bar" style="height:70%;"></div>
+        </div>
+        <div class="sensor-sub" id="sensor-motion">Normal</div>
+      </div>
+      <div class="sensor-card safe">
+        <div class="sensor-label">Batería</div>
+        <div class="sensor-value" style="color:var(--safe);" id="sensor-battery">—</div>
+        <div class="battery-bar" style="margin-top:4px;">
+          <div class="battery-fill" id="battery-fill-sensor" style="width:0%;background:var(--safe);"></div>
+        </div>
+        <div class="sensor-sub" id="sensor-charging">—</div>
+      </div>
+      <div class="sensor-card info">
+        <div class="sensor-label">Velocidad</div>
+        <div class="sensor-value" id="sensor-speed">—</div>
+        <div class="sensor-sub">km/h</div>
+        <div class="sensor-pulse" style="color:var(--blue-acc);margin-top:4px;">
+          <div class="sensor-pulse-dot" style="background:var(--blue-acc);"></div>
+          c/5s
+        </div>
+      </div>
+      <div class="sensor-card info" id="sensor-card-impact">
+        <div class="sensor-label">Impacto / Caída</div>
+        <div class="sensor-value" id="sensor-impact-status">Normal</div>
+        <div class="sensor-sub" id="sensor-impact-detail">Sin alertas</div>
+        <div class="sensor-pulse" id="sensor-impact-pulse" style="color:var(--blue-acc);margin-top:4px;">
+          <div class="sensor-pulse-dot" id="sensor-impact-dot" style="background:var(--blue-acc);"></div>
+          Monitoreando
+        </div>
       </div>
     </div>
 
-    <!-- ══════════════════════════════
+    <!-- ── Mapa del Corredor Seguro Hogar→Escuela ── -->
+    <div class="card anim-item" id="safe-zone-route-container"
+      style="margin: 20px 20px 0; border:1px solid var(--safe); display:none; overflow:hidden;">
+      <div
+        style="background:var(--safe-bg); color:var(--safe); font-weight:700; font-size:12px; padding:8px 16px; display:flex; align-items:center; gap:8px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z" />
+          <circle cx="12" cy="10" r="3" />
+        </svg>
+        Corredor Seguro Establecido
+      </div>
+      <iframe id="safe-zone-route-map" width="100%" height="200" frameborder="0" style="border:0;"
+        allowfullscreen></iframe>
+    </div>
+
+    <!-- Actividad del día -->
+    <div class="section-header" style="padding-top:20px;">
+      <div class="section-title">Actividad de Hoy</div>
+      <div style="font-size:12px;color:var(--blue-acc);cursor:pointer;font-weight:600;"
+        onclick="renderStudentHistory()">↻ Actualizar</div>
+    </div>
+    <div class="card" style="margin:0 20px 100px;" id="student-timeline">
+      <div style="text-align:center;padding:24px;color:var(--text-3);font-size:13px;">
+        Cargando actividad...
+      </div>
+    </div>
+
+    <!-- Código de Vinculación -->
+    <div id="student-linkcode-section" style="margin:0 20px 24px;">
+      <!-- Se carga dinámicamente con loadStudentProfile -->
+    </div>
+
+  </div>
+  </div>
+
+  <!-- ══════════════════════════════
        SCREEN: EDITAR / AGREGAR HIJO
        Acceso: botón ✏️ en card o "Editar" en perfil
        Contiene TODO de ese hijo:
@@ -3344,951 +3407,950 @@
          contactos que el alumno puede llamar
          horario de monitoreo
   ══════════════════════════════ -->
-    <div class="screen" id="screen-edit-student">
-      <div class="topbar">
-        <button class="nav-back-btn" onclick="goBack()" id="edit-back-label">
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-            <path d="M11 4L7 9L11 14" stroke="var(--blue-acc)" stroke-width="2.2" stroke-linecap="round" />
-          </svg>
-          Hijos
-        </button>
-        <div class="topbar-title" id="edit-screen-title">Agregar Hijo</div>
-        <button onclick="saveStudentFull()" class="btn btn-primary"
-          style="height:36px;padding:0 18px;font-size:13px;border-radius:12px;">Guardar</button>
+  <div class="screen" id="screen-edit-student">
+    <div class="topbar">
+      <button class="nav-back-btn" onclick="goBack()" id="edit-back-label">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M11 4L7 9L11 14" stroke="var(--blue-acc)" stroke-width="2.2" stroke-linecap="round" />
+        </svg>
+        Hijos
+      </button>
+      <div class="topbar-title" id="edit-screen-title">Agregar Hijo</div>
+      <button onclick="saveStudentFull()" class="btn btn-primary"
+        style="height:36px;padding:0 18px;font-size:13px;border-radius:12px;">Guardar</button>
+    </div>
+
+    <div class="scroll-content" style="padding:16px 20px 80px;display:flex;flex-direction:column;gap:20px;">
+
+      <!-- ① Info del alumno -->
+      <div class="settings-section anim-item" style="margin:0;">
+        <div class="settings-section-title">Información del Alumno</div>
+        <div class="card" style="padding:16px;display:flex;flex-direction:column;gap:12px;">
+          <div class="input-group">
+            <label class="input-label">Nombre completo</label>
+            <input class="input-field" id="es-name" type="text" placeholder="Ej. Sofía García">
+          </div>
+          <div style="display:flex;gap:10px;">
+            <div class="input-group" style="flex:1;">
+              <label class="input-label">Colegio</label>
+              <input class="input-field" id="es-school" type="text" placeholder="Nombre del colegio">
+            </div>
+            <div class="input-group" style="flex:1;">
+              <label class="input-label">Grado</label>
+              <input class="input-field" id="es-grade" type="text" placeholder="Ej. 9no Grado">
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div class="scroll-content" style="padding:16px 20px 80px;display:flex;flex-direction:column;gap:20px;">
-
-        <!-- ① Info del alumno -->
-        <div class="settings-section anim-item" style="margin:0;">
-          <div class="settings-section-title">Información del Alumno</div>
-          <div class="card" style="padding:16px;display:flex;flex-direction:column;gap:12px;">
-            <div class="input-group">
-              <label class="input-label">Nombre completo</label>
-              <input class="input-field" id="es-name" type="text" placeholder="Ej. Sofía García">
-            </div>
-            <div style="display:flex;gap:10px;">
-              <div class="input-group" style="flex:1;">
-                <label class="input-label">Colegio</label>
-                <input class="input-field" id="es-school" type="text" placeholder="Nombre del colegio">
-              </div>
-              <div class="input-group" style="flex:1;">
-                <label class="input-label">Grado</label>
-                <input class="input-field" id="es-grade" type="text" placeholder="Ej. 9no Grado">
-              </div>
-            </div>
+      <!-- ① Perfil: Género -->
+      <div class="settings-section anim-item" style="margin:0;">
+        <div class="settings-section-title">Perfil del Alumno</div>
+        <div class="card" style="padding:16px;">
+          <div class="input-group" style="margin-bottom:0;">
+            <label class="input-label">Género (Avatar Predeterminado)</label>
+            <select class="input-field" id="es-gender" style="background:var(--bg-app);">
+              <option value="boy">Niño</option>
+              <option value="girl">Niña</option>
+              <option value="other">Otro / Prefiero no decir</option>
+            </select>
+          </div>
+          <div style="font-size:11px;color:var(--text-3);margin-top:10px;">
+            El alumno puede elegir su propio avatar entre 12 opciones divertidas en su app. Si no elige, se usará uno
+            según su género.
           </div>
         </div>
+      </div>
 
-        <!-- ① Perfil: Género -->
-        <div class="settings-section anim-item" style="margin:0;">
-          <div class="settings-section-title">Perfil del Alumno</div>
-          <div class="card" style="padding:16px;">
-            <div class="input-group" style="margin-bottom:0;">
-              <label class="input-label">Género (Avatar Predeterminado)</label>
-              <select class="input-field" id="es-gender" style="background:var(--bg-app);">
-                <option value="boy">Niño</option>
-                <option value="girl">Niña</option>
-                <option value="other">Otro / Prefiero no decir</option>
-              </select>
-            </div>
-            <div style="font-size:11px;color:var(--text-3);margin-top:10px;">
-              El alumno puede elegir su propio avatar entre 12 opciones divertidas en su app. Si no elige, se usará uno
-              según su género.
-            </div>
+      <!-- ② Celular del alumno (para que el PADRE lo llame) -->
+      <div class="settings-section anim-item" style="margin:0;">
+        <div class="settings-section-title">Celular del Alumno</div>
+        <div class="card" style="padding:16px;">
+          <div class="input-group" style="margin-bottom:10px;">
+            <label class="input-label">Número de celular</label>
+            <input class="input-field" id="es-phone" type="tel" placeholder="+504 9999-8888">
+          </div>
+          <div
+            style="background:rgba(41,121,255,0.08);border:1px solid rgba(41,121,255,0.15);border-radius:var(--radius-sm);padding:10px 12px;font-size:12px;color:var(--text-3);">
+            Este es el número que <strong style="color:var(--text-2);">tú como padre</strong> llamas cuando presionas
+            el botón "Llamar" en el perfil de tu hijo.
           </div>
         </div>
+      </div>
 
-        <!-- ② Celular del alumno (para que el PADRE lo llame) -->
-        <div class="settings-section anim-item" style="margin:0;">
-          <div class="settings-section-title">Celular del Alumno</div>
-          <div class="card" style="padding:16px;">
-            <div class="input-group" style="margin-bottom:10px;">
-              <label class="input-label">Número de celular</label>
-              <input class="input-field" id="es-phone" type="tel" placeholder="+504 9999-8888">
+      <!-- Safe Zones Tracking -->
+      <div class="settings-section anim-item" style="margin:0;">
+        <div class="settings-section-title">Rastreo de Zonas Seguras</div>
+        <div style="font-size:12px;color:var(--text-3);margin-bottom:8px;">Define el Hogar y la Escuela para recibir
+          alertas de llegada/salida.</div>
+        <div class="card" style="padding:12px 16px;">
+          <!-- Casa -->
+          <div class="safe-zone-card" style="margin-top:4px;" onclick="openLocationPicker('home')">
+            <div class="safe-zone-icon" style="background:rgba(15,191,122,0.1);color:var(--safe);">🏠</div>
+            <div class="safe-zone-info">
+              <div class="safe-zone-name" id="es-home-label">Casa / Hogar</div>
+              <div class="safe-zone-addr" id="es-home-addr">Toca para configurar ubicación</div>
             </div>
+            <input type="hidden" id="es-home-lat"><input type="hidden" id="es-home-lng">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M5 3L9 7L5 11" stroke="var(--text-3)" stroke-width="1.5" stroke-linecap="round" />
+            </svg>
+          </div>
+          <!-- Escuela -->
+          <div class="safe-zone-card" onclick="openLocationPicker('school')">
+            <div class="safe-zone-icon" style="background:rgba(41,121,255,0.1);color:var(--blue-acc);">🏫</div>
+            <div class="safe-zone-info">
+              <div class="safe-zone-name" id="es-school-label">Escuela / Colegio</div>
+              <div class="safe-zone-addr" id="es-school-addr">Toca para configurar ubicación</div>
+            </div>
+            <input type="hidden" id="es-school-lat"><input type="hidden" id="es-school-lng">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M5 3L9 7L5 11" stroke="var(--text-3)" stroke-width="1.5" stroke-linecap="round" />
+            </svg>
+          </div>
+
+          <button class="btn btn-ghost btn-full"
+            style="height:44px;margin-top:12px;font-size:12px;border:1px dashed var(--border);"
+            onclick="useMyGPSLocation()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round"
+              style="margin-right:6px;vertical-align:middle;margin-top:-2px;">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg> Usar mi ubicación GPS actual
+          </button>
+        </div>
+      </div>
+
+      <!-- ③ Contactos que el ALUMNO puede llamar -->
+      <div class="settings-section anim-item" style="margin:0;">
+        <div class="settings-section-title">Contactos que el Alumno puede Llamar</div>
+        <div style="font-size:12px;color:var(--text-3);margin-bottom:8px;">Aparecen en el botón "Llamar" de la app de
+          tu hijo. El 911 siempre está incluido.</div>
+        <div class="card" style="padding:16px;">
+          <div id="es-contacts-list" style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px;"></div>
+          <button onclick="addContactField()" class="btn btn-ghost btn-full"
+            style="height:40px;border:1.5px dashed var(--border);">
+            + Agregar contacto
+          </button>
+        </div>
+      </div>
+
+      <!-- ④ Horario de monitoreo -->
+      <div class="settings-section anim-item" style="margin:0;">
+        <div class="settings-section-title">Horario de Monitoreo</div>
+        <div style="font-size:12px;color:var(--text-3);margin-bottom:8px;">¿De qué hora a qué hora quieres que los
+          sensores envíen información? Fuera del horario, el celular usa modo ahorro. El SOS siempre funciona.</div>
+        <div class="card" style="padding:16px;display:flex;flex-direction:column;gap:14px;">
+
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <div style="font-size:14px;font-weight:600;color:var(--text-1);">Activar horario específico</div>
+              <div style="font-size:12px;color:var(--text-3);">Sin horario = sensores activos 24/7</div>
+            </div>
+            <div class="toggle" id="es-sched-toggle" onclick="toggleEsSchedule(this)">
+              <div class="toggle-thumb"></div>
+            </div>
+          </div>
+
+          <div id="es-sched-body" style="display:none;flex-direction:column;gap:14px;">
+            <div>
+              <div class="settings-section-title" style="margin-bottom:8px;letter-spacing:0.06em;">Días activos</div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;" id="es-days-row">
+                <button class="day-chip on" data-day="1">Lun</button>
+                <button class="day-chip on" data-day="2">Mar</button>
+                <button class="day-chip on" data-day="3">Mié</button>
+                <button class="day-chip on" data-day="4">Jue</button>
+                <button class="day-chip on" data-day="5">Vie</button>
+                <button class="day-chip" data-day="6">Sáb</button>
+                <button class="day-chip" data-day="0">Dom</button>
+              </div>
+            </div>
+
+            <div style="display:flex;gap:10px;align-items:flex-end;">
+              <div style="flex:1;">
+                <div style="font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:6px;">Desde</div>
+                <input type="time" id="es-start" value="06:00" onchange="updateEsBatteryPreview()"
+                  style="width:100%;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;font-size:16px;color:var(--text-1);outline:none;text-align:center;">
+              </div>
+              <div style="font-size:22px;color:var(--text-3);margin-bottom:12px;">→</div>
+              <div style="flex:1;">
+                <div style="font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:6px;">Hasta</div>
+                <input type="time" id="es-end" value="16:00" onchange="updateEsBatteryPreview()"
+                  style="width:100%;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;font-size:16px;color:var(--text-1);outline:none;text-align:center;">
+              </div>
+            </div>
+
             <div
-              style="background:rgba(41,121,255,0.08);border:1px solid rgba(41,121,255,0.15);border-radius:var(--radius-sm);padding:10px 12px;font-size:12px;color:var(--text-3);">
-              Este es el número que <strong style="color:var(--text-2);">tú como padre</strong> llamas cuando presionas
-              el botón "Llamar" en el perfil de tu hijo.
-            </div>
-          </div>
-        </div>
-
-        <!-- Safe Zones Tracking -->
-        <div class="settings-section anim-item" style="margin:0;">
-          <div class="settings-section-title">Rastreo de Zonas Seguras</div>
-          <div style="font-size:12px;color:var(--text-3);margin-bottom:8px;">Define el Hogar y la Escuela para recibir
-            alertas de llegada/salida.</div>
-          <div class="card" style="padding:12px 16px;">
-            <!-- Casa -->
-            <div class="safe-zone-card" style="margin-top:4px;" onclick="openLocationPicker('home')">
-              <div class="safe-zone-icon" style="background:rgba(15,191,122,0.1);color:var(--safe);">🏠</div>
-              <div class="safe-zone-info">
-                <div class="safe-zone-name" id="es-home-label">Casa / Hogar</div>
-                <div class="safe-zone-addr" id="es-home-addr">Toca para configurar ubicación</div>
-              </div>
-              <input type="hidden" id="es-home-lat"><input type="hidden" id="es-home-lng">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M5 3L9 7L5 11" stroke="var(--text-3)" stroke-width="1.5" stroke-linecap="round" />
+              style="background:rgba(245,166,35,0.06);border:1px solid rgba(245,166,35,0.2);border-radius:var(--radius-sm);padding:12px 14px;display:flex;align-items:center;gap:12px;">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style="flex-shrink:0;opacity:0.6;">
+                <circle cx="10" cy="4" r="2" fill="var(--text-2)" />
+                <path d="M7 8h6l-1 5H8L7 8Z" fill="var(--text-2)" />
+                <path d="M8 13l-2 5M12 13l2 5" stroke="var(--text-2)" stroke-width="1.5" stroke-linecap="round" />
               </svg>
-            </div>
-            <!-- Escuela -->
-            <div class="safe-zone-card" onclick="openLocationPicker('school')">
-              <div class="safe-zone-icon" style="background:rgba(41,121,255,0.1);color:var(--blue-acc);">🏫</div>
-              <div class="safe-zone-info">
-                <div class="safe-zone-name" id="es-school-label">Escuela / Colegio</div>
-                <div class="safe-zone-addr" id="es-school-addr">Toca para configurar ubicación</div>
+              <div style="flex:1;">
+                <div style="font-size:13px;font-weight:600;color:var(--text-1);">Reactivar si se mueve fuera de
+                  horario</div>
+                <div style="font-size:11px;color:var(--text-3);">Si el alumno camina, activa sensores por 30 min extra
+                </div>
               </div>
-              <input type="hidden" id="es-school-lat"><input type="hidden" id="es-school-lng">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M5 3L9 7L5 11" stroke="var(--text-3)" stroke-width="1.5" stroke-linecap="round" />
-              </svg>
-            </div>
-
-            <button class="btn btn-ghost btn-full"
-              style="height:44px;margin-top:12px;font-size:12px;border:1px dashed var(--border);"
-              onclick="useMyGPSLocation()">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                stroke-linecap="round" stroke-linejoin="round"
-                style="margin-right:6px;vertical-align:middle;margin-top:-2px;">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                <circle cx="12" cy="10" r="3" />
-              </svg> Usar mi ubicación GPS actual
-            </button>
-          </div>
-        </div>
-
-        <!-- ③ Contactos que el ALUMNO puede llamar -->
-        <div class="settings-section anim-item" style="margin:0;">
-          <div class="settings-section-title">Contactos que el Alumno puede Llamar</div>
-          <div style="font-size:12px;color:var(--text-3);margin-bottom:8px;">Aparecen en el botón "Llamar" de la app de
-            tu hijo. El 911 siempre está incluido.</div>
-          <div class="card" style="padding:16px;">
-            <div id="es-contacts-list" style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px;"></div>
-            <button onclick="addContactField()" class="btn btn-ghost btn-full"
-              style="height:40px;border:1.5px dashed var(--border);">
-              + Agregar contacto
-            </button>
-          </div>
-        </div>
-
-        <!-- ④ Horario de monitoreo -->
-        <div class="settings-section anim-item" style="margin:0;">
-          <div class="settings-section-title">Horario de Monitoreo</div>
-          <div style="font-size:12px;color:var(--text-3);margin-bottom:8px;">¿De qué hora a qué hora quieres que los
-            sensores envíen información? Fuera del horario, el celular usa modo ahorro. El SOS siempre funciona.</div>
-          <div class="card" style="padding:16px;display:flex;flex-direction:column;gap:14px;">
-
-            <div style="display:flex;align-items:center;justify-content:space-between;">
-              <div>
-                <div style="font-size:14px;font-weight:600;color:var(--text-1);">Activar horario específico</div>
-                <div style="font-size:12px;color:var(--text-3);">Sin horario = sensores activos 24/7</div>
-              </div>
-              <div class="toggle" id="es-sched-toggle" onclick="toggleEsSchedule(this)">
+              <div class="toggle on" id="es-motion-toggle" onclick="this.classList.toggle('on')">
                 <div class="toggle-thumb"></div>
               </div>
             </div>
 
-            <div id="es-sched-body" style="display:none;flex-direction:column;gap:14px;">
-              <div>
-                <div class="settings-section-title" style="margin-bottom:8px;letter-spacing:0.06em;">Días activos</div>
-                <div style="display:flex;gap:6px;flex-wrap:wrap;" id="es-days-row">
-                  <button class="day-chip on" data-day="1">Lun</button>
-                  <button class="day-chip on" data-day="2">Mar</button>
-                  <button class="day-chip on" data-day="3">Mié</button>
-                  <button class="day-chip on" data-day="4">Jue</button>
-                  <button class="day-chip on" data-day="5">Vie</button>
-                  <button class="day-chip" data-day="6">Sáb</button>
-                  <button class="day-chip" data-day="0">Dom</button>
-                </div>
+            <div
+              style="background:rgba(232,54,74,0.05);border:1px solid rgba(232,54,74,0.15);border-radius:var(--radius-sm);padding:12px 14px;display:flex;align-items:center;gap:12px;">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style="flex-shrink:0;opacity:0.6;">
+                <circle cx="10" cy="10" r="8" stroke="var(--danger)" stroke-width="1.5" fill="none" />
+                <path d="M10 6v5M10 13v1" stroke="var(--danger)" stroke-width="2" stroke-linecap="round" />
+              </svg>
+              <div style="flex:1;">
+                <div style="font-size:13px;font-weight:600;color:var(--text-1);">SOS siempre activo</div>
+                <div style="font-size:11px;color:var(--text-3);">Funciona 24/7 sin importar el horario</div>
               </div>
+              <div
+                style="font-size:11px;font-weight:700;color:var(--safe);background:var(--safe-bg);padding:4px 10px;border-radius:100px;">
+                Siempre activo</div>
+            </div>
 
-              <div style="display:flex;gap:10px;align-items:flex-end;">
-                <div style="flex:1;">
-                  <div style="font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:6px;">Desde</div>
-                  <input type="time" id="es-start" value="06:00" onchange="updateEsBatteryPreview()"
-                    style="width:100%;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;font-size:16px;color:var(--text-1);outline:none;text-align:center;">
-                </div>
-                <div style="font-size:22px;color:var(--text-3);margin-bottom:12px;">→</div>
-                <div style="flex:1;">
-                  <div style="font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:6px;">Hasta</div>
-                  <input type="time" id="es-end" value="16:00" onchange="updateEsBatteryPreview()"
-                    style="width:100%;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;font-size:16px;color:var(--text-1);outline:none;text-align:center;">
-                </div>
+            <!-- Preview ahorro de batería -->
+            <div style="background:var(--card);border-radius:var(--radius-sm);padding:16px;">
+              <div style="font-size:12px;font-weight:700;color:var(--text-2);margin-bottom:8px;">Ahorro estimado de
+                batería</div>
+              <div style="display:flex;border-radius:6px;overflow:hidden;height:10px;margin-bottom:8px;"
+                id="es-battery-bar"></div>
+              <div style="display:flex;gap:16px;font-size:11px;color:var(--text-3);">
+                <span style="display:flex;align-items:center;gap:5px;"><span
+                    style="width:8px;height:8px;border-radius:50%;background:var(--safe);display:inline-block;"></span>GPS
+                  activo</span>
+                <span style="display:flex;align-items:center;gap:5px;"><span
+                    style="width:8px;height:8px;border-radius:50%;background:var(--border);display:inline-block;"></span>Modo
+                  ahorro</span>
               </div>
+              <div style="margin-top:8px;font-size:13px;font-weight:700;color:var(--safe);">Ahorro: ~<span
+                  id="es-saving-pct">—</span> vs 24/7</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ⑤ Zona de peligro (solo al editar) -->
+      <div id="es-danger-zone" style="display:none;" class="anim-item">
+        <div class="settings-section-title" style="color:var(--danger);">Zona de peligro</div>
+        <div class="card" style="padding:4px 0;">
+          <div class="settings-item" onclick="confirmDeleteStudent()" style="color:var(--danger);">
+            <div class="settings-item-icon" style="background:var(--danger-bg);">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <path d="M3 5H15M6 5V3H12V5M7 8V14M11 8V14M4 5L5 15H13L14 5H4Z" stroke="var(--danger)"
+                  stroke-width="1.4" stroke-linecap="round" />
+              </svg>
+            </div>
+            <div class="settings-item-text">
+              <div class="settings-item-label" style="color:var(--danger);">Eliminar alumno</div>
+              <div class="settings-item-sub">Se eliminan todos sus datos y configuración</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       SCREEN: MAP
+  ══════════════════════════════ -->
+  <div class="screen" id="screen-map">
+    <div class="map-topbar">
+      <div style="flex:1;">
+        <div class="topbar-title">Rastreo en Vivo</div>
+        <div class="live-indicator" style="margin-top:3px;">
+          <div class="live-dot"></div> Actualiza cada 30 seg
+        </div>
+      </div>
+      <div
+        style="display:flex;gap:8px;overflow-x:auto;mask-image:linear-gradient(to right,black 90%,transparent);max-width:200px;-webkit-overflow-scrolling:touch;padding-bottom:5px;"
+        id="map-student-tabs">
+        <!-- Rendered dynamically by renderMapTabs() -->
+      </div>
+    </div>
+
+    <div id="map-container" style="position:relative;flex:1;overflow:hidden;">
+      <!-- Google Maps iframe — se actualiza con GPS real del alumno -->
+      <div id="parent-map-loading"
+        style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:var(--bg-card);z-index:5;transition:opacity 0.4s;">
+        <div
+          style="width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--blue-acc);border-radius:50%;animation:spin 0.8s linear infinite;">
+        </div>
+        <div style="font-size:12px;color:var(--text-3);" id="parent-map-loading-text">Esperando ubicación...</div>
+      </div>
+      <div class="map-offline-fallback" id="parent-gmap-offline" style="z-index: 10;">
+        <div class="offline-icon-container">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <path
+              d="M1 1l22 22M16.72 11.06A10.94 10.94 0 0 1 19 12.55M5 12.55a10.94 10.94 0 0 1 5.17-2.39M10.71 5.05A16 16 0 0 1 22.58 9M1.42 9a15.91 15.91 0 0 1 4.7-2.88M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01" />
+          </svg>
+          <div class="offline-status-dot"></div>
+        </div>
+        <div class="offline-title">Sin Conexión</div>
+        <div class="offline-sub">No se puede cargar el mapa dinámico sin internet. Verifica tu wifi o datos.</div>
+        <button class="offline-retry-btn" onclick="window.location.reload()">Reintentar conexión</button>
+      </div>
+      <iframe id="parent-gmap" src="" style="width:100%;height:100%;border:none;display:block;" allowfullscreen
+        loading="lazy"></iframe>
+
+      <!-- Info chip coords -->
+      <div id="parent-map-chip"
+        style="position:absolute;bottom:10px;left:10px;background:var(--topbar-bg);backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:100px;padding:5px 12px;font-size:11px;color:var(--text-2);font-weight:600;z-index:10;display:none;align-items:center;gap:6px;">
+        <div style="width:6px;height:6px;border-radius:50%;background:var(--safe);animation:pulse-safe 1.5s infinite;">
+        </div>
+        <span id="parent-map-coords">—</span>
+      </div>
+
+      <div class="map-controls">
+        <button class="map-ctrl-btn" onclick="recenterParentMap()" title="Centrar">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5" fill="none" />
+            <circle cx="10" cy="10" r="2" fill="currentColor" />
+            <line x1="10" y1="1" x2="10" y2="4" stroke="currentColor" stroke-width="1.5" />
+            <line x1="10" y1="16" x2="10" y2="19" stroke="currentColor" stroke-width="1.5" />
+            <line x1="1" y1="10" x2="4" y2="10" stroke="currentColor" stroke-width="1.5" />
+            <line x1="16" y1="10" x2="19" y2="10" stroke="currentColor" stroke-width="1.5" />
+          </svg>
+        </button>
+        <button class="map-ctrl-btn" onclick="showModal('zone')">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M3 10L10 3L17 10L10 17L3 10Z" stroke="currentColor" stroke-width="1.5" fill="none" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="map-bottom-sheet">
+      <div class="sheet-handle"></div>
+      <div class="map-student-row" id="map-student-info">
+        <div class="avatar avatar-ring-safe"
+          style="width:48px;height:48px;font-size:17px;background:linear-gradient(135deg,#0D2E4F,#1A3358);"
+          id="map-student-avatar">S</div>
+        <div style="flex:1;">
+          <div class="topbar-title" style="font-size:16px;" id="map-student-name">...</div>
+          <div style="font-size:13px;color:var(--text-3);margin-top:2px;" id="map-student-location">Obteniendo
+            ubicación...</div>
+        </div>
+        <div class="status-pill status-safe" id="map-student-status">
+          <div class="status-dot"></div>Segura
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:14px;">
+        <button class="btn btn-ghost" style="flex:1;height:44px;" id="map-call-btn"
+          onclick="callStudent(activeMapStudent)">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path
+              d="M14 10.4C13.1 10.4 12.2 10.2 11.4 9.9C11.2 9.8 10.9 9.9 10.8 10L9.6 11.2C7.9 10.3 6.7 9.1 5.8 7.4L7 6.2C7.1 6.1 7.2 5.8 7.1 5.6C6.8 4.8 6.6 3.9 6.6 3C6.6 2.7 6.4 2.5 6.1 2.5H3.9C3.6 2.5 3 2.7 3 3C3 9.8 8.2 15 15 15C15.3 15 15.5 14.4 15.5 14.1V11.9C15.5 11.6 15.3 10.4 14 10.4Z"
+              fill="var(--navy)" />
+          </svg>
+          Llamar
+        </button>
+        <button class="btn btn-primary" style="flex:2;height:44px;" onclick="recenterParentMap()">
+          Centrar en Mapa
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       SCREEN: ALERTS
+  ══════════════════════════════ -->
+  <div class="screen" id="screen-alerts">
+    <div class="topbar">
+      <div class="topbar-title">
+        Centro de Notificaciones
+        <span class="topbar-sub">2 activas</span>
+      </div>
+      <button class="icon-btn" onclick="markAllAlertsRead()">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M4 10L8 14L16 6" stroke="var(--text-2)" stroke-width="1.5" stroke-linecap="round" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="scroll-content">
+      <div class="alert-banner anim-item" onclick="navigateTo('emergency')">
+        <div class="alert-banner-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M10 2L2 16H18L10 2Z" fill="white" />
+            <rect x="9.5" y="7" width="1" height="5" rx="0.5" fill="var(--danger)" />
+            <circle cx="10" cy="13.5" r="0.8" fill="var(--danger)" />
+          </svg>
+        </div>
+        <div class="alert-banner-text">
+          <div class="alert-banner-title" id="alert-banner-title">Sin alertas activas</div>
+          <div class="alert-banner-sub" id="alert-banner-sub">Todo está bajo control</div>
+        </div>
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M7 5L11 9L7 13" stroke="var(--danger)" stroke-width="1.5" stroke-linecap="round" />
+        </svg>
+      </div>
+
+      <div class="filter-tabs anim-item">
+        <button class="filter-tab active" onclick="setFilter(this)">Todos</button>
+        <button class="filter-tab" onclick="setFilter(this)">SOS</button>
+        <button class="filter-tab" onclick="setFilter(this)">Zona</button>
+        <button class="filter-tab" onclick="setFilter(this)">Impacto</button>
+        <button class="filter-tab" onclick="setFilter(this)">Batería</button>
+      </div>
+
+      <div id="alerts-list">
+        <!-- Rendered dynamically -->
+        <div style="text-align:center;padding:40px 20px;color:var(--text-3);">
+          <div style="font-size:40px;margin-bottom:12px;">🔔</div>
+          <div style="font-size:14px;font-weight:500;">No hay alertas recientes</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       SCREEN: SETTINGS
+  ══════════════════════════════ -->
+  <div class="screen" id="screen-settings">
+    <div class="settings-profile">
+      <div class="avatar" id="settings-user-avatar"
+        style="width:60px;height:60px;font-size:22px;background:linear-gradient(135deg,rgba(255,255,255,0.2),rgba(255,255,255,0.05));border:2px solid rgba(255,255,255,0.2);overflow:hidden;">
+        M</div>
+      <div style="flex:1; position:relative;">
+        <div class="profile-name" id="settings-user-name">Perfil de Padre</div>
+        <div class="profile-role" id="settings-user-role">Cuenta de Padre · Cargando...</div>
+      </div>
+      <button class="icon-btn" onclick="openEditParentProfile()">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M14 2L18 6L8 16L4 16L4 12L14 2Z" stroke="rgba(255,255,255,0.6)" stroke-width="1.5" fill="none"
+            stroke-linejoin="round" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="scroll-content" style="padding-bottom:calc(var(--nav-h)+24px);">
+      <div style="height:16px;"></div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">Hijos</div>
+        <div class="card" id="settings-students-list">
+          <!-- Rendered dynamically by renderSettingsStudents() -->
+        </div>
+        <button class="btn btn-ghost btn-full" style="margin-top:8px;height:44px;" onclick="openEditStudent(null)">
+          + Agregar nuevo hijo
+        </button>
+      </div>
+
+      <!-- ══ HORARIO DE MONITOREO ══ -->
+      <div class="settings-section">
+        <div class="settings-section-title">Horario de Monitoreo</div>
+
+        <!-- Card principal: toggle + resumen visual -->
+        <div class="card" style="margin-bottom:10px;">
+          <div class="settings-item"
+            style="align-items:flex-start;padding-bottom:14px;border-bottom:1px solid var(--border);">
+            <div class="settings-item-icon" style="background:rgba(41,121,255,0.1);">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <circle cx="9" cy="9" r="7" stroke="var(--blue-acc)" stroke-width="1.5" fill="none" />
+                <path d="M9 5V9.5L12 11.5" stroke="var(--blue-acc)" stroke-width="1.5" stroke-linecap="round" />
+              </svg>
+            </div>
+            <div class="settings-item-text">
+              <div class="settings-item-label">Horario activo</div>
+              <div class="settings-item-sub" id="sched-summary-sub">Monitoreo 24/7 activo</div>
+            </div>
+            <div class="toggle" id="sched-master-toggle" onclick="toggleSchedule(this)">
+              <div class="toggle-thumb"></div>
+            </div>
+          </div>
+
+          <!-- Panel expandible de configuración -->
+          <div id="sched-config-panel" style="display:none;padding-top:14px;">
+
+            <!-- Días de la semana -->
+            <div
+              style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-3);margin-bottom:8px;">
+              Días activos</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;" id="sched-days-row">
+              <button class="day-chip on" data-day="1" onclick="toggleDay(this)">Lun</button>
+              <button class="day-chip on" data-day="2" onclick="toggleDay(this)">Mar</button>
+              <button class="day-chip on" data-day="3" onclick="toggleDay(this)">Mié</button>
+              <button class="day-chip on" data-day="4" onclick="toggleDay(this)">Jue</button>
+              <button class="day-chip on" data-day="5" onclick="toggleDay(this)">Vie</button>
+              <button class="day-chip" data-day="6" onclick="toggleDay(this)">Sáb</button>
+              <button class="day-chip" data-day="0" onclick="toggleDay(this)">Dom</button>
+            </div>
+
+            <!-- Rango de horas -->
+            <div
+              style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-3);margin-bottom:8px;">
+              Rango de horas</div>
+            <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px;">
+              <div style="flex:1;">
+                <div style="font-size:11px;color:var(--text-3);margin-bottom:4px;">Inicio</div>
+                <input type="time" id="sched-start" value="06:00"
+                  style="width:100%;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px;color:var(--text-h);outline:none;"
+                  onchange="saveScheduleFromUI()">
+              </div>
+              <div style="font-size:18px;color:var(--text-3);margin-top:16px;">→</div>
+              <div style="flex:1;">
+                <div style="font-size:11px;color:var(--text-3);margin-bottom:4px;">Fin</div>
+                <input type="time" id="sched-end" value="16:00"
+                  style="width:100%;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px;color:var(--text-h);outline:none;"
+                  onchange="saveScheduleFromUI()">
+              </div>
+            </div>
+
+            <!-- Opciones inteligentes -->
+            <div
+              style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-3);margin-bottom:8px;">
+              Opciones inteligentes</div>
+            <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:4px;">
 
               <div
-                style="background:rgba(245,166,35,0.06);border:1px solid rgba(245,166,35,0.2);border-radius:var(--radius-sm);padding:12px 14px;display:flex;align-items:center;gap:12px;">
+                style="display:flex;align-items:center;gap:12px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;">
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style="flex-shrink:0;opacity:0.6;">
                   <circle cx="10" cy="4" r="2" fill="var(--text-2)" />
                   <path d="M7 8h6l-1 5H8L7 8Z" fill="var(--text-2)" />
                   <path d="M8 13l-2 5M12 13l2 5" stroke="var(--text-2)" stroke-width="1.5" stroke-linecap="round" />
                 </svg>
                 <div style="flex:1;">
-                  <div style="font-size:13px;font-weight:600;color:var(--text-1);">Reactivar si se mueve fuera de
-                    horario</div>
-                  <div style="font-size:11px;color:var(--text-3);">Si el alumno camina, activa sensores por 30 min extra
-                  </div>
+                  <div style="font-size:13px;font-weight:600;color:var(--text-h);">Reactivar por movimiento</div>
+                  <div style="font-size:11px;color:var(--text-3);margin-top:2px;">Si el alumno se mueve fuera del
+                    horario, activa monitoreo completo 30 min</div>
                 </div>
-                <div class="toggle on" id="es-motion-toggle" onclick="this.classList.toggle('on')">
+                <div class="toggle on" id="sched-motion-toggle"
+                  onclick="this.classList.toggle('on');saveScheduleFromUI();">
                   <div class="toggle-thumb"></div>
                 </div>
               </div>
 
               <div
-                style="background:rgba(232,54,74,0.05);border:1px solid rgba(232,54,74,0.15);border-radius:var(--radius-sm);padding:12px 14px;display:flex;align-items:center;gap:12px;">
+                style="display:flex;align-items:center;gap:12px;background:rgba(232,54,74,0.06);border:1px solid rgba(232,54,74,0.15);border-radius:12px;padding:12px 14px;">
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style="flex-shrink:0;opacity:0.6;">
                   <circle cx="10" cy="10" r="8" stroke="var(--danger)" stroke-width="1.5" fill="none" />
                   <path d="M10 6v5M10 13v1" stroke="var(--danger)" stroke-width="2" stroke-linecap="round" />
                 </svg>
                 <div style="flex:1;">
-                  <div style="font-size:13px;font-weight:600;color:var(--text-1);">SOS siempre activo</div>
-                  <div style="font-size:11px;color:var(--text-3);">Funciona 24/7 sin importar el horario</div>
+                  <div style="font-size:13px;font-weight:600;color:var(--text-h);">SOS siempre activo</div>
+                  <div style="font-size:11px;color:var(--text-3);margin-top:2px;">El botón SOS y detección de impactos
+                    funcionan 24/7, sin excepción</div>
                 </div>
                 <div
-                  style="font-size:11px;font-weight:700;color:var(--safe);background:var(--safe-bg);padding:4px 10px;border-radius:100px;">
+                  style="font-size:11px;font-weight:700;color:var(--safe);background:var(--safe-bg);padding:4px 10px;border-radius:100px;white-space:nowrap;">
                   Siempre activo</div>
               </div>
 
-              <!-- Preview ahorro de batería -->
-              <div style="background:var(--card);border-radius:var(--radius-sm);padding:16px;">
-                <div style="font-size:12px;font-weight:700;color:var(--text-2);margin-bottom:8px;">Ahorro estimado de
-                  batería</div>
-                <div style="display:flex;border-radius:6px;overflow:hidden;height:10px;margin-bottom:8px;"
-                  id="es-battery-bar"></div>
-                <div style="display:flex;gap:16px;font-size:11px;color:var(--text-3);">
-                  <span style="display:flex;align-items:center;gap:5px;"><span
-                      style="width:8px;height:8px;border-radius:50%;background:var(--safe);display:inline-block;"></span>GPS
-                    activo</span>
-                  <span style="display:flex;align-items:center;gap:5px;"><span
-                      style="width:8px;height:8px;border-radius:50%;background:var(--border);display:inline-block;"></span>Modo
-                    ahorro</span>
-                </div>
-                <div style="margin-top:8px;font-size:13px;font-weight:700;color:var(--safe);">Ahorro: ~<span
-                    id="es-saving-pct">—</span> vs 24/7</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- ⑤ Zona de peligro (solo al editar) -->
-        <div id="es-danger-zone" style="display:none;" class="anim-item">
-          <div class="settings-section-title" style="color:var(--danger);">Zona de peligro</div>
-          <div class="card" style="padding:4px 0;">
-            <div class="settings-item" onclick="confirmDeleteStudent()" style="color:var(--danger);">
-              <div class="settings-item-icon" style="background:var(--danger-bg);">
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                  <path d="M3 5H15M6 5V3H12V5M7 8V14M11 8V14M4 5L5 15H13L14 5H4Z" stroke="var(--danger)"
-                    stroke-width="1.4" stroke-linecap="round" />
-                </svg>
-              </div>
-              <div class="settings-item-text">
-                <div class="settings-item-label" style="color:var(--danger);">Eliminar alumno</div>
-                <div class="settings-item-sub">Se eliminan todos sus datos y configuración</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- ══════════════════════════════
-       SCREEN: MAP
-  ══════════════════════════════ -->
-    <div class="screen" id="screen-map">
-      <div class="map-topbar">
-        <div style="flex:1;">
-          <div class="topbar-title">Rastreo en Vivo</div>
-          <div class="live-indicator" style="margin-top:3px;">
-            <div class="live-dot"></div> Actualiza cada 30 seg
-          </div>
-        </div>
-        <div
-          style="display:flex;gap:8px;overflow-x:auto;mask-image:linear-gradient(to right,black 90%,transparent);max-width:200px;-webkit-overflow-scrolling:touch;padding-bottom:5px;"
-          id="map-student-tabs">
-          <!-- Rendered dynamically by renderMapTabs() -->
-        </div>
-      </div>
-
-      <div id="map-container" style="position:relative;flex:1;overflow:hidden;">
-        <!-- Google Maps iframe — se actualiza con GPS real del alumno -->
-        <div id="parent-map-loading"
-          style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:var(--bg-card);z-index:5;transition:opacity 0.4s;">
-          <div
-            style="width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--blue-acc);border-radius:50%;animation:spin 0.8s linear infinite;">
-          </div>
-          <div style="font-size:12px;color:var(--text-3);" id="parent-map-loading-text">Esperando ubicación...</div>
-        </div>
-        <div class="map-offline-fallback" id="parent-gmap-offline" style="z-index: 10;">
-          <div class="offline-icon-container">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-              stroke-linejoin="round">
-              <path
-                d="M1 1l22 22M16.72 11.06A10.94 10.94 0 0 1 19 12.55M5 12.55a10.94 10.94 0 0 1 5.17-2.39M10.71 5.05A16 16 0 0 1 22.58 9M1.42 9a15.91 15.91 0 0 1 4.7-2.88M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01" />
-            </svg>
-            <div class="offline-status-dot"></div>
-          </div>
-          <div class="offline-title">Sin Conexión</div>
-          <div class="offline-sub">No se puede cargar el mapa dinámico sin internet. Verifica tu wifi o datos.</div>
-          <button class="offline-retry-btn" onclick="window.location.reload()">Reintentar conexión</button>
-        </div>
-        <iframe id="parent-gmap" src="" style="width:100%;height:100%;border:none;display:block;" allowfullscreen
-          loading="lazy"></iframe>
-
-        <!-- Info chip coords -->
-        <div id="parent-map-chip"
-          style="position:absolute;bottom:10px;left:10px;background:var(--topbar-bg);backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:100px;padding:5px 12px;font-size:11px;color:var(--text-2);font-weight:600;z-index:10;display:none;align-items:center;gap:6px;">
-          <div
-            style="width:6px;height:6px;border-radius:50%;background:var(--safe);animation:pulse-safe 1.5s infinite;">
-          </div>
-          <span id="parent-map-coords">—</span>
-        </div>
-
-        <div class="map-controls">
-          <button class="map-ctrl-btn" onclick="recenterParentMap()" title="Centrar">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5" fill="none" />
-              <circle cx="10" cy="10" r="2" fill="currentColor" />
-              <line x1="10" y1="1" x2="10" y2="4" stroke="currentColor" stroke-width="1.5" />
-              <line x1="10" y1="16" x2="10" y2="19" stroke="currentColor" stroke-width="1.5" />
-              <line x1="1" y1="10" x2="4" y2="10" stroke="currentColor" stroke-width="1.5" />
-              <line x1="16" y1="10" x2="19" y2="10" stroke="currentColor" stroke-width="1.5" />
-            </svg>
-          </button>
-          <button class="map-ctrl-btn" onclick="showModal('zone')">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M3 10L10 3L17 10L10 17L3 10Z" stroke="currentColor" stroke-width="1.5" fill="none" />
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      <div class="map-bottom-sheet">
-        <div class="sheet-handle"></div>
-        <div class="map-student-row" id="map-student-info">
-          <div class="avatar avatar-ring-safe"
-            style="width:48px;height:48px;font-size:17px;background:linear-gradient(135deg,#0D2E4F,#1A3358);"
-            id="map-student-avatar">S</div>
-          <div style="flex:1;">
-            <div class="topbar-title" style="font-size:16px;" id="map-student-name">...</div>
-            <div style="font-size:13px;color:var(--text-3);margin-top:2px;" id="map-student-location">Obteniendo
-              ubicación...</div>
-          </div>
-          <div class="status-pill status-safe" id="map-student-status">
-            <div class="status-dot"></div>Segura
-          </div>
-        </div>
-        <div style="display:flex;gap:8px;margin-top:14px;">
-          <button class="btn btn-ghost" style="flex:1;height:44px;" id="map-call-btn"
-            onclick="callStudent(activeMapStudent)">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path
-                d="M14 10.4C13.1 10.4 12.2 10.2 11.4 9.9C11.2 9.8 10.9 9.9 10.8 10L9.6 11.2C7.9 10.3 6.7 9.1 5.8 7.4L7 6.2C7.1 6.1 7.2 5.8 7.1 5.6C6.8 4.8 6.6 3.9 6.6 3C6.6 2.7 6.4 2.5 6.1 2.5H3.9C3.6 2.5 3 2.7 3 3C3 9.8 8.2 15 15 15C15.3 15 15.5 14.4 15.5 14.1V11.9C15.5 11.6 15.3 10.4 14 10.4Z"
-                fill="var(--navy)" />
-            </svg>
-            Llamar
-          </button>
-          <button class="btn btn-primary" style="flex:2;height:44px;" onclick="recenterParentMap()">
-            Centrar en Mapa
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ══════════════════════════════
-       SCREEN: ALERTS
-  ══════════════════════════════ -->
-    <div class="screen" id="screen-alerts">
-      <div class="topbar">
-        <div class="topbar-title">
-          Centro de Notificaciones
-          <span class="topbar-sub">2 activas</span>
-        </div>
-        <button class="icon-btn" onclick="markAllAlertsRead()">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path d="M4 10L8 14L16 6" stroke="var(--text-2)" stroke-width="1.5" stroke-linecap="round" />
-          </svg>
-        </button>
-      </div>
-
-      <div class="scroll-content">
-        <div class="alert-banner anim-item" onclick="navigateTo('emergency')">
-          <div class="alert-banner-icon">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M10 2L2 16H18L10 2Z" fill="white" />
-              <rect x="9.5" y="7" width="1" height="5" rx="0.5" fill="var(--danger)" />
-              <circle cx="10" cy="13.5" r="0.8" fill="var(--danger)" />
-            </svg>
-          </div>
-          <div class="alert-banner-text">
-            <div class="alert-banner-title" id="alert-banner-title">Sin alertas activas</div>
-            <div class="alert-banner-sub" id="alert-banner-sub">Todo está bajo control</div>
-          </div>
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-            <path d="M7 5L11 9L7 13" stroke="var(--danger)" stroke-width="1.5" stroke-linecap="round" />
-          </svg>
-        </div>
-
-        <div class="filter-tabs anim-item">
-          <button class="filter-tab active" onclick="setFilter(this)">Todos</button>
-          <button class="filter-tab" onclick="setFilter(this)">SOS</button>
-          <button class="filter-tab" onclick="setFilter(this)">Zona</button>
-          <button class="filter-tab" onclick="setFilter(this)">Impacto</button>
-          <button class="filter-tab" onclick="setFilter(this)">Batería</button>
-        </div>
-
-        <div id="alerts-list">
-          <!-- Rendered dynamically -->
-          <div style="text-align:center;padding:40px 20px;color:var(--text-3);">
-            <div style="font-size:40px;margin-bottom:12px;">🔔</div>
-            <div style="font-size:14px;font-weight:500;">No hay alertas recientes</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ══════════════════════════════
-       SCREEN: SETTINGS
-  ══════════════════════════════ -->
-    <div class="screen" id="screen-settings">
-      <div class="settings-profile">
-        <div class="avatar" id="settings-user-avatar"
-          style="width:60px;height:60px;font-size:22px;background:linear-gradient(135deg,rgba(255,255,255,0.2),rgba(255,255,255,0.05));border:2px solid rgba(255,255,255,0.2);overflow:hidden;">
-          M</div>
-        <div style="flex:1; position:relative;">
-          <div class="profile-name" id="settings-user-name">Perfil de Padre</div>
-          <div class="profile-role" id="settings-user-role">Cuenta de Padre · Cargando...</div>
-        </div>
-        <button class="icon-btn" onclick="openEditParentProfile()">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path d="M14 2L18 6L8 16L4 16L4 12L14 2Z" stroke="rgba(255,255,255,0.6)" stroke-width="1.5" fill="none"
-              stroke-linejoin="round" />
-          </svg>
-        </button>
-      </div>
-
-      <div class="scroll-content" style="padding-bottom:calc(var(--nav-h)+24px);">
-        <div style="height:16px;"></div>
-
-        <div class="settings-section">
-          <div class="settings-section-title">Hijos</div>
-          <div class="card" id="settings-students-list">
-            <!-- Rendered dynamically by renderSettingsStudents() -->
-          </div>
-          <button class="btn btn-ghost btn-full" style="margin-top:8px;height:44px;" onclick="openEditStudent(null)">
-            + Agregar nuevo hijo
-          </button>
-        </div>
-
-        <!-- ══ HORARIO DE MONITOREO ══ -->
-        <div class="settings-section">
-          <div class="settings-section-title">Horario de Monitoreo</div>
-
-          <!-- Card principal: toggle + resumen visual -->
-          <div class="card" style="margin-bottom:10px;">
-            <div class="settings-item"
-              style="align-items:flex-start;padding-bottom:14px;border-bottom:1px solid var(--border);">
-              <div class="settings-item-icon" style="background:rgba(41,121,255,0.1);">
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                  <circle cx="9" cy="9" r="7" stroke="var(--blue-acc)" stroke-width="1.5" fill="none" />
-                  <path d="M9 5V9.5L12 11.5" stroke="var(--blue-acc)" stroke-width="1.5" stroke-linecap="round" />
-                </svg>
-              </div>
-              <div class="settings-item-text">
-                <div class="settings-item-label">Horario activo</div>
-                <div class="settings-item-sub" id="sched-summary-sub">Monitoreo 24/7 activo</div>
-              </div>
-              <div class="toggle" id="sched-master-toggle" onclick="toggleSchedule(this)">
-                <div class="toggle-thumb"></div>
-              </div>
-            </div>
-
-            <!-- Panel expandible de configuración -->
-            <div id="sched-config-panel" style="display:none;padding-top:14px;">
-
-              <!-- Días de la semana -->
               <div
-                style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-3);margin-bottom:8px;">
-                Días activos</div>
-              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;" id="sched-days-row">
-                <button class="day-chip on" data-day="1" onclick="toggleDay(this)">Lun</button>
-                <button class="day-chip on" data-day="2" onclick="toggleDay(this)">Mar</button>
-                <button class="day-chip on" data-day="3" onclick="toggleDay(this)">Mié</button>
-                <button class="day-chip on" data-day="4" onclick="toggleDay(this)">Jue</button>
-                <button class="day-chip on" data-day="5" onclick="toggleDay(this)">Vie</button>
-                <button class="day-chip" data-day="6" onclick="toggleDay(this)">Sáb</button>
-                <button class="day-chip" data-day="0" onclick="toggleDay(this)">Dom</button>
-              </div>
+                style="display:flex;align-items:center;gap:12px;background:rgba(245,166,35,0.06);border:1px solid rgba(245,166,35,0.15);border-radius:12px;padding:12px 14px;">
 
-              <!-- Rango de horas -->
-              <div
-                style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-3);margin-bottom:8px;">
-                Rango de horas</div>
-              <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px;">
                 <div style="flex:1;">
-                  <div style="font-size:11px;color:var(--text-3);margin-bottom:4px;">Inicio</div>
-                  <input type="time" id="sched-start" value="06:00"
-                    style="width:100%;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px;color:var(--text-h);outline:none;"
-                    onchange="saveScheduleFromUI()">
+                  <div style="font-size:13px;font-weight:600;color:var(--text-h);">Batería baja → modo ahorro</div>
+                  <div style="font-size:11px;color:var(--text-3);margin-top:2px;">Si la batería baja de 15%, reduce el
+                    GPS para que el celular no se apague</div>
                 </div>
-                <div style="font-size:18px;color:var(--text-3);margin-top:16px;">→</div>
-                <div style="flex:1;">
-                  <div style="font-size:11px;color:var(--text-3);margin-bottom:4px;">Fin</div>
-                  <input type="time" id="sched-end" value="16:00"
-                    style="width:100%;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px;color:var(--text-h);outline:none;"
-                    onchange="saveScheduleFromUI()">
-                </div>
-              </div>
-
-              <!-- Opciones inteligentes -->
-              <div
-                style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-3);margin-bottom:8px;">
-                Opciones inteligentes</div>
-              <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:4px;">
-
                 <div
-                  style="display:flex;align-items:center;gap:12px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;">
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style="flex-shrink:0;opacity:0.6;">
-                    <circle cx="10" cy="4" r="2" fill="var(--text-2)" />
-                    <path d="M7 8h6l-1 5H8L7 8Z" fill="var(--text-2)" />
-                    <path d="M8 13l-2 5M12 13l2 5" stroke="var(--text-2)" stroke-width="1.5" stroke-linecap="round" />
-                  </svg>
-                  <div style="flex:1;">
-                    <div style="font-size:13px;font-weight:600;color:var(--text-h);">Reactivar por movimiento</div>
-                    <div style="font-size:11px;color:var(--text-3);margin-top:2px;">Si el alumno se mueve fuera del
-                      horario, activa monitoreo completo 30 min</div>
-                  </div>
-                  <div class="toggle on" id="sched-motion-toggle"
-                    onclick="this.classList.toggle('on');saveScheduleFromUI();">
-                    <div class="toggle-thumb"></div>
-                  </div>
-                </div>
-
-                <div
-                  style="display:flex;align-items:center;gap:12px;background:rgba(232,54,74,0.06);border:1px solid rgba(232,54,74,0.15);border-radius:12px;padding:12px 14px;">
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style="flex-shrink:0;opacity:0.6;">
-                    <circle cx="10" cy="10" r="8" stroke="var(--danger)" stroke-width="1.5" fill="none" />
-                    <path d="M10 6v5M10 13v1" stroke="var(--danger)" stroke-width="2" stroke-linecap="round" />
-                  </svg>
-                  <div style="flex:1;">
-                    <div style="font-size:13px;font-weight:600;color:var(--text-h);">SOS siempre activo</div>
-                    <div style="font-size:11px;color:var(--text-3);margin-top:2px;">El botón SOS y detección de impactos
-                      funcionan 24/7, sin excepción</div>
-                  </div>
-                  <div
-                    style="font-size:11px;font-weight:700;color:var(--safe);background:var(--safe-bg);padding:4px 10px;border-radius:100px;white-space:nowrap;">
-                    Siempre activo</div>
-                </div>
-
-                <div
-                  style="display:flex;align-items:center;gap:12px;background:rgba(245,166,35,0.06);border:1px solid rgba(245,166,35,0.15);border-radius:12px;padding:12px 14px;">
-
-                  <div style="flex:1;">
-                    <div style="font-size:13px;font-weight:600;color:var(--text-h);">Batería baja → modo ahorro</div>
-                    <div style="font-size:11px;color:var(--text-3);margin-top:2px;">Si la batería baja de 15%, reduce el
-                      GPS para que el celular no se apague</div>
-                  </div>
-                  <div
-                    style="font-size:11px;font-weight:700;color:var(--warn);background:var(--warn-bg);padding:4px 10px;border-radius:100px;white-space:nowrap;">
-                    Auto</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Previsualización del ahorro de batería -->
-          <div id="sched-battery-preview"
-            style="display:none;background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:0;">
-            <div style="font-size:12px;font-weight:700;color:var(--text-2);margin-bottom:10px;">Estimado de batería hoy
-            </div>
-            <div style="display:flex;gap:0;border-radius:8px;overflow:hidden;height:12px;margin-bottom:8px;"
-              id="battery-timeline-bar"></div>
-            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-3);"
-              id="battery-timeline-labels"></div>
-            <div style="margin-top:10px;display:flex;gap:16px;flex-wrap:wrap;">
-              <div style="font-size:12px;color:var(--safe);">●&nbsp;<span id="bat-saving-pct">—</span> ahorro estimado
-              </div>
-              <div style="font-size:12px;color:var(--text-3);">⬛ Bajo consumo &nbsp; 🟩 Activo</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="settings-section">
-          <div class="settings-section-title">Notificaciones</div>
-          <div class="card">
-            <div class="settings-item">
-              <div class="settings-item-icon" style="background:var(--danger-bg);">
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                  <path d="M9 1.5L1 14.5H17L9 1.5Z" fill="var(--danger)" />
-                </svg>
-              </div>
-              <div class="settings-item-text">
-                <div class="settings-item-label">Notificaciones SOS</div>
-                <div class="settings-item-sub">Alerta de sonido inmediato</div>
-              </div>
-              <div class="toggle on" onclick="toggleSwitch(this)">
-                <div class="toggle-thumb"></div>
-              </div>
-            </div>
-            <div class="settings-item">
-              <div class="settings-item-icon" style="background:var(--warn-bg);">
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                  <circle cx="9" cy="9" r="5" stroke="var(--warn)" stroke-width="1.5" fill="none" />
-                  <path d="M9 6.5V9.5" stroke="var(--warn)" stroke-width="1.5" stroke-linecap="round" />
-                </svg>
-              </div>
-              <div class="settings-item-text">
-                <div class="settings-item-label">Salida de Zonas</div>
-                <div class="settings-item-sub">Alerta al salir de zonas seguras</div>
-              </div>
-              <div class="toggle on" onclick="toggleSwitch(this)">
-                <div class="toggle-thumb"></div>
-              </div>
-            </div>
-            <div class="settings-item">
-              <div class="settings-item-icon" style="background:rgba(10,22,40,0.07);">
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                  <rect x="2" y="9" width="14" height="7" rx="1" fill="var(--text-3)" />
-                  <rect x="2" y="9" width="4" height="7" rx="1" fill="var(--text-2)" />
-                </svg>
-              </div>
-              <div class="settings-item-text">
-                <div class="settings-item-label">Batería Baja</div>
-                <div class="settings-item-sub">Alerta al 15% de batería</div>
-              </div>
-              <div class="toggle" onclick="toggleSwitch(this)">
-                <div class="toggle-thumb"></div>
-              </div>
-            </div>
-            <div class="settings-item">
-              <div class="settings-item-icon" style="background:rgba(10,22,40,0.07);">
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                  <path
-                    d="M9 2C6.24 2 4 4.24 4 7C4 10.75 9 17 9 17C9 17 14 10.75 14 7C14 4.24 11.76 2 9 2ZM9 8.5C8.17 8.5 7.5 7.83 7.5 7C7.5 6.17 8.17 5.5 9 5.5C9.83 5.5 10.5 6.17 10.5 7C10.5 7.83 9.83 8.5 9 8.5Z"
-                    fill="var(--text-3)" />
-                </svg>
-              </div>
-              <div class="settings-item-text">
-                <div class="settings-item-label">Llegadas y Salidas</div>
-                <div class="settings-item-sub">Check-in en colegio y hogar</div>
-              </div>
-              <div class="toggle on" onclick="toggleSwitch(this)">
-                <div class="toggle-thumb"></div>
+                  style="font-size:11px;font-weight:700;color:var(--warn);background:var(--warn-bg);padding:4px 10px;border-radius:100px;white-space:nowrap;">
+                  Auto</div>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="settings-section">
-          <div class="settings-section-title">Apariencia</div>
-          <div class="card">
-            <div class="settings-item" id="dark-mode-item">
-              <div class="settings-item-icon" id="dark-mode-icon" style="background:rgba(10,22,40,0.07);">
-                <svg id="dark-icon-moon" width="18" height="18" viewBox="0 0 18 18" fill="none">
-                  <path
-                    d="M15.3 9.45C14.58 12.78 11.61 15.3 8.1 15.3C4.14 15.3 0.9 12.06 0.9 8.1C0.9 4.59 3.42 1.62 6.75 0.9C5.31 2.7 4.5 5.04 4.5 7.65C4.5 11.88 7.92 15.3 12.15 15.3C13.32 15.3 14.4 15.03 15.3 14.58V9.45Z"
-                    fill="var(--text-1)" />
-                </svg>
-                <svg id="dark-icon-sun" width="18" height="18" viewBox="0 0 18 18" fill="none" style="display:none;">
-                  <circle cx="9" cy="9" r="3.6" fill="#F5A623" />
-                  <path
-                    d="M9 1.8V3.6M9 14.4V16.2M1.8 9H3.6M14.4 9H16.2M4.437 4.437L5.7 5.7M12.3 12.3L13.563 13.563M4.437 13.563L5.7 12.3M12.3 5.7L13.563 4.437"
-                    stroke="#F5A623" stroke-width="1.35" stroke-linecap="round" />
-                </svg>
-              </div>
-              <div class="settings-item-text">
-                <div class="settings-item-label" id="dark-mode-label">Modo Oscuro</div>
-                <div class="settings-item-sub" id="dark-mode-sub">Tema claro activo</div>
-              </div>
-              <div class="toggle" id="dark-mode-toggle" onclick="toggleDarkMode()">
-                <div class="toggle-thumb"></div>
-              </div>
+        <!-- Previsualización del ahorro de batería -->
+        <div id="sched-battery-preview"
+          style="display:none;background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:0;">
+          <div style="font-size:12px;font-weight:700;color:var(--text-2);margin-bottom:10px;">Estimado de batería hoy
+          </div>
+          <div style="display:flex;gap:0;border-radius:8px;overflow:hidden;height:12px;margin-bottom:8px;"
+            id="battery-timeline-bar"></div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-3);"
+            id="battery-timeline-labels"></div>
+          <div style="margin-top:10px;display:flex;gap:16px;flex-wrap:wrap;">
+            <div style="font-size:12px;color:var(--safe);">●&nbsp;<span id="bat-saving-pct">—</span> ahorro estimado
             </div>
-
-            <!-- Asistente de Voz -->
-            <div class="settings-item">
-              <div class="settings-item-icon" style="background:rgba(45,212,191,0.12);">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2DD4BF" stroke-width="2"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path>
-                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-                  <line x1="12" y1="19" x2="12" y2="22"></line>
-                  <line x1="8" y1="22" x2="16" y2="22"></line>
-                </svg>
-              </div>
-              <div class="settings-item-text">
-                <div class="settings-item-label">Asistente de Voz</div>
-                <div class="settings-item-sub">Alertas críticas parlantes</div>
-              </div>
-              <div style="display:flex;align-items:center;gap:8px;">
-                <button class="btn btn-ghost" style="height:32px;font-size:10px;padding:0 8px;border-radius:10px;"
-                  onclick="VoiceAssistant.speak('Prueba de voz exitosa. El sistema está listo.')">Probar</button>
-                <div class="toggle" id="voice-assistant-toggle" onclick="toggleVoiceAssistant()">
-                  <div class="toggle-thumb"></div>
-                </div>
-              </div>
-            </div>
+            <div style="font-size:12px;color:var(--text-3);">⬛ Bajo consumo &nbsp; 🟩 Activo</div>
           </div>
         </div>
+      </div>
 
-        <div class="settings-section">
-          <div class="settings-section-title">Cuenta</div>
-          <div class="card">
-            <div class="settings-item" onclick="showModal('security')">
-              <div class="settings-item-icon" style="background:rgba(41,121,255,0.1);">
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                  <rect x="4" y="8" width="10" height="8" rx="1.5" stroke="var(--blue-acc)" stroke-width="1.5"
-                    fill="none" />
-                  <path d="M6 8V6C6 4.34 7.34 3 9 3C10.66 3 12 4.34 12 6V8" stroke="var(--blue-acc)" stroke-width="1.5"
-                    stroke-linecap="round" />
-                </svg>
-              </div>
-              <div class="settings-item-text">
-                <div class="settings-item-label">Privacidad y Seguridad</div>
-              </div>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M6 4L10 8L6 12" stroke="var(--text-3)" stroke-width="1.5" stroke-linecap="round" />
+      <div class="settings-section">
+        <div class="settings-section-title">Notificaciones</div>
+        <div class="card">
+          <div class="settings-item">
+            <div class="settings-item-icon" style="background:var(--danger-bg);">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <path d="M9 1.5L1 14.5H17L9 1.5Z" fill="var(--danger)" />
               </svg>
             </div>
-            <div class="settings-item" onclick="logoutUser()">
-              <div class="settings-item-icon" style="background:var(--danger-bg);">
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                  <path d="M7 3H3V15H7M12 12L15 9M15 9L12 6M15 9H7" stroke="var(--danger)" stroke-width="1.5"
-                    stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-              </div>
-              <div class="settings-item-text">
-                <div class="settings-item-label" style="color:var(--danger);">Cerrar Sesión</div>
+            <div class="settings-item-text">
+              <div class="settings-item-label">Notificaciones SOS</div>
+              <div class="settings-item-sub">Alerta de sonido inmediato</div>
+            </div>
+            <div class="toggle on" onclick="toggleSwitch(this)">
+              <div class="toggle-thumb"></div>
+            </div>
+          </div>
+          <div class="settings-item">
+            <div class="settings-item-icon" style="background:var(--warn-bg);">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <circle cx="9" cy="9" r="5" stroke="var(--warn)" stroke-width="1.5" fill="none" />
+                <path d="M9 6.5V9.5" stroke="var(--warn)" stroke-width="1.5" stroke-linecap="round" />
+              </svg>
+            </div>
+            <div class="settings-item-text">
+              <div class="settings-item-label">Salida de Zonas</div>
+              <div class="settings-item-sub">Alerta al salir de zonas seguras</div>
+            </div>
+            <div class="toggle on" onclick="toggleSwitch(this)">
+              <div class="toggle-thumb"></div>
+            </div>
+          </div>
+          <div class="settings-item">
+            <div class="settings-item-icon" style="background:rgba(10,22,40,0.07);">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <rect x="2" y="9" width="14" height="7" rx="1" fill="var(--text-3)" />
+                <rect x="2" y="9" width="4" height="7" rx="1" fill="var(--text-2)" />
+              </svg>
+            </div>
+            <div class="settings-item-text">
+              <div class="settings-item-label">Batería Baja</div>
+              <div class="settings-item-sub">Alerta al 15% de batería</div>
+            </div>
+            <div class="toggle" onclick="toggleSwitch(this)">
+              <div class="toggle-thumb"></div>
+            </div>
+          </div>
+          <div class="settings-item">
+            <div class="settings-item-icon" style="background:rgba(10,22,40,0.07);">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <path
+                  d="M9 2C6.24 2 4 4.24 4 7C4 10.75 9 17 9 17C9 17 14 10.75 14 7C14 4.24 11.76 2 9 2ZM9 8.5C8.17 8.5 7.5 7.83 7.5 7C7.5 6.17 8.17 5.5 9 5.5C9.83 5.5 10.5 6.17 10.5 7C10.5 7.83 9.83 8.5 9 8.5Z"
+                  fill="var(--text-3)" />
+              </svg>
+            </div>
+            <div class="settings-item-text">
+              <div class="settings-item-label">Llegadas y Salidas</div>
+              <div class="settings-item-sub">Check-in en colegio y hogar</div>
+            </div>
+            <div class="toggle on" onclick="toggleSwitch(this)">
+              <div class="toggle-thumb"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">Apariencia</div>
+        <div class="card">
+          <div class="settings-item" id="dark-mode-item">
+            <div class="settings-item-icon" id="dark-mode-icon" style="background:rgba(10,22,40,0.07);">
+              <svg id="dark-icon-moon" width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <path
+                  d="M15.3 9.45C14.58 12.78 11.61 15.3 8.1 15.3C4.14 15.3 0.9 12.06 0.9 8.1C0.9 4.59 3.42 1.62 6.75 0.9C5.31 2.7 4.5 5.04 4.5 7.65C4.5 11.88 7.92 15.3 12.15 15.3C13.32 15.3 14.4 15.03 15.3 14.58V9.45Z"
+                  fill="var(--text-1)" />
+              </svg>
+              <svg id="dark-icon-sun" width="18" height="18" viewBox="0 0 18 18" fill="none" style="display:none;">
+                <circle cx="9" cy="9" r="3.6" fill="#F5A623" />
+                <path
+                  d="M9 1.8V3.6M9 14.4V16.2M1.8 9H3.6M14.4 9H16.2M4.437 4.437L5.7 5.7M12.3 12.3L13.563 13.563M4.437 13.563L5.7 12.3M12.3 5.7L13.563 4.437"
+                  stroke="#F5A623" stroke-width="1.35" stroke-linecap="round" />
+              </svg>
+            </div>
+            <div class="settings-item-text">
+              <div class="settings-item-label" id="dark-mode-label">Modo Oscuro</div>
+              <div class="settings-item-sub" id="dark-mode-sub">Tema claro activo</div>
+            </div>
+            <div class="toggle" id="dark-mode-toggle" onclick="toggleDarkMode()">
+              <div class="toggle-thumb"></div>
+            </div>
+          </div>
+
+          <!-- Asistente de Voz -->
+          <div class="settings-item">
+            <div class="settings-item-icon" style="background:rgba(45,212,191,0.12);">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2DD4BF" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                <line x1="12" y1="19" x2="12" y2="22"></line>
+                <line x1="8" y1="22" x2="16" y2="22"></line>
+              </svg>
+            </div>
+            <div class="settings-item-text">
+              <div class="settings-item-label">Asistente de Voz</div>
+              <div class="settings-item-sub">Alertas críticas parlantes</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <button class="btn btn-ghost" style="height:32px;font-size:10px;padding:0 8px;border-radius:10px;"
+                onclick="VoiceAssistant.speak('Prueba de voz exitosa. El sistema está listo.')">Probar</button>
+              <div class="toggle" id="voice-assistant-toggle" onclick="toggleVoiceAssistant()">
+                <div class="toggle-thumb"></div>
               </div>
             </div>
           </div>
         </div>
+      </div>
 
-        <div style="text-align:center;padding:16px;color:var(--text-3);font-size:12px;">
-          SchoolSafe Guardián v2.4.1<br>Hecho con ❤️ para las familias de Honduras
+      <div class="settings-section">
+        <div class="settings-section-title">Cuenta</div>
+        <div class="card">
+          <div class="settings-item" onclick="showModal('security')">
+            <div class="settings-item-icon" style="background:rgba(41,121,255,0.1);">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <rect x="4" y="8" width="10" height="8" rx="1.5" stroke="var(--blue-acc)" stroke-width="1.5"
+                  fill="none" />
+                <path d="M6 8V6C6 4.34 7.34 3 9 3C10.66 3 12 4.34 12 6V8" stroke="var(--blue-acc)" stroke-width="1.5"
+                  stroke-linecap="round" />
+              </svg>
+            </div>
+            <div class="settings-item-text">
+              <div class="settings-item-label">Privacidad y Seguridad</div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M6 4L10 8L6 12" stroke="var(--text-3)" stroke-width="1.5" stroke-linecap="round" />
+            </svg>
+          </div>
+          <div class="settings-item" onclick="logoutUser()">
+            <div class="settings-item-icon" style="background:var(--danger-bg);">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <path d="M7 3H3V15H7M12 12L15 9M15 9L12 6M15 9H7" stroke="var(--danger)" stroke-width="1.5"
+                  stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </div>
+            <div class="settings-item-text">
+              <div class="settings-item-label" style="color:var(--danger);">Cerrar Sesión</div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- ══════════════════════════════
+      <div style="text-align:center;padding:16px;color:var(--text-3);font-size:12px;">
+        SchoolSafe Guardián v2.4.1<br>Hecho con ❤️ para las familias de Honduras
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
        SCREEN: EMERGENCY
   ══════════════════════════════ -->
-    <div class="screen" id="screen-emergency">
-      <div class="emergency-overlay"></div>
+  <div class="screen" id="screen-emergency">
+    <div class="emergency-overlay"></div>
 
-      <div class="emergency-header" style="z-index:10;">
-        <button class="back-btn" style="background:rgba(255,255,255,0.1);" onclick="goBack()">
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-            <path d="M11 4L7 9L11 14" stroke="rgba(255,255,255,0.8)" stroke-width="2" stroke-linecap="round" />
-          </svg>
-        </button>
-        <div class="emergency-sos-badge">SOS ACTIVO</div>
-        <div class="emergency-timer" id="em-timer">14:23</div>
-      </div>
-
-      <div class="emergency-student-section" style="z-index:10;">
-        <div class="emergency-pulse-ring">
-          <div class="pulse-ring"></div>
-          <div class="pulse-ring"></div>
-          <div class="pulse-ring"></div>
-          <div class="avatar" id="emergency-avatar"
-            style="width:72px;height:72px;font-size:26px;background:linear-gradient(135deg,#7A1E2E,#4A1520);border:3px solid var(--danger);z-index:1;">
-            ?</div>
-        </div>
-        <div class="emergency-name" id="emergency-name">Cargando...</div>
-        <div class="emergency-location-text" id="emergency-location">Obteniendo ubicación...</div>
-        <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
-          <div id="emergency-alert-type"
-            style="background:rgba(232,54,74,0.15);border:1px solid rgba(232,54,74,0.3);border-radius:100px;padding:5px 14px;font-size:12px;color:rgba(255,255,255,0.7);">
-            Alerta SOS
-          </div>
-          <div id="emergency-battery-chip"
-            style="background:rgba(232,54,74,0.15);border:1px solid rgba(232,54,74,0.3);border-radius:100px;padding:5px 14px;font-size:12px;color:rgba(255,255,255,0.7);">
-            --% batería
-          </div>
-        </div>
-      </div>
-
-      <div class="emergency-map-preview" style="z-index:10;position:relative;">
-        <div id="em-map-loading"
-          style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(26,5,8,0.7);z-index:2;border-radius:16px;">
-          <div style="font-size:12px;color:rgba(255,255,255,0.5);">Obteniendo ubicación...</div>
-        </div>
-        <div class="map-offline-fallback" id="em-gmap-offline"
-          style="background: rgba(26,5,8,0.95); border-radius: 16px;">
-          <div class="offline-icon-container">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-              stroke-linejoin="round">
-              <path
-                d="M1 1l22 22M16.72 11.06A10.94 10.94 0 0 1 19 12.55M5 12.55a10.94 10.94 0 0 1 5.17-2.39M10.71 5.05A16 16 0 0 1 22.58 9M1.42 9a15.91 15.91 0 0 1 4.7-2.88M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01" />
-            </svg>
-            <div class="offline-status-dot"></div>
-          </div>
-          <div class="offline-title" style="color: white;">Mapa no disponible</div>
-          <div class="offline-sub" style="color: rgba(255,255,255,0.6);">El rastreo de emergencia requiere conexión a
-            internet.</div>
-        </div>
-        <iframe id="em-gmap" src="" style="width:100%;height:100%;border:none;border-radius:16px;"
-          allowfullscreen></iframe>
-      </div>
-
-      <div class="emergency-actions" style="z-index:10;">
-        <button class="btn btn-ghost" id="emergency-call-btn"
-          style="flex:1;height:52px;border:1.5px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:white;"
-          onclick="callStudent(emergencyChildId)">
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-            <path
-              d="M16 11.6C15.1 11.6 14.2 11.4 13.4 11.1C13.2 11 12.9 11.1 12.8 11.2L11.3 12.7C9.6 11.8 8.2 10.4 7.3 8.7L8.8 7.2C8.9 7.1 9 6.8 8.9 6.6C8.6 5.8 8.4 4.9 8.4 4C8.4 3.7 8.2 3.5 7.9 3.5H5.7C5.4 3.5 5 3.7 5 4C5 10.8 10.2 16 17 16C17.3 16 17.5 15.6 17.5 15.3V13.1C17.5 12.8 17.3 11.6 16 11.6Z"
-              fill="white" />
-          </svg>
-          Llamar
-        </button>
-        <button class="btn btn-danger"
-          style="flex:2;height:52px;font-size:15px;box-shadow:0 4px 24px rgba(232,54,74,0.5);"
-          onclick="showModal('call-911')">
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-            <path d="M9 1.5L1 14.5H17L9 1.5Z" fill="white" opacity="0.9" />
-            <rect x="8.5" y="6.5" width="1" height="5" rx="0.5" fill="var(--danger)" />
-            <circle cx="9" cy="12.5" r="0.7" fill="var(--danger)" />
-          </svg>
-          Llamar Autoridades
-        </button>
-      </div>
-
-      <div class="emergency-dismiss" style="z-index:10;" onclick="showModal('dismiss-sos')">
-        Descartar alerta
-      </div>
-    </div>
-
-    <!-- PANTALLA: SELECTOR DE UBICACIÓN (Location Picker) -->
-    <div id="screen-location-picker" class="screen">
-      <div class="topbar" style="background:transparent;z-index:20;">
-        <button class="nav-back-btn" onclick="goBack()"
-          style="background:var(--bg);border-radius:100px;padding:4px 12px;box-shadow:var(--shadow-sm);">
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-            <path d="M11 4L7 9L11 14" stroke="var(--blue-acc)" stroke-width="2.2" stroke-linecap="round" />
-          </svg>
-          Atrás
-        </button>
-        <div style="flex:1;text-align:center;">
-          <div class="topbar-title" id="picker-title" style="font-size:15px;">Configurar Ubicación</div>
-        </div>
-        <div style="width:70px;"></div>
-      </div>
-
-      <div class="picker-map-container">
-        <div class="map-offline-fallback" id="picker-iframe-offline">
-          <div class="offline-icon-container">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-              stroke-linejoin="round">
-              <path
-                d="M1 1l22 22M16.72 11.06A10.94 10.94 0 0 1 19 12.55M5 12.55a10.94 10.94 0 0 1 5.17-2.39M10.71 5.05A16 16 0 0 1 22.58 9M1.42 9a15.91 15.91 0 0 1 4.7-2.88M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01" />
-            </svg>
-            <div class="offline-status-dot"></div>
-          </div>
-          <div class="offline-title">Mapa Offline</div>
-          <div class="offline-sub">Conéctate para configurar la zona segura.</div>
-        </div>
-        <iframe id="picker-iframe" width="100%" height="100%" frameborder="0" style="border:0;" allowfullscreen=""
-          loading="lazy"></iframe>
-      </div>
-
-      <div class="picker-overlay">
-        <div class="picker-search-bar">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="opacity:0.5;">
-            <circle cx="11" cy="11" r="8" stroke="var(--text-1)" stroke-width="2" />
-            <path d="M21 21L16.65 16.65" stroke="var(--text-1)" stroke-width="2" stroke-linecap="round" />
-          </svg>
-          <input type="text" class="picker-search-input" id="picker-search" placeholder="Busca una dirección o lugar..."
-            onkeydown="if(event.key==='Enter') searchInPicker()">
-        </div>
-
-        <div style="display:flex;gap:8px;pointer-events:auto;">
-          <button class="btn btn-ghost"
-            style="flex:1;background:var(--bg);box-shadow:var(--shadow-sm);font-size:11px;height:36px;"
-            onclick="useCurrentStudentLocPicker()">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-              stroke-linecap="round" stroke-linejoin="round"
-              style="margin-right:6px;vertical-align:middle;margin-top:-2px;">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-              <circle cx="12" cy="10" r="3" />
-            </svg> Usar ubicación del alumno
-          </button>
-        </div>
-      </div>
-
-      <div class="picker-fab" onclick="recenterPicker()">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" />
-          <path d="M12 2V5M12 19V22M2 12H5M19 12H22" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+    <div class="emergency-header" style="z-index:10;">
+      <button class="back-btn" style="background:rgba(255,255,255,0.1);" onclick="goBack()">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M11 4L7 9L11 14" stroke="rgba(255,255,255,0.8)" stroke-width="2" stroke-linecap="round" />
         </svg>
+      </button>
+      <div class="emergency-sos-badge">SOS ACTIVO</div>
+      <div class="emergency-timer" id="em-timer">14:23</div>
+    </div>
+
+    <div class="emergency-student-section" style="z-index:10;">
+      <div class="emergency-pulse-ring">
+        <div class="pulse-ring"></div>
+        <div class="pulse-ring"></div>
+        <div class="pulse-ring"></div>
+        <div class="avatar" id="emergency-avatar"
+          style="width:72px;height:72px;font-size:26px;background:linear-gradient(135deg,#7A1E2E,#4A1520);border:3px solid var(--danger);z-index:1;">
+          ?</div>
+      </div>
+      <div class="emergency-name" id="emergency-name">Cargando...</div>
+      <div class="emergency-location-text" id="emergency-location">Obteniendo ubicación...</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
+        <div id="emergency-alert-type"
+          style="background:rgba(232,54,74,0.15);border:1px solid rgba(232,54,74,0.3);border-radius:100px;padding:5px 14px;font-size:12px;color:rgba(255,255,255,0.7);">
+          Alerta SOS
+        </div>
+        <div id="emergency-battery-chip"
+          style="background:rgba(232,54,74,0.15);border:1px solid rgba(232,54,74,0.3);border-radius:100px;padding:5px 14px;font-size:12px;color:rgba(255,255,255,0.7);">
+          --% batería
+        </div>
+      </div>
+    </div>
+
+    <div class="emergency-map-preview" style="z-index:10;position:relative;">
+      <div id="em-map-loading"
+        style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(26,5,8,0.7);z-index:2;border-radius:16px;">
+        <div style="font-size:12px;color:rgba(255,255,255,0.5);">Obteniendo ubicación...</div>
+      </div>
+      <div class="map-offline-fallback" id="em-gmap-offline"
+        style="background: rgba(26,5,8,0.95); border-radius: 16px;">
+        <div class="offline-icon-container">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <path
+              d="M1 1l22 22M16.72 11.06A10.94 10.94 0 0 1 19 12.55M5 12.55a10.94 10.94 0 0 1 5.17-2.39M10.71 5.05A16 16 0 0 1 22.58 9M1.42 9a15.91 15.91 0 0 1 4.7-2.88M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01" />
+          </svg>
+          <div class="offline-status-dot"></div>
+        </div>
+        <div class="offline-title" style="color: white;">Mapa no disponible</div>
+        <div class="offline-sub" style="color: rgba(255,255,255,0.6);">El rastreo de emergencia requiere conexión a
+          internet.</div>
+      </div>
+      <iframe id="em-gmap" src="" style="width:100%;height:100%;border:none;border-radius:16px;"
+        allowfullscreen></iframe>
+    </div>
+
+    <div class="emergency-actions" style="z-index:10;">
+      <button class="btn btn-ghost" id="emergency-call-btn"
+        style="flex:1;height:52px;border:1.5px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:white;"
+        onclick="callStudent(emergencyChildId)">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path
+            d="M16 11.6C15.1 11.6 14.2 11.4 13.4 11.1C13.2 11 12.9 11.1 12.8 11.2L11.3 12.7C9.6 11.8 8.2 10.4 7.3 8.7L8.8 7.2C8.9 7.1 9 6.8 8.9 6.6C8.6 5.8 8.4 4.9 8.4 4C8.4 3.7 8.2 3.5 7.9 3.5H5.7C5.4 3.5 5 3.7 5 4C5 10.8 10.2 16 17 16C17.3 16 17.5 15.6 17.5 15.3V13.1C17.5 12.8 17.3 11.6 16 11.6Z"
+            fill="white" />
+        </svg>
+        Llamar
+      </button>
+      <button class="btn btn-danger"
+        style="flex:2;height:52px;font-size:15px;box-shadow:0 4px 24px rgba(232,54,74,0.5);"
+        onclick="showModal('call-911')">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M9 1.5L1 14.5H17L9 1.5Z" fill="white" opacity="0.9" />
+          <rect x="8.5" y="6.5" width="1" height="5" rx="0.5" fill="var(--danger)" />
+          <circle cx="9" cy="12.5" r="0.7" fill="var(--danger)" />
+        </svg>
+        Llamar Autoridades
+      </button>
+    </div>
+
+    <div class="emergency-dismiss" style="z-index:10;" onclick="showModal('dismiss-sos')">
+      Descartar alerta
+    </div>
+  </div>
+
+  <!-- PANTALLA: SELECTOR DE UBICACIÓN (Location Picker) -->
+  <div id="screen-location-picker" class="screen">
+    <div class="topbar" style="background:transparent;z-index:20;">
+      <button class="nav-back-btn" onclick="goBack()"
+        style="background:var(--bg);border-radius:100px;padding:4px 12px;box-shadow:var(--shadow-sm);">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M11 4L7 9L11 14" stroke="var(--blue-acc)" stroke-width="2.2" stroke-linecap="round" />
+        </svg>
+        Atrás
+      </button>
+      <div style="flex:1;text-align:center;">
+        <div class="topbar-title" id="picker-title" style="font-size:15px;">Configurar Ubicación</div>
+      </div>
+      <div style="width:70px;"></div>
+    </div>
+
+    <div class="picker-map-container">
+      <div class="map-offline-fallback" id="picker-iframe-offline">
+        <div class="offline-icon-container">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <path
+              d="M1 1l22 22M16.72 11.06A10.94 10.94 0 0 1 19 12.55M5 12.55a10.94 10.94 0 0 1 5.17-2.39M10.71 5.05A16 16 0 0 1 22.58 9M1.42 9a15.91 15.91 0 0 1 4.7-2.88M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01" />
+          </svg>
+          <div class="offline-status-dot"></div>
+        </div>
+        <div class="offline-title">Mapa Offline</div>
+        <div class="offline-sub">Conéctate para configurar la zona segura.</div>
+      </div>
+      <iframe id="picker-iframe" width="100%" height="100%" frameborder="0" style="border:0;" allowfullscreen=""
+        loading="lazy"></iframe>
+    </div>
+
+    <div class="picker-overlay">
+      <div class="picker-search-bar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="opacity:0.5;">
+          <circle cx="11" cy="11" r="8" stroke="var(--text-1)" stroke-width="2" />
+          <path d="M21 21L16.65 16.65" stroke="var(--text-1)" stroke-width="2" stroke-linecap="round" />
+        </svg>
+        <input type="text" class="picker-search-input" id="picker-search" placeholder="Busca una dirección o lugar..."
+          onkeydown="if(event.key==='Enter') searchInPicker()">
       </div>
 
-      <div class="picker-footer">
-        <div>
-          <div style="font-size:13px;font-weight:700;color:var(--text-1);margin-bottom:2px;" id="picker-point-name">
-            Lugar
-            seleccionado</div>
-          <div class="picker-coords" id="picker-coords-text">--.----, --.----</div>
-        </div>
-        <button class="btn btn-primary btn-full" style="height:52px;" onclick="confirmPickerLocation()">
-          Confirmar esta Ubicación
+      <div style="display:flex;gap:8px;pointer-events:auto;">
+        <button class="btn btn-ghost"
+          style="flex:1;background:var(--bg);box-shadow:var(--shadow-sm);font-size:11px;height:36px;"
+          onclick="useCurrentStudentLocPicker()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round"
+            style="margin-right:6px;vertical-align:middle;margin-top:-2px;">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+            <circle cx="12" cy="10" r="3" />
+          </svg> Usar ubicación del alumno
         </button>
       </div>
     </div>
 
-    <!-- ══════════════════════════════
+    <div class="picker-fab" onclick="recenterPicker()">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" />
+        <path d="M12 2V5M12 19V22M2 12H5M19 12H22" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+      </svg>
+    </div>
+
+    <div class="picker-footer">
+      <div>
+        <div style="font-size:13px;font-weight:700;color:var(--text-1);margin-bottom:2px;" id="picker-point-name">
+          Lugar
+          seleccionado</div>
+        <div class="picker-coords" id="picker-coords-text">--.----, --.----</div>
+      </div>
+      <button class="btn btn-primary btn-full" style="height:52px;" onclick="confirmPickerLocation()">
+        Confirmar esta Ubicación
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
        BOTTOM NAVIGATION
   ══════════════════════════════ -->
-    <nav id="bottom-nav" style="display: none;">
-      <button class="nav-item active" id="nav-home" data-tab="home" onclick="switchTab('home')">
-        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-          <path d="M11 2L3 8V20H9V14H13V20H19V8L11 2Z" fill="#94A3B8" />
-        </svg>
-        <span class="nav-label">Inicio</span>
-      </button>
+  <nav id="bottom-nav" style="display: none;">
+    <button class="nav-item active" id="nav-home" data-tab="home" onclick="switchTab('home')">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+        <path d="M11 2L3 8V20H9V14H13V20H19V8L11 2Z" fill="#94A3B8" />
+      </svg>
+      <span class="nav-label">Inicio</span>
+    </button>
 
-      <button class="nav-item" id="nav-children" data-tab="children" onclick="switchTab('children')">
-        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-          <circle cx="11" cy="8" r="4" fill="#94A3B8" />
-          <path d="M3 20C3 16.13 6.13 13 10 13H12C15.87 13 19 16.13 19 20" stroke="#94A3B8" stroke-width="1.8"
-            stroke-linecap="round" fill="none" />
-        </svg>
-        <span class="nav-label">Hijos</span>
-      </button>
+    <button class="nav-item" id="nav-children" data-tab="children" onclick="switchTab('children')">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+        <circle cx="11" cy="8" r="4" fill="#94A3B8" />
+        <path d="M3 20C3 16.13 6.13 13 10 13H12C15.87 13 19 16.13 19 20" stroke="#94A3B8" stroke-width="1.8"
+          stroke-linecap="round" fill="none" />
+      </svg>
+      <span class="nav-label">Hijos</span>
+    </button>
 
-      <button class="nav-item" id="nav-map" data-tab="map" onclick="switchTab('map')">
-        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-          <path
-            d="M11 2C8.24 2 6 4.24 6 7C6 10.75 11 17 11 17C11 17 16 10.75 16 7C16 4.24 13.76 2 11 2ZM11 8.5C10.17 8.5 9.5 7.83 9.5 7C9.5 6.17 10.17 5.5 11 5.5C11.83 5.5 12.5 6.17 12.5 7C12.5 7.83 11.83 8.5 11 8.5Z"
-            fill="#94A3B8" />
-          <path d="M4 19H18" stroke="#94A3B8" stroke-width="1.5" stroke-linecap="round" />
-        </svg>
-        <span class="nav-label">Mapa</span>
-      </button>
+    <button class="nav-item" id="nav-map" data-tab="map" onclick="switchTab('map')">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+        <path
+          d="M11 2C8.24 2 6 4.24 6 7C6 10.75 11 17 11 17C11 17 16 10.75 16 7C16 4.24 13.76 2 11 2ZM11 8.5C10.17 8.5 9.5 7.83 9.5 7C9.5 6.17 10.17 5.5 11 5.5C11.83 5.5 12.5 6.17 12.5 7C12.5 7.83 11.83 8.5 11 8.5Z"
+          fill="#94A3B8" />
+        <path d="M4 19H18" stroke="#94A3B8" stroke-width="1.5" stroke-linecap="round" />
+      </svg>
+      <span class="nav-label">Mapa</span>
+    </button>
 
-      <button class="nav-item" id="nav-alerts" data-tab="alerts" onclick="switchTab('alerts')">
-        <div class="nav-badge" style="display:none;"></div>
-        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-          <path d="M11 2C7.13 2 4 5.13 4 9V16L2 18V19H20V18L18 16V9C18 5.13 14.87 2 11 2Z" fill="#94A3B8" />
-          <path d="M11 22C12.1 22 13 21.1 13 20H9C9 21.1 9.9 22 11 22Z" fill="#94A3B8" />
-        </svg>
-        <span class="nav-label">Notificaciones</span>
-      </button>
+    <button class="nav-item" id="nav-alerts" data-tab="alerts" onclick="switchTab('alerts')">
+      <div class="nav-badge" style="display:none;"></div>
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+        <path d="M11 2C7.13 2 4 5.13 4 9V16L2 18V19H20V18L18 16V9C18 5.13 14.87 2 11 2Z" fill="#94A3B8" />
+        <path d="M11 22C12.1 22 13 21.1 13 20H9C9 21.1 9.9 22 11 22Z" fill="#94A3B8" />
+      </svg>
+      <span class="nav-label">Notificaciones</span>
+    </button>
 
-      <button class="nav-item" id="nav-settings" data-tab="settings" onclick="switchTab('settings')">
-        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-          <path d="M11 14C12.66 14 14 12.66 14 11C14 9.34 12.66 8 11 8C9.34 8 8 9.34 8 11C8 12.66 9.34 14 11 14Z"
-            fill="#94A3B8" />
-          <path
-            d="M19.4 13.5L18.1 12.7C18.3 12 18.4 11.5 18.4 11C18.4 10.5 18.3 10 18.1 9.3L19.4 8.5C20 8.1 20.2 7.3 19.8 6.6L18.4 4.2C18 3.5 17.2 3.3 16.5 3.7L15.2 4.5C14.6 4.1 14 3.7 13.3 3.5V2H10.7V3.5C10 3.7 9.4 4.1 8.8 4.5L7.5 3.7C6.8 3.3 6 3.5 5.6 4.2L4.2 6.6C3.8 7.3 4 8.1 4.6 8.5L5.9 9.3C5.7 10 5.6 10.5 5.6 11C5.6 11.5 5.7 12 5.9 12.7L4.6 13.5C4 13.9 3.8 14.7 4.2 15.4L5.6 17.8C6 18.5 6.8 18.7 7.5 18.3L8.8 17.5C9.4 17.9 10 18.3 10.7 18.5V20H13.3V18.5C14 18.3 14.6 17.9 15.2 17.5L16.5 18.3C17.2 18.7 18 18.5 18.4 17.8L19.8 15.4C20.2 14.7 20 13.9 19.4 13.5Z"
-            fill="#94A3B8" />
-        </svg>
-        <span class="nav-label">Ajustes</span>
-      </button>
-    </nav>
+    <button class="nav-item" id="nav-settings" data-tab="settings" onclick="switchTab('settings')">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+        <path d="M11 14C12.66 14 14 12.66 14 11C14 9.34 12.66 8 11 8C9.34 8 8 9.34 8 11C8 12.66 9.34 14 11 14Z"
+          fill="#94A3B8" />
+        <path
+          d="M19.4 13.5L18.1 12.7C18.3 12 18.4 11.5 18.4 11C18.4 10.5 18.3 10 18.1 9.3L19.4 8.5C20 8.1 20.2 7.3 19.8 6.6L18.4 4.2C18 3.5 17.2 3.3 16.5 3.7L15.2 4.5C14.6 4.1 14 3.7 13.3 3.5V2H10.7V3.5C10 3.7 9.4 4.1 8.8 4.5L7.5 3.7C6.8 3.3 6 3.5 5.6 4.2L4.2 6.6C3.8 7.3 4 8.1 4.6 8.5L5.9 9.3C5.7 10 5.6 10.5 5.6 11C5.6 11.5 5.7 12 5.9 12.7L4.6 13.5C4 13.9 3.8 14.7 4.2 15.4L5.6 17.8C6 18.5 6.8 18.7 7.5 18.3L8.8 17.5C9.4 17.9 10 18.3 10.7 18.5V20H13.3V18.5C14 18.3 14.6 17.9 15.2 17.5L16.5 18.3C17.2 18.7 18 18.5 18.4 17.8L19.8 15.4C20.2 14.7 20 13.9 19.4 13.5Z"
+          fill="#94A3B8" />
+      </svg>
+      <span class="nav-label">Ajustes</span>
+    </button>
+  </nav>
   </div>
 
   <script>
@@ -4296,9 +4358,9 @@
        🛡️ SECURITY / ANTI-XSS PRO GUARD
        Inyección temprana antes de cualquier script
     ═══════════════════════════════════════ */
-    (function() {
-      try { console.clear(); } catch(e) {}
-      
+    (function () {
+      try { console.clear(); } catch (e) { }
+
       console.log(
         "%c¡ALTO AHÍ!",
         "color: #FF2B2B; font-size: 50px; font-weight: 900; text-shadow: 2px 2px 0 #000; font-family: sans-serif;"
@@ -4311,9 +4373,9 @@
         "font-size: 16px; font-family: sans-serif;",
         "font-size: 14px; color: #888; font-style: italic; margin-top: 15px; display: inline-block; font-family: sans-serif;"
       );
-      
+
       // Silenciar todos los logs para producción pura
-      const noop = () => {};
+      const noop = () => { };
       window.console.log = noop;
       window.console.warn = noop;
       window.console.info = noop;
@@ -5060,23 +5122,184 @@
       if (sensorInterval) { clearInterval(sensorInterval); sensorInterval = null; }
     }
 
-    function updateSensors() {
-      const data = getStudentLive();
+    function generateSmartSummary(data) {
+      if (!data) return "Esperando datos del alumno...";
 
-      // GPS
-      const gpsEl = document.getElementById('sensor-gps-acc');
-      const gpsLoc = document.getElementById('sensor-gps-loc');
-      if (data && data.lat != null) {
-        if (gpsEl) gpsEl.textContent = data.accuracy ? `±${Math.round(data.accuracy)}m` : '±?m';
-        if (gpsLoc) gpsLoc.textContent = `${parseFloat(data.lat).toFixed(4)}, ${parseFloat(data.lng).toFixed(4)}`;
-      } else {
-        if (gpsEl) gpsEl.textContent = 'Sin señal';
-        if (gpsLoc) gpsLoc.textContent = 'Sin datos del alumno';
+      const name = students[currentStudentId]?.name?.split(' ')[0] || 'El alumno';
+      const battery = Math.round((data.battery || 0) * 100);
+      const noise = data.noiseLevel || 30;
+      const motion = data.motion || 'Quieto';
+      const speed = data.speed || 0;
+      const light = data.light || 0;
+      const now = new Date();
+      const hour = now.getHours();
+
+      // 1. ESCENARIO CRÍTICO: Impacto o Caída
+      if (data.impact || data.fall) {
+        return `🚨 ¡ALERTA CRÍTICA! Se detectó un incidente físico fuerte con ${name}. Intenta contactar de inmediato.`;
       }
 
-      // Acelerómetro
+      // 2. ESCENARIO DE CONEXIÓN: Datos antiguos
+      const minsAgo = data.ts ? Math.round((Date.now() - data.ts) / 60000) : 999;
+      if (minsAgo > 10) {
+        return `⚠️ Conexión perdida. El último reporte de ${name} fue hace ${minsAgo} minutos. Su última ubicación conocida está guardada.`;
+      }
+
+      let summary = `🛡️ ${name} `;
+
+      // 3. ESCENARIO DE UBICACIÓN (Contexto de Seguridad)
+      const isSafe = document.getElementById('status-badge-top')?.classList.contains('status-badge-safe');
+      if (isSafe) {
+        summary += "está en una ZONA SEGURA. ";
+      } else {
+        if (hour >= 19 || hour < 6) {
+          summary += "está fuera de zona segura en horario nocturno. ";
+        } else {
+          summary += "está en tránsito fuera de sus zonas habituales. ";
+        }
+      }
+
+      // 4. ESCENARIO DE MOVIMIENTO Y DISPOSITIVO
+      if (speed > 50) {
+        summary += "Se desplaza a alta velocidad en un vehículo. ";
+      } else if (motion === 'Corriendo') {
+        summary += "Se encuentra corriendo. ";
+      } else if (light < 5 && motion !== 'Quieto' && motion !== 'Vehículo') {
+        summary += "Lleva el celular guardado (mochila/bolso) mientras se mueve. ";
+      } else if (motion === 'Quieto') {
+        summary += "Está en una posición estable (sentado o en reposo). ";
+      }
+
+      // 5. ESCENARIO DE ENTORNO
+      if (noise > 85) {
+        summary += "¡Cuidado! Hay gritos o ruido ambiental extremo cerca. ";
+      } else if (noise > 65) {
+        summary += "El ambiente es ruidoso o con mucha gente. ";
+      } else {
+        summary += "El entorno parece tranquilo y silencioso. ";
+      }
+
+      // 6. ESCENARIO DE BATERÍA
+      if (battery < 15) {
+        summary += `🚨 La batería está críticamente baja (${battery}%).`;
+      } else if (battery < 30) {
+        summary += `⚠️ Batería baja (${battery}%).`;
+      }
+
+      return summary;
+    }
+
+    function updateSensors() {
+      const data = getStudentLive();
+      if (!data) return;
+
+      // Actualizar Resumen Inteligente
+      const smartText = document.getElementById('smart-security-text');
+      if (smartText) smartText.textContent = generateSmartSummary(data);
+
+      // ─── 1. GPS Y SEÑAL ───────────────────
+      const gpsEl = document.getElementById('sensor-gps-acc');
+      const gpsLoc = document.getElementById('sensor-gps-loc');
+      if (data.lat != null) {
+        if (gpsEl) gpsEl.textContent = data.accuracy ? `±${Math.round(data.accuracy)}m` : '±12m';
+        if (gpsLoc) gpsLoc.textContent = data.accuracy < 15 ? 'Ubicación muy precisa' : 'Ubicación aproximada';
+      }
+
+      // ─── 2. RED Y SEÑAL (Natural Language) ──
+      const netType = document.getElementById('s-net-type');
+      const netStatus = document.getElementById('s-net-status');
+      const netBars = document.getElementById('s-net-bars');
+      if (netType) {
+        const type = data.networkType || '4G';
+        const speed = data.networkDownlink || 5;
+        netType.textContent = type.toUpperCase() + (data.networkLatency ? ` (${data.networkLatency}ms)` : '');
+
+        if (netStatus) {
+          if (speed > 10) netStatus.textContent = 'Internet muy rápido';
+          else if (speed > 2) netStatus.textContent = 'Conexión estable';
+          else netStatus.textContent = 'Internet lento / inestable';
+        }
+
+        if (netBars) {
+          const bars = speed > 10 ? 4 : speed > 4 ? 3 : speed > 1 ? 2 : 1;
+          const children = netBars.children;
+          for (let i = 0; i < 4; i++) {
+            children[i].style.opacity = i < bars ? '1' : '0.2';
+            children[i].style.background = bars > 2 ? 'var(--safe)' : 'var(--warn)';
+          }
+        }
+      }
+
+      // ─── 3. ENTORNO SONORO (Natural Language) ──
+      const audioDb = document.getElementById('s-audio-db');
+      const audioState = document.getElementById('s-audio-state');
+      const audioBars = document.querySelectorAll('#s-audio-bars .accel-bar');
+      if (audioDb) {
+        const db = Math.round(data.noiseLevel || 30);
+        audioDb.textContent = db + ' dB';
+
+        if (audioState) {
+          if (db > 85) audioState.textContent = '¡RUIDO EXTREMO / GRITOS!';
+          else if (db > 60) audioState.textContent = 'Ambiente con gente';
+          else audioState.textContent = 'Entorno tranquilo';
+
+          audioState.style.color = db > 85 ? 'var(--danger)' : 'var(--text-3)';
+        }
+
+        audioBars.forEach((bar, i) => {
+          const h = Math.random() * (db / 2) + 10;
+          bar.style.height = h + '%';
+          bar.style.background = db > 80 ? 'var(--danger)' : 'var(--safe)';
+        });
+      }
+
+      // ─── 4. ESTADO CELULAR (Natural Language) ──
+      const sysStorage = document.getElementById('s-sys-storage');
+      const sysStatus = document.getElementById('s-sys-status');
+      const sysBar = document.getElementById('s-sys-bar');
+      if (sysStorage) {
+        const storage = data.storageUsage || 15;
+        sysStorage.textContent = storage + '%';
+        if (sysStatus) {
+          if (storage > 90) sysStatus.textContent = '¡Memoria casi llena!';
+          else if (storage > 70) sysStatus.textContent = 'Poco espacio libre';
+          else sysStatus.textContent = 'Celular optimizado';
+        }
+        if (sysBar) {
+          sysBar.style.width = storage + '%';
+          sysBar.style.background = storage > 85 ? 'var(--danger)' : 'var(--blue-acc)';
+        }
+      }
+
+      // ─── 5. BRÚJULA / DIRECCIÓN ──────────
+      const compDeg = document.getElementById('s-compass-deg');
+      const compDir = document.getElementById('s-compass-dir');
+      const compViz = document.getElementById('compass-viz-parent');
+      if (compDeg) {
+        const deg = Math.round(data.heading || 0);
+        compDeg.textContent = deg + '°';
+        if (compDir) compDir.textContent = data.orientation || 'Norte';
+        if (compViz) compViz.style.transform = `rotate(${deg}deg)`;
+      }
+
+      // ─── 6. LUZ AMBIENTE (Natural Language) ──
+      const lightVal = document.getElementById('s-light-val');
+      const lightState = document.getElementById('s-light-state');
+      const lightDot = document.getElementById('light-dot');
+      if (lightVal) {
+        const lux = Math.round(data.light || 0);
+        lightVal.textContent = lux + ' lx';
+        if (lightState) {
+          if (lux < 5) lightState.textContent = 'Guardado en mochila/bolso';
+          else if (lux < 50) lightState.textContent = 'Luz tenue (interior)';
+          else lightState.textContent = 'Luz normal / Exterior';
+        }
+        if (lightDot) lightDot.style.background = lux < 5 ? 'var(--warn)' : 'var(--safe)';
+      }
+
+      // ─── 6. ACELERÓMETRO Y MOVIMIENTO ─────
       const bars = document.querySelectorAll('#accel-bars .accel-bar');
-      if (data && data.accel_x != null) {
+      if (data.accel_x != null) {
         const vals = [
           Math.min(100, Math.abs(data.accel_x) * 10),
           Math.min(100, Math.abs(data.accel_y) * 10),
@@ -5090,79 +5313,71 @@
         bars.forEach(bar => { bar.style.height = '15%'; });
       }
 
-      // Estado de movimiento
       const motionEl = document.getElementById('sensor-motion');
       if (motionEl) {
-        motionEl.textContent = (data && data.motion) ? data.motion : 'Sin datos';
+        const m = data.motion || 'Quieto';
+        if (m === 'Quieto') motionEl.textContent = 'En reposo / Sentado';
+        else if (m === 'Caminando') motionEl.textContent = 'Caminando normal';
+        else if (m === 'Corriendo') motionEl.textContent = 'Corriendo / Movimiento rápido';
+        else if (m === 'Vehículo') motionEl.textContent = 'En transporte / Vehículo';
+        else motionEl.textContent = m;
       }
 
-      // Batería
+      // ─── 7. BATERÍA ───────────────────────
       const battEl = document.getElementById('sensor-battery');
       const fillEl = document.getElementById('battery-fill-sensor');
       const chargEl = document.getElementById('sensor-charging');
-      const batt = (data && data.battery != null) ? Math.round(data.battery * 100) : null;
+      const batt = (data.battery != null) ? Math.round(data.battery * 100) : null;
       if (battEl && batt != null) {
         battEl.textContent = batt + '%';
-        battEl.style.color = batt > 30 ? 'var(--safe)' : batt > 15 ? 'var(--warn)' : 'var(--danger)';
         if (fillEl) {
           fillEl.style.width = batt + '%';
           fillEl.style.background = batt > 30 ? 'var(--safe)' : batt > 15 ? 'var(--warn)' : 'var(--danger)';
         }
         if (chargEl) {
-          const checkIcon = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-left:4px;vertical-align:middle;"><polyline points="20 6 9 17 4 12"/></svg>';
-          const boltIcon = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:4px;vertical-align:middle;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>';
-          chargEl.innerHTML = data.charging ? `Cargando ${boltIcon}` : (batt >= 100 ? `Cargado ${checkIcon}` : 'Sin cargador');
+          if (data.charging) chargEl.textContent = 'Cargando batería';
+          else if (batt > 80) chargEl.textContent = 'Batería saludable';
+          else if (batt < 20) chargEl.textContent = '¡BATERÍA MUY BAJA!';
+          else chargEl.textContent = 'Batería en uso';
         }
-      } else {
-        if (battEl) battEl.textContent = '—';
-        if (chargEl) chargEl.textContent = 'Sin datos';
       }
 
-      // Velocidad
+      // ─── 8. VELOCIDAD ─────────────────────
       const speedEl = document.getElementById('sensor-speed');
       if (speedEl) {
-        speedEl.textContent = (data && data.speed != null) ? parseFloat(data.speed).toFixed(1) : '—';
+        const s = data.speed || 0;
+        speedEl.textContent = s.toFixed(1);
       }
 
-      // Impacto / Caída (Lógica dinámica)
+      // ─── 9. IMPACTO / CAÍDA ───────────────
       const impStatusEl = document.getElementById('sensor-impact-status');
       const impDetailEl = document.getElementById('sensor-impact-detail');
-      const impPulseEl = document.getElementById('sensor-impact-pulse');
-      const impDotEl = document.getElementById('sensor-impact-dot');
       const impCardEl = document.getElementById('sensor-card-impact');
 
-      if (impStatusEl && data) {
-        // Detectamos si hay impacto o caída en los datos
+      if (impStatusEl) {
         const isImpact = data.impact === true || (data.motion && data.motion.toLowerCase().includes('impacto'));
-        const isFall = data.fall === true || (data.motion && data.motion.toLowerCase().includes('caida')) || (data.motion && data.motion.toLowerCase().includes('caída'));
+        const isFall = data.fall === true || (data.motion && data.motion.toLowerCase().includes('caida'));
 
         if (isImpact || isFall) {
-          SS_SoundManager.play('sos_alarm');
-          impStatusEl.textContent = isFall ? '¡CAÍDA DETECTADA!' : '¡IMPACTO!';
+          impStatusEl.textContent = isFall ? 'CAÍDA DETECTADA' : 'IMPACTO FUERTE';
           impStatusEl.style.color = 'var(--danger)';
-          if (impDetailEl) impDetailEl.textContent = 'Alerta de seguridad activa';
-          if (impPulseEl) impPulseEl.style.color = 'var(--danger)';
-          if (impDotEl) impDotEl.style.background = 'var(--danger)';
-          if (impCardEl) impCardEl.style.border = '1px solid var(--danger)';
-          if (impPulseEl) impPulseEl.innerHTML = '<div class="sensor-pulse-dot" style="background:var(--danger);"></div> ALERTA ACTIVA';
+          if (impDetailEl) impDetailEl.textContent = 'Verificar estado del alumno';
+          if (impCardEl) impCardEl.style.borderColor = 'var(--danger)';
         } else {
-          SS_SoundManager.stop('sos_alarm');
           impStatusEl.textContent = 'Normal';
           impStatusEl.style.color = 'var(--text-1)';
-          if (impDetailEl) impDetailEl.textContent = 'Sin alertas';
-          if (impPulseEl) impPulseEl.style.color = 'var(--blue-acc)';
-          if (impDotEl) impDotEl.style.background = 'var(--blue-acc)';
-          if (impCardEl) impCardEl.style.border = '1px solid var(--border)';
-          if (impPulseEl) impPulseEl.innerHTML = '<div class="sensor-pulse-dot" style="background:var(--blue-acc);"></div> Monitoreando';
+          if (impDetailEl) impDetailEl.textContent = 'Sin incidentes físicos';
+          if (impCardEl) impCardEl.style.borderColor = 'var(--border)';
         }
       }
 
-      // Info tiles en pantalla de perfil de alumno
+      // ─── 10. SINCRONIZACIÓN ────────────────
       const tileSync = document.getElementById('tile-last-sync');
-      if (tileSync && data && data.ts) {
+      if (tileSync && data.ts) {
         const mins = Math.round((Date.now() - data.ts) / 60000);
-        tileSync.textContent = mins < 1 ? 'Ahora' : `hace ${mins} min`;
+        tileSync.textContent = mins < 1 ? 'Actualizado ahora' : `visto hace ${mins} min`;
       }
+
       const tileBatt = document.getElementById('tile-battery');
       if (tileBatt && batt != null) {
         tileBatt.textContent = batt + '%';
@@ -5170,31 +5385,13 @@
         if (fill) { fill.style.width = batt + '%'; fill.style.background = batt > 30 ? 'var(--safe)' : batt > 15 ? 'var(--warn)' : 'var(--danger)'; }
       }
 
-      // tile-speed (nuevo tile en perfil)
-      const tileSpeed = document.getElementById('tile-speed');
-      if (tileSpeed) {
-        tileSpeed.textContent = (data && data.speed != null) ? parseFloat(data.speed).toFixed(1) : '—';
-      }
-
-      // Estado en vivo sobre el mapa mini
-      if (data && data.lat != null) {
-        const gpsTextEl = document.getElementById('student-gps-text');
-        if (gpsTextEl) gpsTextEl.textContent = `${parseFloat(data.lat).toFixed(5)}, ${parseFloat(data.lng).toFixed(5)}`;
+      // ─── 11. ACTUALIZAR MAPA MINI ──────────
+      if (data.lat != null && currentScreen === 'student') {
         const lastSeenEl = document.getElementById('student-last-seen');
         if (lastSeenEl && data.ts) {
           const ago = Math.round((Date.now() - data.ts) / 1000);
           lastSeenEl.textContent = ago < 60 ? `hace ${ago}s` : `hace ${Math.round(ago / 60)}min`;
         }
-      }
-
-      // Refresca mapa mini si el alumno se movió
-      if (data && data.lat != null && currentScreen === 'student') {
-        const miniMap = document.getElementById('student-mini-map');
-        if (miniMap) refreshParentMap(data.lat, data.lng, false);
-      }
-
-      // También actualiza la localización en el mapa completo si está abierto
-      if (data && data.lat != null && currentScreen === 'map') {
         refreshParentMap(data.lat, data.lng, false);
       }
     }
