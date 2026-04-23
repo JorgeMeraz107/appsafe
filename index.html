@@ -3235,167 +3235,178 @@
           </div>
         </div>
 
-        <div class="sensor-card info">
-          <div class="sensor-label">GPS</div>
-          <div class="sensor-value" id="sensor-gps-acc">±8m</div>
-          <div class="sensor-sub" id="sensor-gps-loc">—</div>
-          <div class="sensor-pulse" style="color:var(--blue-acc);margin-top:4px;">
-            <div class="sensor-pulse-dot" style="background:var(--blue-acc);"></div>
-            Señal buena
+        <div class="info-grid" id="sensors-realtime-grid">
+          <div class="sensor-card info">
+            <div class="sensor-label">GPS</div>
+            <div class="sensor-value" id="sensor-gps-acc">±8m</div>
+            <div class="sensor-sub" id="sensor-gps-loc">—</div>
+            <div class="sensor-pulse" style="color:var(--blue-acc);margin-top:4px;">
+              <div class="sensor-pulse-dot" style="background:var(--blue-acc);"></div>
+              Señal buena
+            </div>
           </div>
-        </div>
 
-        <!-- Red y Señal (NUEVO) -->
-        <div class="sensor-card info" id="card-network">
-          <div class="sensor-label">Red y Señal</div>
-          <div class="sensor-value" id="s-net-type">4G / Wi-Fi</div>
-          <div class="sensor-sub" id="s-net-status">Conexión Estable</div>
-          <div style="display:flex; gap:2px; margin-top:4px;" id="s-net-bars">
-            <div style="width:3px;height:6px;background:var(--safe);border-radius:1px;"></div>
-            <div style="width:3px;height:9px;background:var(--safe);border-radius:1px;"></div>
-            <div style="width:3px;height:12px;background:var(--safe);border-radius:1px;"></div>
-            <div style="width:3px;height:15px;background:var(--safe);border-radius:1px;"></div>
+          <!-- Red y Señal (NUEVO) -->
+          <div class="sensor-card info" id="card-network">
+            <div class="sensor-label">Red y Señal</div>
+            <div class="sensor-value" id="s-net-type">4G / Wi-Fi</div>
+            <div class="sensor-sub" id="s-net-status">Conexión Estable</div>
+            <div style="display:flex; gap:2px; margin-top:4px;" id="s-net-bars">
+              <div style="width:3px;height:6px;background:var(--safe);border-radius:1px;"></div>
+              <div style="width:3px;height:9px;background:var(--safe);border-radius:1px;"></div>
+              <div style="width:3px;height:12px;background:var(--safe);border-radius:1px;"></div>
+              <div style="width:3px;height:15px;background:var(--safe);border-radius:1px;"></div>
+            </div>
           </div>
-        </div>
 
-        <!-- Ruido Ambiente (NUEVO) -->
-        <div class="sensor-card info" id="card-audio">
-          <div class="sensor-label">Entorno Sonoro</div>
-          <div class="sensor-value" id="s-audio-db">-- dB</div>
-          <div class="sensor-sub" id="s-audio-state">Ambiente Tranquilo</div>
-          <div class="accel-bars" id="s-audio-bars" style="height:15px; margin-top:4px;">
-            <div class="accel-bar" style="height:20%; background:var(--safe);"></div>
-            <div class="accel-bar" style="height:40%; background:var(--safe);"></div>
-            <div class="accel-bar" style="height:30%; background:var(--safe);"></div>
+          <!-- Ruido Ambiente (NUEVO) -->
+          <div class="sensor-card info" id="card-audio">
+            <div class="sensor-label">Entorno Sonoro</div>
+            <div class="sensor-value" id="s-audio-db">-- dB</div>
+            <div class="sensor-sub" id="s-audio-state">Ambiente Tranquilo</div>
+            <div class="accel-bars" id="s-audio-bars" style="height:15px; margin-top:4px;">
+              <div class="accel-bar" style="height:20%; background:var(--safe);"></div>
+              <div class="accel-bar" style="height:40%; background:var(--safe);"></div>
+              <div class="accel-bar" style="height:30%; background:var(--safe);"></div>
+            </div>
           </div>
-        </div>
 
-        <!-- Salud del Sistema (NUEVO) -->
-        <div class="sensor-card info" id="card-system">
-          <div class="sensor-label">Estado Celular</div>
-          <div class="sensor-value" id="s-sys-storage">-- %</div>
-          <div class="sensor-sub" id="s-sys-status">Sistema Optimizado</div>
-          <div style="width:100%; height:4px; background:var(--border); border-radius:2px; margin-top:6px;">
-            <div id="s-sys-bar" style="width:10%; height:100%; background:var(--blue-acc); border-radius:2px;"></div>
+          <!-- Salud del Sistema (NUEVO) -->
+          <div class="sensor-card info" id="card-system">
+            <div class="sensor-label">Estado Celular</div>
+            <div class="sensor-value" id="s-sys-storage">-- %</div>
+            <div class="sensor-sub" id="s-sys-status">Sistema Optimizado</div>
+            <div style="width:100%; height:4px; background:var(--border); border-radius:2px; margin-top:6px;">
+              <div id="s-sys-bar" style="width:10%; height:100%; background:var(--blue-acc); border-radius:2px;"></div>
+            </div>
           </div>
-        </div>
 
-        <!-- Brújula / Dirección (NUEVO) -->
-        <div class="sensor-card info" id="card-compass">
-          <div class="sensor-label">Dirección</div>
-          <div class="sensor-value" id="s-compass-deg">--°</div>
-          <div class="sensor-sub" id="s-compass-dir">Norte</div>
-          <div id="compass-viz-parent"
-            style="width:30px;height:30px;border:2px solid var(--border);border-radius:50%;margin-top:4px;display:flex;align-items:center;justify-content:center;transition:transform 0.3s;margin-left:auto;">
-            <div style="width:2px;height:12px;background:var(--danger);border-radius:2px;"></div>
+          <!-- Brújula / Dirección (NUEVO) -->
+          <div class="sensor-card info" id="card-compass">
+            <div class="sensor-label">Dirección</div>
+            <div class="sensor-value" id="s-compass-deg">--°</div>
+            <div class="sensor-sub" id="s-compass-dir">Norte</div>
+            <div id="compass-viz-parent"
+              style="width:30px;height:30px;border:2px solid var(--border);border-radius:50%;margin-top:4px;display:flex;align-items:center;justify-content:center;transition:transform 0.3s;margin-left:auto;">
+              <div style="width:2px;height:12px;background:var(--danger);border-radius:2px;"></div>
+            </div>
           </div>
-        </div>
 
-        <!-- Luz Ambiente (NUEVO) -->
-        <div class="sensor-card info" id="card-light">
-          <div class="sensor-label">Luz Ambiente</div>
-          <div class="sensor-value" id="s-light-val">-- lx</div>
-          <div class="sensor-sub" id="s-light-state">Analizando...</div>
-          <div style="display:flex; align-items:center; gap:4px; margin-top:4px;">
-            <div id="light-dot" style="width:8px; height:8px; border-radius:50%; background:var(--safe);"></div>
-            <span style="font-size:10px; color:var(--text-3);" id="light-label">Luz Normal</span>
+          <!-- Luz Ambiente (NUEVO) -->
+          <div class="sensor-card info" id="card-light">
+            <div class="sensor-label">Luz Ambiente</div>
+            <div class="sensor-value" id="s-light-val">-- lx</div>
+            <div class="sensor-sub" id="s-light-state">Analizando...</div>
+            <div style="display:flex; align-items:center; gap:4px; margin-top:4px;">
+              <div id="light-dot" style="width:8px; height:8px; border-radius:50%; background:var(--safe);"></div>
+              <span style="font-size:10px; color:var(--text-3);" id="light-label">Luz Normal</span>
+            </div>
           </div>
-        </div>
-        <!-- Zonas Seguras -->
-        <div class="sensor-card info" id="safe-zone-home-card">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-            <div class="sensor-label">Hogar</div>
-            <button class="btn btn-ghost"
-              style="height:22px;padding:0 6px;font-size:9px;border:1px solid var(--border);border-radius:6px;"
-              onclick="viewZoneOnMap('home')">Ver</button>
-          </div>
-          <div class="sensor-value" id="home-distance">—</div>
-          <div class="safe-zone-status sz-pending" id="home-status">No definido</div>
-        </div>
-        <div class="sensor-card info" id="safe-zone-school-card">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-            <div class="sensor-label">Escuela</div>
-            <button class="btn btn-ghost"
-              style="height:22px;padding:0 6px;font-size:9px;border:1px solid var(--border);border-radius:6px;"
-              onclick="viewZoneOnMap('school')">Ver</button>
-          </div>
-          <div class="sensor-value" id="school-distance">—</div>
-          <div class="safe-zone-status sz-pending" id="school-status">No definido</div>
-        </div>
 
-        <!-- Movimiento -->
-        <div class="accel-bars" id="accel-bars">
-          <div class="accel-bar" style="height:40%;"></div>
-          <div class="accel-bar" style="height:60%;"></div>
-          <div class="accel-bar" style="height:30%;"></div>
-          <div class="accel-bar" style="height:80%;"></div>
-          <div class="accel-bar" style="height:50%;"></div>
-          <div class="accel-bar" style="height:70%;"></div>
+          <!-- Zonas Seguras -->
+          <div class="sensor-card info" id="safe-zone-home-card">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+              <div class="sensor-label">Hogar</div>
+              <button class="btn btn-ghost"
+                style="height:22px;padding:0 6px;font-size:9px;border:1px solid var(--border);border-radius:6px;"
+                onclick="viewZoneOnMap('home')">Ver</button>
+            </div>
+            <div class="sensor-value" id="home-distance">—</div>
+            <div class="safe-zone-status sz-pending" id="home-status">No definido</div>
+          </div>
+
+          <div class="sensor-card info" id="safe-zone-school-card">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+              <div class="sensor-label">Escuela</div>
+              <button class="btn btn-ghost"
+                style="height:22px;padding:0 6px;font-size:9px;border:1px solid var(--border);border-radius:6px;"
+                onclick="viewZoneOnMap('school')">Ver</button>
+            </div>
+            <div class="sensor-value" id="school-distance">—</div>
+            <div class="safe-zone-status sz-pending" id="school-status">No definido</div>
+          </div>
+
+          <!-- Movimiento -->
+          <div class="sensor-card info">
+            <div class="sensor-label">Movimiento</div>
+            <div class="accel-bars" id="accel-bars" style="margin-top:8px;">
+              <div class="accel-bar" style="height:40%;"></div>
+              <div class="accel-bar" style="height:60%;"></div>
+              <div class="accel-bar" style="height:30%;"></div>
+              <div class="accel-bar" style="height:80%;"></div>
+              <div class="accel-bar" style="height:50%;"></div>
+            </div>
+            <div class="sensor-sub" id="sensor-motion" style="margin-top:4px;">Normal</div>
+          </div>
+
+          <!-- Batería Detalle -->
+          <div class="sensor-card safe">
+            <div class="sensor-label">Batería</div>
+            <div class="sensor-value" style="color:var(--safe);" id="sensor-battery">—</div>
+            <div class="battery-bar" style="margin-top:4px;">
+              <div class="battery-fill" id="battery-fill-sensor" style="width:0%;background:var(--safe);"></div>
+            </div>
+            <div class="sensor-sub" id="sensor-charging">—</div>
+          </div>
+
+          <!-- Velocidad Detalle -->
+          <div class="sensor-card info">
+            <div class="sensor-label">Velocidad</div>
+            <div class="sensor-value" id="sensor-speed">—</div>
+            <div class="sensor-sub">km/h</div>
+            <div class="sensor-pulse" style="color:var(--blue-acc);margin-top:4px;">
+              <div class="sensor-pulse-dot" style="background:var(--blue-acc);"></div>
+              c/5s
+            </div>
+          </div>
+
+          <!-- Impacto / Caída -->
+          <div class="sensor-card info" id="sensor-card-impact">
+            <div class="sensor-label">Impacto / Caída</div>
+            <div class="sensor-value" id="sensor-impact-status">Normal</div>
+            <div class="sensor-sub" id="sensor-impact-detail">Sin alertas</div>
+            <div class="sensor-pulse" id="sensor-impact-pulse" style="color:var(--blue-acc);margin-top:4px;">
+              <div class="sensor-pulse-dot" id="sensor-impact-dot" style="background:var(--blue-acc);"></div>
+              Monitoreando
+            </div>
+          </div>
         </div>
-        <div class="sensor-sub" id="sensor-motion">Normal</div>
       </div>
-      <div class="sensor-card safe">
-        <div class="sensor-label">Batería</div>
-        <div class="sensor-value" style="color:var(--safe);" id="sensor-battery">—</div>
-        <div class="battery-bar" style="margin-top:4px;">
-          <div class="battery-fill" id="battery-fill-sensor" style="width:0%;background:var(--safe);"></div>
+
+      <!-- ── Mapa del Corredor Seguro Hogar→Escuela ── -->
+      <div class="card anim-item" id="safe-zone-route-container"
+        style="margin: 20px 20px 0; border:1px solid var(--safe); display:none; overflow:hidden;">
+        <div
+          style="background:var(--safe-bg); color:var(--safe); font-weight:700; font-size:12px; padding:8px 16px; display:flex; align-items:center; gap:8px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z" />
+            <circle cx="12" cy="10" r="3" />
+          </svg>
+          Corredor Seguro Establecido
         </div>
-        <div class="sensor-sub" id="sensor-charging">—</div>
+        <iframe id="safe-zone-route-map" width="100%" height="200" frameborder="0" style="border:0;"
+          allowfullscreen></iframe>
       </div>
-      <div class="sensor-card info">
-        <div class="sensor-label">Velocidad</div>
-        <div class="sensor-value" id="sensor-speed">—</div>
-        <div class="sensor-sub">km/h</div>
-        <div class="sensor-pulse" style="color:var(--blue-acc);margin-top:4px;">
-          <div class="sensor-pulse-dot" style="background:var(--blue-acc);"></div>
-          c/5s
+
+      <!-- Actividad del día -->
+      <div class="section-header" style="padding-top:20px;">
+        <div class="section-title">Actividad de Hoy</div>
+        <div style="font-size:12px;color:var(--blue-acc);cursor:pointer;font-weight:600;"
+          onclick="renderStudentHistory()">↻ Actualizar</div>
+      </div>
+      <div class="card" style="margin:0 20px 100px;" id="student-timeline">
+        <div style="text-align:center;padding:24px;color:var(--text-3);font-size:13px;">
+          Cargando actividad...
         </div>
       </div>
-      <div class="sensor-card info" id="sensor-card-impact">
-        <div class="sensor-label">Impacto / Caída</div>
-        <div class="sensor-value" id="sensor-impact-status">Normal</div>
-        <div class="sensor-sub" id="sensor-impact-detail">Sin alertas</div>
-        <div class="sensor-pulse" id="sensor-impact-pulse" style="color:var(--blue-acc);margin-top:4px;">
-          <div class="sensor-pulse-dot" id="sensor-impact-dot" style="background:var(--blue-acc);"></div>
-          Monitoreando
-        </div>
+
+      <!-- Código de Vinculación -->
+      <div id="student-linkcode-section" style="margin:0 20px 24px;">
+        <!-- Se carga dinámicamente con loadStudentProfile -->
       </div>
+
     </div>
-
-    <!-- ── Mapa del Corredor Seguro Hogar→Escuela ── -->
-    <div class="card anim-item" id="safe-zone-route-container"
-      style="margin: 20px 20px 0; border:1px solid var(--safe); display:none; overflow:hidden;">
-      <div
-        style="background:var(--safe-bg); color:var(--safe); font-weight:700; font-size:12px; padding:8px 16px; display:flex; align-items:center; gap:8px;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-          stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z" />
-          <circle cx="12" cy="10" r="3" />
-        </svg>
-        Corredor Seguro Establecido
-      </div>
-      <iframe id="safe-zone-route-map" width="100%" height="200" frameborder="0" style="border:0;"
-        allowfullscreen></iframe>
-    </div>
-
-    <!-- Actividad del día -->
-    <div class="section-header" style="padding-top:20px;">
-      <div class="section-title">Actividad de Hoy</div>
-      <div style="font-size:12px;color:var(--blue-acc);cursor:pointer;font-weight:600;"
-        onclick="renderStudentHistory()">↻ Actualizar</div>
-    </div>
-    <div class="card" style="margin:0 20px 100px;" id="student-timeline">
-      <div style="text-align:center;padding:24px;color:var(--text-3);font-size:13px;">
-        Cargando actividad...
-      </div>
-    </div>
-
-    <!-- Código de Vinculación -->
-    <div id="student-linkcode-section" style="margin:0 20px 24px;">
-      <!-- Se carga dinámicamente con loadStudentProfile -->
-    </div>
-
-  </div>
   </div>
 
   <!-- ══════════════════════════════
