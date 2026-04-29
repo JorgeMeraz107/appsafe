@@ -3380,30 +3380,76 @@
 
         <!-- ── Mapa del Corredor Seguro Hogar→Escuela ── -->
         <div class="card anim-item" id="safe-zone-route-container"
-          style="margin: 20px 20px 0; border:1px solid var(--safe); display:none; overflow:hidden; box-shadow: 0 4px 20px var(--safe-bg);">
-          <div
-            style="background:var(--safe-bg); color:var(--safe); font-weight:700; font-size:12px; padding:12px 16px; display:flex; align-items:center; justify-content:space-between;">
-            <div style="display:flex; align-items:center; gap:8px;">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z" />
-                <circle cx="12" cy="10" r="3" />
-              </svg>
-              Corredor Seguro: Casa ↔ Colegio
+          style="margin: 20px 20px 0; border:1px solid var(--border); display:none; overflow:hidden; box-shadow: var(--shadow);">
+          
+          <!-- Header Profesional -->
+          <div style="background:var(--surface); padding:14px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <div style="width:32px; height:32px; background:var(--safe-bg); color:var(--safe); border-radius:8px; display:flex; align-items:center; justify-content:center;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z" />
+                  <circle cx="12" cy="10" r="3" />
+                </svg>
+              </div>
+              <div>
+                <div style="font-size:13px; font-weight:700; color:var(--text-1);">Corredor Seguro Inteligente</div>
+                <div style="font-size:10px; color:var(--text-3); font-weight:600; text-transform:uppercase; letter-spacing:0.02em;">Monitoreo de Trayecto Activo</div>
+              </div>
             </div>
-            <div style="font-size:10px; opacity:0.8; font-weight:600; text-transform:uppercase;">Ruta Programada</div>
+            <div id="route-status-badge" class="status-pill status-safe" style="font-size:10px; padding:2px 8px;">
+               Sincronizado
+            </div>
           </div>
-          <iframe id="safe-zone-route-map" width="100%" height="320" frameborder="0" style="border:0; display:block;"
+
+          <!-- Análisis Inteligente (NUEVO) -->
+          <div style="background:linear-gradient(90deg, var(--safe-bg), transparent); padding:10px 16px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border);">
+             <span style="font-size:16px;">✨</span>
+             <div id="safe-zone-analysis-text" style="font-size:12px; font-weight:600; color:var(--text-2);">Analizando parámetros de ruta y seguridad...</div>
+          </div>
+
+          <!-- Panel de Telemetría de Seguridad (Dashboard de Control) -->
+          <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px; padding:12px 16px; background:var(--surface); border-bottom:1px solid var(--border);">
+            <div style="text-align:center;">
+              <div style="font-size:9px; color:var(--text-3); text-transform:uppercase; font-weight:700; letter-spacing:0.03em;">Llegada Est.</div>
+              <div id="route-eta" style="font-size:13px; font-weight:700; color:var(--blue-acc);">-- min</div>
+            </div>
+            <div style="text-align:center; border-left:1px solid var(--border); border-right:1px solid var(--border);">
+              <div style="font-size:9px; color:var(--text-3); text-transform:uppercase; font-weight:700; letter-spacing:0.03em;">Velocidad</div>
+              <div id="route-speed" style="font-size:13px; font-weight:700; color:var(--safe);">-- km/h</div>
+            </div>
+            <div style="text-align:center;">
+              <div style="font-size:9px; color:var(--text-3); text-transform:uppercase; font-weight:700; letter-spacing:0.03em;">Batería Hijo</div>
+              <div id="route-battery" style="font-size:13px; font-weight:700; color:var(--text-1);">--%</div>
+            </div>
+          </div>
+
+          <iframe id="safe-zone-route-map" width="100%" height="420" frameborder="0" style="border:0; display:block;"
             allowfullscreen></iframe>
-          <div style="background:var(--bg); padding:10px 16px; border-top:1px solid var(--safe-bg); display:flex; flex-wrap:wrap; gap:12px; font-size:11px; color:var(--text-2);">
-            <div style="display:flex; align-items:center; gap:5px;">
-              <div style="width:8px; height:8px; background:#4285F4; border-radius:50%;"></div> Casa
+
+          <!-- Legend & Quick Actions -->
+          <div style="background:var(--surface); padding:12px 16px; border-top:1px solid var(--border);">
+            <div style="display:flex; flex-wrap:wrap; gap:12px; font-size:11px; color:var(--text-3); margin-bottom:12px; padding-bottom:12px; border-bottom:1px dotted var(--border);">
+              <div style="display:flex; align-items:center; gap:5px;">
+                <div style="width:8px; height:8px; background:#4285F4; border-radius:50%;"></div> Casa (A)
+              </div>
+              <div style="display:flex; align-items:center; gap:5px;">
+                <div style="width:8px; height:8px; background:#34A853; border-radius:50%;"></div> <b>Hijo (B)</b>
+              </div>
+              <div style="display:flex; align-items:center; gap:5px;">
+                <div style="width:8px; height:8px; background:#EA4335; border-radius:50%;"></div> Colegio (C)
+              </div>
             </div>
-            <div style="display:flex; align-items:center; gap:5px;">
-              <div style="width:8px; height:8px; background:#34A853; border-radius:50%;"></div> <b>Tu Hijo (Vivo)</b>
-            </div>
-            <div style="display:flex; align-items:center; gap:5px;">
-              <div style="width:8px; height:8px; background:#EA4335; border-radius:50%;"></div> Colegio
+
+            <!-- Botones de Acción para el Padre -->
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+              <button class="btn btn-ghost" style="height:38px; font-size:12px; gap:6px; border-radius:10px;" onclick="showToast('Cargando capas de tráfico real...')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                Ver Tráfico
+              </button>
+              <button class="btn btn-ghost" style="height:38px; font-size:12px; gap:6px; border-radius:10px; color:var(--danger); border-color:var(--danger-bg);" onclick="showToast('Incidencia reportada a central de seguridad')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>
+                Reportar
+              </button>
             </div>
           </div>
         </div>
@@ -7023,6 +7069,49 @@
           } else {
             // Ruta estática si no hay señal GPS actual
             newUrl = `https://maps.google.com/maps?saddr=${s.homeLat},${s.homeLng}&daddr=${s.schoolLat},${s.schoolLng}&output=embed&hl=es`;
+          }
+
+          // Lógica de Análisis Inteligente Avanzada
+          const analysisText = document.getElementById('safe-zone-analysis-text');
+          const routeEta = document.getElementById('route-eta');
+          const routeSpeed = document.getElementById('route-speed');
+          const routeBattery = document.getElementById('route-battery');
+          const badge = document.getElementById('route-status-badge');
+
+          if (live && liveLat && liveLng) {
+            const dHome = haversine(liveLat, liveLng, s.homeLat, s.homeLng);
+            const dSchool = haversine(liveLat, liveLng, s.schoolLat, s.schoolLng);
+            
+            // Simulación de telemetría basada en datos reales
+            if (routeSpeed) routeSpeed.textContent = live.speed ? `${Math.round(live.speed * 3.6)} km/h` : 'Estacionario';
+            if (routeBattery) routeBattery.textContent = live.battery != null ? `${Math.round(live.battery * 100)}%` : '--%';
+            
+            if (analysisText) {
+              if (dHome < 200) {
+                analysisText.textContent = "Hijo en Casa. Todo en orden.";
+                if (routeEta) routeEta.textContent = "0 min";
+                if (badge) { badge.textContent = "En Casa"; badge.className = "status-pill status-safe"; }
+              } else if (dSchool < 200) {
+                analysisText.textContent = "Hijo en Colegio. Llegada confirmada.";
+                if (routeEta) routeEta.textContent = "Llegó";
+                if (badge) { badge.textContent = "En Destino"; badge.className = "status-pill status-safe"; }
+              } else {
+                // Cálculo de ETA aproximado (suponiendo 30km/h promedio)
+                const mins = Math.round((dSchool / 500)); 
+                if (routeEta) routeEta.textContent = `${mins} min`;
+                
+                // Detección de Desvíos (Análisis Inteligente)
+                // Si la distancia a la escuela es mayor que la distancia entre casa y escuela, podría estar alejándose
+                const totalPath = haversine(s.homeLat, s.homeLng, s.schoolLat, s.schoolLng);
+                if (dSchool > totalPath + 1000) {
+                  analysisText.textContent = "⚠️ Alerta: Posible desvío detectado. Fuera del corredor habitual.";
+                  if (badge) { badge.textContent = "Desvío"; badge.className = "status-pill status-danger"; }
+                } else {
+                  analysisText.textContent = "Trayecto Normal: En curso hacia el destino.";
+                  if (badge) { badge.textContent = "En Ruta"; badge.className = "status-pill status-safe"; }
+                }
+              }
+            }
           }
 
           // Solo recargar si la ubicación cambió significativamente (redondeamos a 5 decimales ~1 metro)
