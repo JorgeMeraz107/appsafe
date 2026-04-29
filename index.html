@@ -627,15 +627,15 @@
     }
 
     .avatar-ring-safe {
-      box-shadow: 0 0 0 3px var(--safe);
+      box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--safe);
     }
 
     .avatar-ring-warn {
-      box-shadow: 0 0 0 3px var(--warn);
+      box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--warn);
     }
 
     .avatar-ring-danger {
-      box-shadow: 0 0 0 3px var(--danger), 0 0 0 6px rgba(232, 54, 74, 0.2);
+      box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--danger), 0 0 0 8px var(--danger-bg);
     }
 
     /* ═══════════════════════════════════════
@@ -3185,9 +3185,11 @@
           <div class="card"
             style="padding: 16px; background: linear-gradient(135deg, rgba(41, 121, 255, 0.08), rgba(15, 191, 122, 0.05)); border: 1px solid rgba(41, 121, 255, 0.2); border-radius: var(--radius);">
             <div style="display:flex; align-items:center; gap:12px;">
-              <div style="color: var(--blue-acc); flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              <div
+                style="color: var(--blue-acc); flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                 </svg>
               </div>
               <div style="flex:1;">
@@ -3378,18 +3380,32 @@
 
         <!-- ── Mapa del Corredor Seguro Hogar→Escuela ── -->
         <div class="card anim-item" id="safe-zone-route-container"
-          style="margin: 20px 20px 0; border:1px solid var(--safe); display:none; overflow:hidden;">
+          style="margin: 20px 20px 0; border:1px solid var(--safe); display:none; overflow:hidden; box-shadow: 0 4px 20px var(--safe-bg);">
           <div
-            style="background:var(--safe-bg); color:var(--safe); font-weight:700; font-size:12px; padding:8px 16px; display:flex; align-items:center; gap:8px;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-              stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z" />
-              <circle cx="12" cy="10" r="3" />
-            </svg>
-            Corredor Seguro Establecido
+            style="background:var(--safe-bg); color:var(--safe); font-weight:700; font-size:12px; padding:12px 16px; display:flex; align-items:center; justify-content:space-between;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z" />
+                <circle cx="12" cy="10" r="3" />
+              </svg>
+              Corredor Seguro: Casa ↔ Colegio
+            </div>
+            <div style="font-size:10px; opacity:0.8; font-weight:600; text-transform:uppercase;">Ruta Programada</div>
           </div>
-          <iframe id="safe-zone-route-map" width="100%" height="200" frameborder="0" style="border:0;"
+          <iframe id="safe-zone-route-map" width="100%" height="320" frameborder="0" style="border:0; display:block;"
             allowfullscreen></iframe>
+          <div style="background:var(--bg); padding:10px 16px; border-top:1px solid var(--safe-bg); display:flex; flex-wrap:wrap; gap:12px; font-size:11px; color:var(--text-2);">
+            <div style="display:flex; align-items:center; gap:5px;">
+              <div style="width:8px; height:8px; background:#4285F4; border-radius:50%;"></div> Casa
+            </div>
+            <div style="display:flex; align-items:center; gap:5px;">
+              <div style="width:8px; height:8px; background:#34A853; border-radius:50%;"></div> <b>Tu Hijo (Vivo)</b>
+            </div>
+            <div style="display:flex; align-items:center; gap:5px;">
+              <div style="width:8px; height:8px; background:#EA4335; border-radius:50%;"></div> Colegio
+            </div>
+          </div>
         </div>
 
         <!-- Actividad del día -->
@@ -6996,10 +7012,23 @@
       if (routeContainer && routeMap) {
         if (configuredZones === 2) {
           routeContainer.style.display = 'block';
-          // Solo recargar el iframe si la URL cambia (para no parpadear en cada sync gps)
-          const newUrl = `https://maps.google.com/maps?saddr=${s.homeLat},${s.homeLng}&daddr=${s.schoolLat},${s.schoolLng}&z=14&output=embed`;
-          if (routeMap.src !== newUrl) {
+          
+          const liveLat = live?.lat;
+          const liveLng = live?.lng;
+          let newUrl;
+          
+          if (liveLat && liveLng) {
+            // Ruta dinámica: Casa -> Hijo (Posición Real) -> Escuela
+            newUrl = `https://maps.google.com/maps?saddr=${s.homeLat},${s.homeLng}&daddr=${liveLat},${liveLng}+to:${s.schoolLat},${s.schoolLng}&output=embed&hl=es`;
+          } else {
+            // Ruta estática si no hay señal GPS actual
+            newUrl = `https://maps.google.com/maps?saddr=${s.homeLat},${s.homeLng}&daddr=${s.schoolLat},${s.schoolLng}&output=embed&hl=es`;
+          }
+
+          // Solo recargar si la ubicación cambió significativamente (redondeamos a 5 decimales ~1 metro)
+          if (routeMap.getAttribute('data-last-url') !== newUrl) {
             routeMap.src = newUrl;
+            routeMap.setAttribute('data-last-url', newUrl);
           }
         } else {
           routeContainer.style.display = 'none';
