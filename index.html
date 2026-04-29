@@ -18,7 +18,7 @@
       --navy: #0A1628;
       --navy-mid: #112240;
       --navy-light: #1A3358;
-      --safe: #0FBF7A;
+      --safe: #10B981;
       --safe-bg: #0FBF7A18;
       --warn: #F5A623;
       --warn-bg: #F5A62318;
@@ -627,15 +627,15 @@
     }
 
     .avatar-ring-safe {
-      box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--safe);
+      box-shadow: 0 0 0 1.5px var(--surface), 0 0 0 3px var(--safe);
     }
 
     .avatar-ring-warn {
-      box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--warn);
+      box-shadow: 0 0 0 1.5px var(--surface), 0 0 0 3px var(--warn);
     }
 
     .avatar-ring-danger {
-      box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--danger), 0 0 0 8px var(--danger-bg);
+      box-shadow: 0 0 0 1.5px var(--surface), 0 0 0 3px var(--danger), 0 0 0 6px var(--danger-bg);
     }
 
     /* ═══════════════════════════════════════
@@ -6335,7 +6335,9 @@
       }
       if (syncEl && live?.ts) {
         const ago = Math.round((Date.now() - live.ts) / 1000);
-        syncEl.textContent = ago < 60 ? `hace ${ago}s` : `hace ${Math.round(ago / 60)}min`;
+        if (ago < 60) syncEl.textContent = `hace ${ago}s`;
+        else if (ago < 3600) syncEl.textContent = `hace ${Math.round(ago / 60)}min`;
+        else syncEl.textContent = `hace ${Math.round(ago / 3600)}h`;
       }
 
       // Geo-Zonas (Safe Zones)
