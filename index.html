@@ -3456,7 +3456,8 @@
 
             <!-- Botones de Acción para el Padre -->
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-              <button id="btn-traffic" class="btn btn-ghost" style="height:38px; font-size:12px; gap:6px; border-radius:10px; transition: all 0.3s;"
+              <button id="btn-traffic" class="btn btn-ghost"
+                style="height:38px; font-size:12px; gap:6px; border-radius:10px; transition: all 0.3s;"
                 onclick="toggleRouteTraffic()">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
@@ -4476,8 +4477,8 @@
 
       // Silenciar todos los logs para producción pura
       const noop = () => { };
-      window.console.log = noop;
-      window.console.warn = noop;
+      // window.console.log = noop;
+      // window.console.warn = noop;
       window.console.info = noop;
       window.console.error = noop;
     })();
@@ -6297,6 +6298,7 @@
       } catch { return null; }
     }
     function toggleRouteTraffic() {
+      alert('toggleRouteTraffic called');
       routeTrafficEnabled = !routeTrafficEnabled;
       const btn = document.getElementById('btn-traffic');
       if (routeTrafficEnabled) {
@@ -7336,6 +7338,7 @@
     ═══════════════════════════════════════ */
     let toastTimeout = null;
     function showToast(msg, type = 'info') {
+      alert('showToast: ' + msg);
       if (type === 'info' || type === 'safe') SS_SoundManager.play('alert_new');
       const t = document.getElementById('toast');
       if (!t) return;
