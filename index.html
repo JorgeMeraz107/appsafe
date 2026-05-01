@@ -3456,8 +3456,8 @@
 
             <!-- Botones de Acción para el Padre -->
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-              <button class="btn btn-ghost" style="height:38px; font-size:12px; gap:6px; border-radius:10px;"
-                onclick="showToast('Cargando capas de tráfico real...')">
+              <button id="btn-traffic" class="btn btn-ghost" style="height:38px; font-size:12px; gap:6px; border-radius:10px; transition: all 0.3s;"
+                onclick="toggleRouteTraffic()">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
                 </svg>
@@ -4516,6 +4516,7 @@
     let lastParentMapLng = null;
     let currentStudentId = null;
     let editingStudentId = null;
+    let routeTrafficEnabled = false;
 
     /* ═══════════════════════════════════════
      SS_SOUND_MANAGER (INTERNAZIONALIZACIÓN ACÚSTICA)
@@ -6295,6 +6296,26 @@
         return raw ? JSON.parse(raw) : null;
       } catch { return null; }
     }
+    function toggleRouteTraffic() {
+      routeTrafficEnabled = !routeTrafficEnabled;
+      const btn = document.getElementById('btn-traffic');
+      if (routeTrafficEnabled) {
+        showToast('Capas de tráfico activadas');
+        if (btn) {
+          btn.style.borderColor = 'var(--safe)';
+          btn.style.background = 'var(--safe-bg)';
+          btn.style.color = 'var(--safe)';
+        }
+      } else {
+        showToast('Capas de tráfico desactivadas');
+        if (btn) {
+          btn.style.borderColor = 'var(--border)';
+          btn.style.background = 'transparent';
+          btn.style.color = 'inherit';
+        }
+      }
+      loadStudentProfile(currentStudentId);
+    }
 
     /* ── Carga datos dinámicos en pantalla de perfil ── */
     function loadStudentProfile(id) {
@@ -7090,9 +7111,11 @@
           if (liveLat && liveLng) {
             // Ruta dinámica: Casa -> Hijo (Posición Real) -> Escuela
             newUrl = `https://maps.google.com/maps?saddr=${s.homeLat},${s.homeLng}&daddr=${liveLat},${liveLng}+to:${s.schoolLat},${s.schoolLng}&output=embed&hl=es`;
+            if (routeTrafficEnabled) newUrl += '&layer=t';
           } else {
             // Ruta estática si no hay señal GPS actual
             newUrl = `https://maps.google.com/maps?saddr=${s.homeLat},${s.homeLng}&daddr=${s.schoolLat},${s.schoolLng}&output=embed&hl=es`;
+            if (routeTrafficEnabled) newUrl += '&layer=t';
           }
 
           // Lógica de Análisis Inteligente Avanzada
