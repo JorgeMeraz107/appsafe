@@ -5830,11 +5830,11 @@
       if (!emergencyChildId) return;
       const child = students[emergencyChildId];
       const liveInfo = liveData[emergencyChildId] || {};
-      
+
       // 1. Guardar en localStorage que este SOS específico fue descartado
       const dismissedKey = `ss_sos_dismissed_${emergencyChildId}_${liveInfo.sosTs || 'active'}`;
       localStorage.setItem(dismissedKey, 'true');
-      
+
       // 2. Restaurar status a safe localmente y en Firestore
       if (child && child.status === 'danger') {
         child.status = 'safe';
@@ -5842,11 +5842,12 @@
           window.app_saveStudentFS({ status: 'safe' }, emergencyChildId).catch(e => console.warn("No se pudo restaurar estado seguro:", e));
         }
       }
-      
+
       showToast('Alerta SOS descartada.', 'safe');
       closeModal();
       goBack();
     }
+    window.dismissSOS = dismissSOS;
 
     /* ═══════════════════════════════════════
        LLAMAR AL ALUMNO — Usa número guardado
