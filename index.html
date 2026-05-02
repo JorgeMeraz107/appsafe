@@ -6112,7 +6112,7 @@
       container.innerHTML = ids.map(id => {
         const s = students[id];
         const isSafe = s.status !== 'danger';
-        const ring = isSafe ? 'avatar-ring-safe' : 'avatar-ring-danger';
+        const ring = isSafe ? '' : 'avatar-ring-danger';
         const pillClass = isSafe ? 'status-pill status-safe' : 'status-pill status-danger';
         const pillText = isSafe ? 'Seguro/a' : 'SOS Activo';
         const pillIcon = isSafe ?
@@ -6242,7 +6242,7 @@
       homeList.innerHTML = ids.map(id => {
         const s = students[id];
         const isSafe = s.status !== 'danger';
-        const ring = isSafe ? 'avatar-ring-safe' : 'avatar-ring-danger';
+        const ring = isSafe ? '' : 'avatar-ring-danger';
         const pillClass = isSafe ? 'status-pill status-safe' : 'status-pill status-danger';
         const pillText = isSafe ? 'Seguro/a' : 'SOS Activo';
         const pillIcon = isSafe ?
