@@ -6132,7 +6132,7 @@
       const defaults = { boy: 'Felix', girl: 'Aneka', other: 'Nova' };
       const seed = defaults[s.gender] || 'Felix';
       const initial = s.name ? s.name[0].toUpperCase() : '?';
-      return `<img src="https://api.dicebear.com/7.x/notionists/webp?seed=${seed}" style="width:100%;height:100%;object-fit:cover;opacity:0.8;">`;
+      return `<img src="https://api.dicebear.com/7.x/notionists/svg?seed=${seed}" style="width:100%;height:100%;object-fit:cover;opacity:0.8;">`;
     }
 
     function renderHomeScreen() {
@@ -7522,23 +7522,23 @@
       const parentEmail = currentParentProfile?.email || '';
       const parentAvatars = [
         // Femeninos
-        'https://api.dicebear.com/7.x/micah/webp?seed=Aneka&backgroundColor=ffdfbf',
-        'https://api.dicebear.com/7.x/micah/webp?seed=Mimi&backgroundColor=c0aede',
-        'https://api.dicebear.com/7.x/micah/webp?seed=Avery&backgroundColor=b6e3f4',
-        'https://api.dicebear.com/7.x/micah/webp?seed=Jasmine&backgroundColor=d1d4f9',
-        'https://api.dicebear.com/7.x/micah/webp?seed=Nala&backgroundColor=ffdfbf',
-        'https://api.dicebear.com/7.x/micah/webp?seed=Lilly&backgroundColor=c0aede',
-        'https://api.dicebear.com/7.x/micah/webp?seed=Sophie&backgroundColor=ffdfbf',
-        'https://api.dicebear.com/7.x/micah/webp?seed=Chloe&backgroundColor=b6e3f4',
+        'https://api.dicebear.com/7.x/micah/svg?seed=Aneka&backgroundColor=ffdfbf',
+        'https://api.dicebear.com/7.x/micah/svg?seed=Mimi&backgroundColor=c0aede',
+        'https://api.dicebear.com/7.x/micah/svg?seed=Avery&backgroundColor=b6e3f4',
+        'https://api.dicebear.com/7.x/micah/svg?seed=Jasmine&backgroundColor=d1d4f9',
+        'https://api.dicebear.com/7.x/micah/svg?seed=Nala&backgroundColor=ffdfbf',
+        'https://api.dicebear.com/7.x/micah/svg?seed=Lilly&backgroundColor=c0aede',
+        'https://api.dicebear.com/7.x/micah/svg?seed=Sophie&backgroundColor=ffdfbf',
+        'https://api.dicebear.com/7.x/micah/svg?seed=Chloe&backgroundColor=b6e3f4',
         // Masculinos
-        'https://api.dicebear.com/7.x/micah/webp?seed=Felix&backgroundColor=b6e3f4',
-        'https://api.dicebear.com/7.x/micah/webp?seed=Jude&backgroundColor=d1d4f9',
-        'https://api.dicebear.com/7.x/micah/webp?seed=Leo&backgroundColor=ffdfbf',
-        'https://api.dicebear.com/7.x/micah/webp?seed=Oliver&backgroundColor=c0aede',
-        'https://api.dicebear.com/7.x/micah/webp?seed=Max&backgroundColor=b6e3f4',
-        'https://api.dicebear.com/7.x/micah/webp?seed=Jack&backgroundColor=d1d4f9',
-        'https://api.dicebear.com/7.x/micah/webp?seed=Oscar&backgroundColor=ffdfbf',
-        'https://api.dicebear.com/7.x/micah/webp?seed=Caleb&backgroundColor=b6e3f4'
+        'https://api.dicebear.com/7.x/micah/svg?seed=Felix&backgroundColor=b6e3f4',
+        'https://api.dicebear.com/7.x/micah/svg?seed=Jude&backgroundColor=d1d4f9',
+        'https://api.dicebear.com/7.x/micah/svg?seed=Leo&backgroundColor=ffdfbf',
+        'https://api.dicebear.com/7.x/micah/svg?seed=Oliver&backgroundColor=c0aede',
+        'https://api.dicebear.com/7.x/micah/svg?seed=Max&backgroundColor=b6e3f4',
+        'https://api.dicebear.com/7.x/micah/svg?seed=Jack&backgroundColor=d1d4f9',
+        'https://api.dicebear.com/7.x/micah/svg?seed=Oscar&backgroundColor=ffdfbf',
+        'https://api.dicebear.com/7.x/micah/svg?seed=Caleb&backgroundColor=b6e3f4'
       ];
       const defaultAva = parentAvatars[0];
       const currentAvatar = currentParentProfile?.avatar || defaultAva;
@@ -7600,12 +7600,7 @@
 
     function renderParentProfile() {
       const parentName = currentParentProfile?.name || 'Padre';
-      // Auto-migrar avatares DiceBear de SVG a WebP
-      let parentAvatar = currentParentProfile?.avatar || parentName[0].toUpperCase();
-      if (typeof parentAvatar === 'string' && parentAvatar.includes('dicebear.com') && parentAvatar.includes('/svg?')) {
-        parentAvatar = parentAvatar.replace('/svg?', '/webp?');
-        if (currentParentProfile) currentParentProfile.avatar = parentAvatar;
-      }
+      const parentAvatar = currentParentProfile?.avatar || parentName[0].toUpperCase();
       const isImg = parentAvatar.startsWith('http') || parentAvatar.startsWith('data:');
       const avatarHTML = isImg ? `<img src="${parentAvatar}" style="width:100%;height:100%;object-fit:cover;">` : parentAvatar;
 

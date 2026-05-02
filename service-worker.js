@@ -5,8 +5,8 @@
    No compatible con: WebViewGold (necesita FCM para APK)
 ═══════════════════════════════════════════════════════ */
 
-const SW_VERSION = 'schoolsafe-sw-v2';
-const CACHE_NAME = 'schoolsafe-static-v2';
+const SW_VERSION = 'schoolsafe-sw-v3';
+const CACHE_NAME = 'schoolsafe-static-v3';
 
 // Assets to cache for immediate offline load
 const STATIC_ASSETS = [
@@ -14,7 +14,28 @@ const STATIC_ASSETS = [
   '/index.html',
   '/firebase.js',
   '/service-worker.js',
-  'https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Sora:wght@400;600;700;800&display=swap'
+  'https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Sora:wght@400;600;700;800&display=swap',
+  // Avatares del padre (DiceBear - precacheados para carga instantánea)
+  'https://api.dicebear.com/7.x/micah/svg?seed=Aneka&backgroundColor=ffdfbf',
+  'https://api.dicebear.com/7.x/micah/svg?seed=Mimi&backgroundColor=c0aede',
+  'https://api.dicebear.com/7.x/micah/svg?seed=Avery&backgroundColor=b6e3f4',
+  'https://api.dicebear.com/7.x/micah/svg?seed=Jasmine&backgroundColor=d1d4f9',
+  'https://api.dicebear.com/7.x/micah/svg?seed=Nala&backgroundColor=ffdfbf',
+  'https://api.dicebear.com/7.x/micah/svg?seed=Lilly&backgroundColor=c0aede',
+  'https://api.dicebear.com/7.x/micah/svg?seed=Sophie&backgroundColor=ffdfbf',
+  'https://api.dicebear.com/7.x/micah/svg?seed=Chloe&backgroundColor=b6e3f4',
+  'https://api.dicebear.com/7.x/micah/svg?seed=Felix&backgroundColor=b6e3f4',
+  'https://api.dicebear.com/7.x/micah/svg?seed=Jude&backgroundColor=d1d4f9',
+  'https://api.dicebear.com/7.x/micah/svg?seed=Leo&backgroundColor=ffdfbf',
+  'https://api.dicebear.com/7.x/micah/svg?seed=Oliver&backgroundColor=c0aede',
+  'https://api.dicebear.com/7.x/micah/svg?seed=Max&backgroundColor=b6e3f4',
+  'https://api.dicebear.com/7.x/micah/svg?seed=Jack&backgroundColor=d1d4f9',
+  'https://api.dicebear.com/7.x/micah/svg?seed=Oscar&backgroundColor=ffdfbf',
+  'https://api.dicebear.com/7.x/micah/svg?seed=Caleb&backgroundColor=b6e3f4',
+  // Avatares de alumnos (DiceBear)
+  'https://api.dicebear.com/7.x/notionists/svg?seed=Felix',
+  'https://api.dicebear.com/7.x/notionists/svg?seed=Aneka',
+  'https://api.dicebear.com/7.x/notionists/svg?seed=Nova',
 ];
 
 /* ── Instalación ─────────────────────────────────────── */
