@@ -4498,6 +4498,7 @@
 
     window.app_updateParentProfileFS = updateParentProfileFS;
     window.app_setTutorialSeenFS = setTutorialSeenFS;
+    window.app_saveStudentFS = saveStudentFS;
 
     /* ═══════════════════════════════════════
        APP STATE
@@ -5820,6 +5821,32 @@
           if (loadingText) loadingText.textContent = 'Buscando última ubicación...';
         }
       }
+    }
+    }
+
+    /* ═══════════════════════════════════════
+       DESCARTAR SOS
+    ═══════════════════════════════════════ */
+    function dismissSOS() {
+      if (!emergencyChildId) return;
+      const child = students[emergencyChildId];
+      const liveInfo = liveData[emergencyChildId] || {};
+      
+      // 1. Guardar en localStorage que este SOS específico fue descartado
+      const dismissedKey = `ss_sos_dismissed_${emergencyChildId}_${liveInfo.sosTs || 'active'}`;
+      localStorage.setItem(dismissedKey, 'true');
+      
+      // 2. Restaurar status a safe localmente y en Firestore
+      if (child && child.status === 'danger') {
+        child.status = 'safe';
+        if (window.app_saveStudentFS) {
+          window.app_saveStudentFS({ status: 'safe' }, emergencyChildId).catch(e => console.warn("No se pudo restaurar estado seguro:", e));
+        }
+      }
+      
+      showToast('Alerta SOS descartada.', 'safe');
+      closeModal();
+      goBack();
     }
 
     /* ═══════════════════════════════════════
@@ -7464,7 +7491,7 @@
         title: '¿Descartar Alerta SOS?',
         sub: 'Solo descarta si confirmaste que tu hijo está seguro. Esta acción queda registrada.',
         content: `
-      <button class="btn btn-danger btn-full" style="height:52px;margin-bottom:12px;" onclick="closeModal();goBack()">Confirmar — Mi hijo está seguro</button>
+      <button class="btn btn-danger btn-full" style="height:52px;margin-bottom:12px;" onclick="dismissSOS()">Confirmar — Mi hijo está seguro</button>
       <button class="btn btn-ghost btn-full" style="height:48px;" onclick="closeModal()">Mantener Alerta Activa</button>`
       },
       'security': {
@@ -8089,14 +8116,23 @@
                     const prevLive = liveData[childId] || {};
                     liveData[childId] = liveInfo;
 
-                    if (liveInfo && liveInfo.sos && !prevLive.sos) {
-                      sendPushNotification({
-                        type: 'sos',
-                        title: `🆘 SOS ACTIVADO: ${students[childId]?.name || 'Tu hijo'}`,
-                        body: 'Toca aquí para ver ubicación y llamar'
-                      });
-                      VoiceAssistant.speak(`¡Alerta! SOS activado por ${students[childId]?.name || 'tu hijo'}.`, 'high');
-                      if (currentScreen !== 'emergency' || emergencyChildId !== childId) {
+                    if (liveInfo && liveInfo.sos) {
+                      // Verificar si esta alerta SOS ya fue confirmada por el padre
+                      const dismissedKey = `ss_sos_dismissed_${childId}_${liveInfo.sosTs || 'active'}`;
+                      const alreadyDismissed = localStorage.getItem(dismissedKey) === 'true';
+
+                      if (!prevLive.sos && !alreadyDismissed) {
+                        sendPushNotification({
+                          type: 'sos',
+                          title: `🆘 SOS ACTIVADO: ${students[childId]?.name || 'Tu hijo'}`,
+                          body: 'Toca aquí para ver ubicación y llamar'
+                        });
+                        VoiceAssistant.speak(`¡Alerta! SOS activado por ${students[childId]?.name || 'tu hijo'}.`, 'high');
+                        if (currentScreen !== 'emergency' || emergencyChildId !== childId) {
+                          navigateTo('emergency', { id: childId });
+                        }
+                      } else if (!alreadyDismissed && currentScreen !== 'emergency') {
+                        // Primera carga: SOS sigue activo y no fue descartado aún
                         navigateTo('emergency', { id: childId });
                       }
                     }
