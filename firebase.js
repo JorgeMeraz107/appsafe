@@ -318,6 +318,13 @@ export async function getStudentLiveFS(studentId) {
     return snap.exists() ? { id: snap.id, ...snap.data() } : null;
 }
 
+/**
+ * Actualiza parcialmente el estado en vivo (ej. para descartar SOS remotamente)
+ */
+export async function updateStudentLiveFS(studentId, data) {
+    await setDoc(doc(db, "student_live", studentId), data, { merge: true });
+}
+
 /* ═══════════════════════════════════════════════════════════════
    NOTIFICACIONES — /notifications
    ───────────────────────────────────────────────────────────────

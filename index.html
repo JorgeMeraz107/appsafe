@@ -4493,12 +4493,13 @@
       loginWithEmail, registerWithEmail, loginWithGoogle, logout as fbLogout, onAuthChange, currentUser,
       getStudentsFS, subscribeStudents, subscribeStudentLive, subscribeStudentHistory,
       getUserProfile, saveStudentFS, deleteStudentFS, setTutorialSeenFS,
-      subscribeNotifications, markNotificationRead, markAllNotificationsRead, updateParentProfileFS
+      subscribeNotifications, markNotificationRead, markAllNotificationsRead, updateParentProfileFS, updateStudentLiveFS
     } from './firebase.js';
 
     window.app_updateParentProfileFS = updateParentProfileFS;
     window.app_setTutorialSeenFS = setTutorialSeenFS;
     window.app_saveStudentFS = saveStudentFS;
+    window.app_updateStudentLiveFS = updateStudentLiveFS;
 
     /* ═══════════════════════════════════════
        APP STATE
@@ -5841,6 +5842,11 @@
         if (window.app_saveStudentFS) {
           window.app_saveStudentFS({ status: 'safe' }, emergencyChildId).catch(e => console.warn("No se pudo restaurar estado seguro:", e));
         }
+      }
+      
+      // 3. Limpiar el estado SOS en student_live para que no reaparezca
+      if (window.app_updateStudentLiveFS) {
+        window.app_updateStudentLiveFS(emergencyChildId, { sos: false }).catch(e => console.warn("No se pudo limpiar SOS en vivo:", e));
       }
 
       showToast('Alerta SOS descartada.', 'safe');
