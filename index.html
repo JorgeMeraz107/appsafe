@@ -6132,7 +6132,7 @@
       const defaults = { boy: 'Felix', girl: 'Aneka', other: 'Nova' };
       const seed = defaults[s.gender] || 'Felix';
       const initial = s.name ? s.name[0].toUpperCase() : '?';
-      return `<img src="https://api.dicebear.com/7.x/notionists/svg?seed=${seed}" style="width:100%;height:100%;object-fit:cover;opacity:0.8;">`;
+      return `<img src="https://api.dicebear.com/7.x/notionists/webp?seed=${seed}" style="width:100%;height:100%;object-fit:cover;opacity:0.8;">`;
     }
 
     function renderHomeScreen() {
@@ -6464,7 +6464,7 @@
                 <div style="font-size:11px;color:var(--text-3);margin-bottom:16px;">Abre la app del alumno y escanea para vincular al instante</div>
                 
                 <div style="background:white;padding:12px;border-radius:16px;display:inline-block;border:1px solid var(--border);box-shadow:var(--shadow);">
-                  <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(s.linkCode || '')}&margin=2" 
+                  <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(s.linkCode || '')}&margin=2&format=webp" 
                        style="display:block;width:150px;height:150px;image-rendering:pixelated;" alt="Código QR de vinculación">
                 </div>
                 
