@@ -64,8 +64,8 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   // Evitar interceptar llamadas a Firebase Auth/Firestore directamente
   // (Firebase ya tiene su propia persistencia interna IndexedDB)
-  if (e.request.url.includes('firestore.googleapis.com') || 
-      e.request.url.includes('identitytoolkit.googleapis.com')) {
+  if (e.request.url.includes('firestore.googleapis.com') ||
+    e.request.url.includes('identitytoolkit.googleapis.com')) {
     return;
   }
 
@@ -77,7 +77,7 @@ self.addEventListener('fetch', e => {
           if (networkResponse && networkResponse.status === 200) {
             caches.open(CACHE_NAME).then(cache => cache.put(e.request, networkResponse));
           }
-        }).catch(() => {});
+        }).catch(() => { });
         return cachedResponse;
       }
       return fetch(e.request);
@@ -116,17 +116,17 @@ function showNotification(payload) {
 
   // Icono y color según tipo
   const icons = {
-    sos:        '/icons/icon-sos.png',
-    battery:    '/icons/icon-battery.png',
-    offline:    '/icons/icon-offline.png',
-    info:       '/icons/icon-192.png',
+    sos: '/icons/icon-sos.png',
+    battery: '/icons/icon-battery.png',
+    offline: '/icons/icon-offline.png',
+    info: '/icons/icon-192.png',
   };
 
   const options = {
     body,
-    icon:  icons[type] || icons.info,
+    icon: icons[type] || icons.info,
     badge: '/icons/badge-72.png',   // icono pequeño en barra de notificaciones Android
-    tag:   `schoolsafe-${type}`,    // reemplaza notif anterior del mismo tipo
+    tag: `schoolsafe-${type}`,    // reemplaza notif anterior del mismo tipo
     renotify: type === 'sos',       // SOS siempre vibra aunque ya haya una
     requireInteraction: type === 'sos', // SOS no desaparece solo
     vibrate: type === 'sos'
@@ -135,12 +135,12 @@ function showNotification(payload) {
     data: { url, type, studentName },
     actions: type === 'sos'
       ? [
-          { action: 'view',  title: 'Ver ubicación' },
-          { action: 'call',  title: 'Llamar' },
-        ]
+        { action: 'view', title: 'Ver ubicación' },
+        { action: 'call', title: 'Llamar' },
+      ]
       : [
-          { action: 'view',  title: 'Ver' },
-        ],
+        { action: 'view', title: 'Ver' },
+      ],
   };
 
   return self.registration.showNotification(title, options);
