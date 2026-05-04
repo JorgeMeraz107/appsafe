@@ -2750,10 +2750,132 @@
       transform: rotate(45deg);
       z-index: 10001;
     }
+
+    /* ═══════════════════════════════════════
+       APP LOADER (SPLASH SCREEN)
+    ═══════════════════════════════════════ */
+    .app-loader-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--navy);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      transition: opacity 0.5s ease, visibility 0.5s;
+    }
+
+    .app-loader-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .app-loader-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 32px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .loader-logo-container {
+      position: relative;
+      width: 160px;
+      height: 160px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .loader-logo {
+      width: 130px;
+      height: auto;
+      z-index: 2;
+      animation: logo-pulse 2s infinite ease-in-out;
+      filter: drop-shadow(0 0 15px rgba(41, 121, 255, 0.2));
+    }
+
+    .loader-ring {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border: 3px solid rgba(41, 121, 255, 0.08);
+      border-top-color: var(--blue-acc);
+      border-radius: 50%;
+      animation: ring-spin 1.2s infinite cubic-bezier(0.5, 0, 0.5, 1);
+    }
+
+    .loader-text-container {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .loader-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: white;
+      letter-spacing: -0.02em;
+    }
+
+    .loader-dots {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .loader-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--blue-acc);
+      border-radius: 50%;
+      animation: dot-jump 1.4s infinite ease-in-out;
+    }
+
+    .loader-dot:nth-child(2) { animation-delay: 0.2s; }
+    .loader-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes logo-pulse {
+      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(41, 121, 255, 0.2)); }
+      50% { transform: scale(1.03); filter: drop-shadow(0 0 20px rgba(41, 121, 255, 0.4)); }
+    }
+
+    @keyframes ring-spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes dot-jump {
+      0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+      40% { transform: translateY(-8px); opacity: 1; }
+    }
   </style>
 </head>
 
 <body>
+
+  <!-- APP LOADER (SPLASH SCREEN) -->
+  <div id="app-loader" class="app-loader-overlay">
+    <div class="app-loader-content">
+      <div class="loader-logo-container">
+        <img src="assets/logo-loader.png" alt="SchoolSafe Logo" class="loader-logo">
+        <div class="loader-ring"></div>
+      </div>
+      <div class="loader-text-container">
+        <div class="loader-title">SchoolSafe</div>
+        <div class="loader-dots">
+          <span class="loader-dot"></span>
+          <span class="loader-dot"></span>
+          <span class="loader-dot"></span>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- TOAST -->
   <div class="toast" id="toast"></div>
@@ -4499,6 +4621,21 @@
     window.app_setTutorialSeenFS = setTutorialSeenFS;
     window.app_saveStudentFS = saveStudentFS;
     window.app_updateStudentLiveFS = updateStudentLiveFS;
+
+    /* ── Función para ocultar el loader de la app ── */
+    function hideAppLoader() {
+      const loader = document.getElementById('app-loader');
+      if (loader && !loader.classList.contains('hidden')) {
+        loader.classList.add('hidden');
+        setTimeout(() => {
+          loader.style.display = 'none';
+        }, 600);
+      }
+    }
+    window.hideAppLoader = hideAppLoader;
+
+    // Timeout de seguridad para el loader (máximo 6 segundos)
+    setTimeout(hideAppLoader, 6000);
 
     /* ═══════════════════════════════════════
        APP STATE
@@ -8109,6 +8246,9 @@
               students = data;
               localStorage.setItem('ss_students_v1', JSON.stringify(students));
 
+              // Datos iniciales cargados -> ocultar loader
+              hideAppLoader();
+
               const settingsRoleEl = document.getElementById('settings-user-role');
               const count = Object.keys(students).length;
               if (settingsRoleEl) settingsRoleEl.textContent = `Cuenta de Padre · ${count} ${count === 1 ? 'hijo vinculado' : 'hijos vinculados'}`;
@@ -8211,6 +8351,8 @@
           const loginScreen = document.getElementById('screen-login');
           if (loginScreen) loginScreen.classList.add('active');
           currentScreen = 'login';
+
+          hideAppLoader();
 
           // Limpiar suscripciones de Firebase
           if (unsubStudents) { unsubStudents(); unsubStudents = null; }
