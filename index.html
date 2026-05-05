@@ -7710,30 +7710,50 @@
       }
     };
 
-    window.handleParentPhoto = function(input) {
+    window.handleParentPhoto = function (input) {
       const file = input.files[0];
       if (!file) return;
 
-      if (file.size > 204800) { // 200KB limit
-        showToast("La imagen es muy pesada (máx 200KB)", "warn");
-        input.value = "";
-        return;
-      }
+      // Mostrar cargando sutil
+      showToast("Procesando imagen...", "info");
 
       const reader = new FileReader();
-      reader.onload = function(e) {
-        const base64 = e.target.result;
-        document.getElementById('edit-parent-avatar').value = base64;
-        const preview = document.getElementById('parent-photo-preview');
-        if (preview) {
-           preview.innerHTML = `<img src="${base64}" style="width:100%;height:100%;object-fit:cover;">`;
-        }
-        // Desmarcar avatares
-        document.querySelectorAll('.avatar-option').forEach(b => {
-          b.style.border = '2px solid transparent';
-          b.style.opacity = '0.5';
-        });
-        showToast("Foto cargada correctamente", "safe");
+      reader.onload = function (e) {
+        const img = new Image();
+        img.onload = function () {
+          // Crear un canvas para redimensionar y convertir a WebP
+          const canvas = document.createElement('canvas');
+          const size = 200; // Tamaño estándar para avatar (suficiente nitidez, mínimo peso)
+          canvas.width = size;
+          canvas.height = size;
+          const ctx = canvas.getContext('2d');
+
+          // Dibujar centrado y recortado (Square crop)
+          const minSide = Math.min(img.width, img.height);
+          const sx = (img.width - minSide) / 2;
+          const sy = (img.height - minSide) / 2;
+          
+          ctx.drawImage(img, sx, sy, minSide, minSide, 0, 0, size, size);
+
+          // Convertir a WebP con calidad optimizada (0.7)
+          const optimizedBase64 = canvas.toDataURL('image/webp', 0.7);
+
+          // Guardar y mostrar
+          document.getElementById('edit-parent-avatar').value = optimizedBase64;
+          const preview = document.getElementById('parent-photo-preview');
+          if (preview) {
+            preview.innerHTML = `<img src="${optimizedBase64}" style="width:100%;height:100%;object-fit:cover;">`;
+          }
+          
+          // Desmarcar avatares predeterminados
+          document.querySelectorAll('.avatar-option').forEach(b => {
+            b.style.border = '2px solid transparent';
+            b.style.opacity = '0.5';
+          });
+          
+          showToast("Foto optimizada (WebP)", "safe");
+        };
+        img.src = e.target.result;
       };
       reader.readAsDataURL(file);
     };
