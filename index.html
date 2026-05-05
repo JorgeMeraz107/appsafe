@@ -2978,7 +2978,7 @@
               M
             </div>
             <div>
-              <div class="home-greeting">Buenos días,</div>
+              <div class="home-greeting" id="home-greeting-text">Buenos días,</div>
               <div class="home-name">Cargando...</div>
             </div>
           </div>
@@ -6343,6 +6343,16 @@
       const statRole = document.getElementById('home-stat-role');
       const summaryTitle = document.querySelector('.summary-title');
       const summarySub = document.querySelector('.status-summary-card .summary-sub');
+      const greetingText = document.getElementById('home-greeting-text');
+
+      // Saludo dinámico
+      if (greetingText) {
+        const hour = new Date().getHours();
+        let greeting = 'Buenos días,';
+        if (hour >= 12 && hour < 19) greeting = 'Buenas tardes,';
+        else if (hour >= 19 || hour < 5) greeting = 'Buenas noches,';
+        greetingText.textContent = greeting;
+      }
 
       // Actualizar stats
       const total = ids.length;
