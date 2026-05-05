@@ -18,8 +18,8 @@
       --navy: #0A1628;
       --navy-mid: #112240;
       --navy-light: #1A3358;
-      --safe: #10B981;
-      --safe-bg: #0FBF7A18;
+      --safe: #059669;
+      --safe-bg: rgba(5, 150, 105, 0.1);
       --warn: #F5A623;
       --warn-bg: #F5A62318;
       --danger: #E8364A;
@@ -47,8 +47,8 @@
       --navy: #0D1B2A;
       --navy-mid: #0D1B2A;
       --navy-light: #162032;
-      --safe: #0FBF7A;
-      --safe-bg: #0FBF7A22;
+      --safe: #10B981;
+      --safe-bg: rgba(16, 185, 129, 0.15);
       --warn: #F5A623;
       --warn-bg: #F5A62322;
       --danger: #E8364A;
@@ -6359,9 +6359,9 @@
         const isSafe = s.status !== 'danger';
         const ring = isSafe ? '' : 'avatar-ring-danger';
         const pillClass = isSafe ? 'status-pill status-safe' : 'status-pill status-danger';
-        const pillText = isSafe ? 'Seguro/a' : 'SOS Activo';
+        const pillText = isSafe ? 'Protegido/a' : 'SOS Activo';
         const pillIcon = isSafe ?
-          '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>' :
+          '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><polyline points="20 6 9 17 4 12"></polyline></svg>' :
           '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
         const arrowColor = isSafe ? 'currentColor' : 'var(--danger)';
         const metaText = [escapeHTML(s.grade), escapeHTML(s.school)].filter(Boolean).join(' · ') || 'Sin información';
