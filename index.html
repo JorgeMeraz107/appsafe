@@ -3092,6 +3092,26 @@
             <div class="stat-value" id="home-stat-battery">-</div>
             <div class="stat-label">Batería prom.</div>
           </div>
+
+          <div class="card stat-card">
+            <div class="stat-icon" style="background:rgba(255, 71, 87, 0.1);">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+            </div>
+            <div class="stat-value" id="home-stat-sos" style="color:var(--danger);">0</div>
+            <div class="stat-label">Alertas SOS</div>
+          </div>
+
+          <div class="card stat-card" onclick="openEditParentProfile()">
+            <div class="stat-icon" style="background:rgba(107, 77, 255, 0.1);">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B4DFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              </svg>
+            </div>
+            <div class="stat-value" id="home-stat-role" style="font-size: 15px; color:#6B4DFF;">-</div>
+            <div class="stat-label">Mi Rol</div>
+          </div>
         </div>
 
         <!-- AI Safety Tip of the Day -->
@@ -6261,6 +6281,8 @@
       const statAlerts = document.getElementById('home-stat-alerts');
       const statChildren = document.getElementById('home-stat-children');
       const statBattery = document.getElementById('home-stat-battery');
+      const statSOS = document.getElementById('home-stat-sos');
+      const statRole = document.getElementById('home-stat-role');
       const summaryTitle = document.querySelector('.summary-title');
       const summarySub = document.querySelector('.status-summary-card .summary-sub');
 
@@ -6272,6 +6294,8 @@
       if (statSafe) statSafe.textContent = safeCount;
       if (statAlerts) statAlerts.textContent = alertCount;
       if (statChildren) statChildren.textContent = total;
+      if (statSOS) statSOS.textContent = alertCount;
+      if (statRole) statRole.textContent = currentParentProfile?.role || 'Padre';
 
       // Batería promedio
       let avgBatt = 0;
