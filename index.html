@@ -3961,13 +3961,20 @@
       <div class="topbar">
         <div class="topbar-title">
           Centro de Notificaciones
-          <span class="topbar-sub">2 activas</span>
+          <span class="topbar-sub">Cargando...</span>
         </div>
-        <button class="icon-btn" onclick="markAllAlertsRead()">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path d="M4 10L8 14L16 6" stroke="var(--text-2)" stroke-width="1.5" stroke-linecap="round" />
-          </svg>
-        </button>
+        <div style="display: flex; gap: 8px;">
+          <button class="icon-btn" onclick="markAllAlertsRead()" title="Marcar leídas">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M4 10L8 14L16 6" stroke="var(--text-2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <button class="icon-btn" onclick="clearAllNotifications()" title="Limpiar todo" style="color: var(--danger);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></polyline>
+            </svg>
+          </button>
+        </div>
       </div>
 
       <div class="scroll-content">
@@ -4907,6 +4914,46 @@
       }
     }
 
+    function clearAllNotifications() {
+      const all = getAllHistoryEvents();
+      if (all.length === 0) return;
+      
+      const dismissed = getDismissedAlerts();
+      all.forEach(ev => {
+        if (!dismissed.includes(ev._stableId.toString())) {
+          dismissed.push(ev._stableId.toString());
+        }
+      });
+      localStorage.setItem('ss_dismissed_alerts_v1', JSON.stringify(dismissed));
+      SS_SoundManager.play('save_success');
+      renderAlertsScreen();
+    }
+
+    function viewNotificationDetail(stableId) {
+      const all = getAllHistoryEvents();
+      const ev = all.find(e => e._stableId.toString() === stableId.toString());
+      if (!ev) return;
+
+      const timeVal = getMillis(ev.ts) || getMillis(ev.serverTs);
+      const timeStr = timeVal ? new Date(timeVal).toLocaleString('es-HN', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }) : 'Recientemente';
+      
+      showModalContent({
+        title: ev.title || ev.type.toUpperCase(),
+        sub: `${ev.childName} • ${timeStr}`,
+        content: `
+          <div style="padding: 20px; text-align: center;">
+            <div style="font-size: 15px; line-height: 1.6; color: var(--text-1); margin-bottom: 24px;">
+              ${ev.description || 'Se ha detectado una actividad relevante de seguridad para tu hijo/a.'}
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+              <button class="btn btn-ghost btn-full" style="height: 48px;" onclick="closeModal()">Cerrar</button>
+              <button class="btn btn-primary btn-full" style="height: 48px;" onclick="closeModal(); navigateTo('student', {id:'${ev.childId}'})">Ver Perfil</button>
+            </div>
+          </div>
+        `
+      });
+    }
+
     function getAllHistoryEvents() {
       let allEvents = [];
       if (!students || !historyData) return [];
@@ -5755,15 +5802,22 @@
         const date = timeVal ? new Date(timeVal).toLocaleDateString('es-HN', { day: 'numeric', month: 'short' }) : '';
 
         const eventId = ev._stableId;
+        const desc = ev.description || 'Actividad de seguridad detectada.';
+        const snippet = desc.length > 50 ? desc.substring(0, 50) + '...' : desc;
+
         return `
           <div class="card alert-item card-pressable anim-item" style="margin-bottom:10px;" 
-               onclick="${ev.type === 'sos' ? `navigateTo('emergency',{id:'${ev.childId}'})` : `navigateTo('student',{id:'${ev.childId}'})`}">
+               onclick="viewNotificationDetail('${eventId}')">
             <div class="alert-item-icon" style="background:${color}; color:${textColor}; border: 1px solid rgba(0,0,0,0.05); display:flex; align-items:center; justify-content:center;">
               ${icon}
             </div>
             <div class="alert-item-content">
               <div class="alert-item-title">${escapeHTML(ev.title || ev.type.toUpperCase())}</div>
-              <div class="alert-item-meta">${escapeHTML(ev.childName)} · ${time} · ${date}</div>
+              <div class="alert-item-meta">${escapeHTML(ev.childName)} · ${time}</div>
+              <div style="font-size: 12px; color: var(--text-3); margin-top: 4px;">${escapeHTML(snippet)}</div>
+            </div>
+            <div style="padding-left: 8px; opacity: 0.5;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
             </div>
           </div>`;
       }).join('');
