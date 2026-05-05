@@ -7664,6 +7664,21 @@
         sub: 'Personaliza tu cuenta de SchoolSafe.',
         content: `
         <div class="input-group"><label class="input-label">Nombre Completo</label><input class="input-field" id="edit-parent-name" value="${escapeHTML(parentName)}" type="text"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+           <div class="input-group">
+             <label class="input-label">Teléfono</label>
+             <input class="input-field" id="edit-parent-phone" value="${escapeHTML(currentParentProfile?.phone || '')}" type="tel" placeholder="+504 0000-0000">
+           </div>
+           <div class="input-group">
+             <label class="input-label">Rol / Parentesco</label>
+             <select class="input-field" id="edit-parent-role" style="appearance:none;background-image:url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2214%22%20height%3D%2214%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2394A3B8%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C/polyline%3E%3C/svg%3E');background-repeat:no-repeat;background-position:right%2012px%20center;background-size:14px;">
+                <option value="Padre" ${currentParentProfile?.role === 'Padre' ? 'selected' : ''}>Padre</option>
+                <option value="Madre" ${currentParentProfile?.role === 'Madre' ? 'selected' : ''}>Madre</option>
+                <option value="Tutor" ${currentParentProfile?.role === 'Tutor' ? 'selected' : ''}>Tutor</option>
+                <option value="Abuelo/a" ${currentParentProfile?.role === 'Abuelo/a' ? 'selected' : ''}>Abuelo/a</option>
+             </select>
+           </div>
+        </div>
         <div class="input-group"><label class="input-label">Correo (solo lectura)</label><input class="input-field" value="${escapeHTML(parentEmail)}" type="email" disabled></div>
         <div class="input-group">
           <label class="input-label">Selecciona tu Avatar o sube tu foto</label>
@@ -7760,6 +7775,8 @@
 
     window.saveParentProfile = async function () {
       const newName = document.getElementById('edit-parent-name').value.trim();
+      const newPhone = document.getElementById('edit-parent-phone').value.trim();
+      const newRole = document.getElementById('edit-parent-role').value;
       const newAvatar = document.getElementById('edit-parent-avatar').value || 'https://api.dicebear.com/7.x/micah/svg?seed=Aneka&backgroundColor=ffdfbf';
       
       if (!newName) return showToast('El nombre es obligatorio', 'warn');
@@ -7772,11 +7789,15 @@
         if (window.app_updateParentProfileFS) {
           await window.app_updateParentProfileFS(user.uid, {
             name: newName,
+            phone: newPhone,
+            role: newRole,
             avatar: newAvatar
           });
         }
         
         currentParentProfile.name = newName;
+        currentParentProfile.phone = newPhone;
+        currentParentProfile.role = newRole;
         currentParentProfile.avatar = newAvatar;
         localStorage.setItem('ss_parent_profile', JSON.stringify(currentParentProfile));
         
@@ -7821,7 +7842,8 @@
       }
       if (settingsRoleEl) {
         const count = Object.keys(students || {}).length;
-        settingsRoleEl.textContent = `Cuenta de Padre · ${count} ${count === 1 ? 'hijo vinculado' : 'hijos vinculados'}`;
+        const roleStr = currentParentProfile?.role || 'Padre';
+        settingsRoleEl.textContent = `${roleStr} · ${count} ${count === 1 ? 'hijo vinculado' : 'hijos vinculados'}`;
       }
     }
 
