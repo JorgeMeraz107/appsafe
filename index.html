@@ -3117,7 +3117,7 @@
         <!-- AI Assistant Insight -->
         <div id="ai-safety-tip-container" class="anim-item" style="margin: 20px 20px 0; display: none;">
           <div class="card"
-            style="padding: 18px; background: var(--card); border: 1px solid var(--border); border-left: 4px solid #6B4DFF; border-radius: var(--radius); display: flex; align-items: flex-start; gap: 16px; box-shadow: var(--shadow);">
+            style="padding: 18px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); display: flex; align-items: flex-start; gap: 16px; box-shadow: var(--shadow);">
             <div
               style="background: rgba(107, 77, 255, 0.1); width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #6B4DFF;">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
@@ -6408,8 +6408,8 @@
         return;
       }
       if (noChildren) noChildren.style.display = 'none';
-      // Con hijos: mostrar tarjeta de IA (ya se llenará con el consejo)
-      if (aiTipContainer) aiTipContainer.style.display = 'block';
+      // Con hijos: no forzar mostrar la IA aqu para evitar que aparezca si fallan los tokens
+      // loadSafetyTip() se encargar de mostrarlo si tiene xito
 
 
       homeList.innerHTML = ids.map(id => {
@@ -8071,10 +8071,20 @@
       const tipContainer = document.getElementById('ai-safety-tip-container');
       if (!tipText || !tipContainer) return;
 
+      // Solo intentar si hay hijos vinculados
+      if (Object.keys(students || {}).length === 0) {
+        tipContainer.style.display = 'none';
+        return;
+      }
+
       try {
-        tipContainer.style.display = 'block';
         const tip = await window.ss_gemini.getTip();
-        tipText.textContent = tip;
+        if (tip && tip.length > 5) {
+          tipText.textContent = tip;
+          tipContainer.style.display = 'block';
+        } else {
+          tipContainer.style.display = 'none';
+        }
       } catch (e) {
         tipContainer.style.display = 'none';
       }
