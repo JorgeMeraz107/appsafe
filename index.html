@@ -8235,31 +8235,47 @@
         setTimeout(() => {
           const el = s.target ? document.querySelector(s.target) : null;
           if (el && el.offsetParent !== null) {
-            const rect = el.getBoundingClientRect();
-            const cx = rect.left + rect.width / 2;
-            const cy = rect.top + rect.height / 2;
-            const size = Math.max(rect.width, rect.height) + 20;
+            // Asegurar que el elemento sea visible
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-            spotlight.style.width = size + 'px';
-            spotlight.style.height = size + 'px';
-            spotlight.style.left = (cx - size / 2) + 'px';
-            spotlight.style.top = (cy - size / 2) + 'px';
-            spotlight.style.opacity = '1';
+            setTimeout(() => {
+              const rect = el.getBoundingClientRect();
+              const cx = rect.left + rect.width / 2;
+              const cy = rect.top + rect.height / 2;
+              const size = Math.max(rect.width, rect.height) + 20;
 
-            // Card Position
-            const screenH = window.innerHeight;
-            if (cy > screenH / 2) {
-              card.style.top = (cy - size / 2 - 200) + 'px';
-            } else {
-              card.style.top = (cy + size / 2 + 20) + 'px';
-            }
-            card.style.left = 'calc(50% - 140px)';
+              spotlight.style.width = size + 'px';
+              spotlight.style.height = size + 'px';
+              spotlight.style.left = (cx - size / 2) + 'px';
+              spotlight.style.top = (cy - size / 2) + 'px';
+              spotlight.style.opacity = '1';
+
+              // Card Position - Mejorada para evitar recortes
+              const screenH = window.innerHeight;
+              const cardH = 220; // Altura estimada aproximada
+              
+              if (cy > screenH / 2) {
+                // Si el objetivo está abajo, poner card arriba
+                let topPos = cy - (size / 2) - cardH - 20;
+                card.style.top = Math.max(20, topPos) + 'px';
+              } else {
+                // Si el objetivo está arriba, poner card abajo
+                let topPos = cy + (size / 2) + 20;
+                // Evitar que se salga por abajo
+                if (topPos + cardH > screenH - 20) {
+                  topPos = screenH - cardH - 80; // Ajuste para dejar espacio al nav
+                }
+                card.style.top = topPos + 'px';
+              }
+              card.style.left = 'calc(50% - 140px)';
+              card.classList.add('active');
+            }, 300);
           } else {
             spotlight.style.opacity = '0';
             card.style.top = '30%';
             card.style.left = 'calc(50% - 140px)';
+            card.classList.add('active');
           }
-          card.classList.add('active');
         }, 100);
       },
       next() {
