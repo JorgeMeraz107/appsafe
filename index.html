@@ -8175,14 +8175,14 @@
       // 1. Cargar caché inmediatamente si existe (para modo offline o navegación rápida)
       const cachedTip = localStorage.getItem('ss_cached_ai_tip');
       const cachedTime = localStorage.getItem('ss_cached_ai_tip_time');
-      
+
       if (cachedTip) {
         tipText.textContent = cachedTip;
         tipContainer.style.opacity = '1';
-        
+
         // Si el caché tiene menos de 2 horas y hay internet, no recargar para ahorrar tokens
         const isFresh = cachedTime && (Date.now() - parseInt(cachedTime) < 2 * 60 * 60 * 1000);
-        if (isFresh && navigator.onLine) return; 
+        if (isFresh && navigator.onLine) return;
       }
 
       // Si no hay internet, nos quedamos con el caché (o no hacemos nada si no hay caché)
@@ -8223,13 +8223,19 @@
         return;
       }
 
-      // Preparar datos para el análisis
+      // Preparar el "Expediente Vivo" completo para el análisis de IA
       const dataForAi = {
         name: s.name,
+        grade: s.grade || "No especificado",
+        school: s.school || "No especificada",
         battery: live.battery !== undefined ? live.battery : 0.5,
+        charging: live.charging ? "Cargando" : "Desconectado",
         sos: live.sos || false,
-        location: live.location_name || "Ubicación en proceso...",
-        motion: live.motion || "Normal"
+        location: live.location_name || (live.lat ? `Coordenadas: ${live.lat.toFixed(4)}, ${live.lng.toFixed(4)}` : "Ubicación en proceso..."),
+        motion: live.motion || "Normal",
+        impact_detected: live.impact ? "¡Golpe/Caída detectada!" : "Ninguno",
+        speed: live.speed !== undefined ? `${live.speed} km/h` : "0 km/h",
+        minutes_since_last_ping: live.ts ? Math.round((Date.now() - live.ts) / 60000) : 0
       };
 
       // Crear un 'hash' de los datos actuales para saber si algo cambió
@@ -8244,10 +8250,10 @@
       if (cachedDiag) {
         diagText.textContent = cachedDiag;
         diagText.style.opacity = "1";
-        
+
         // Si los datos base NO han cambiado, usar el caché para ahorrar tokens (Ahorro Inteligente)
         if (cachedHash === dataHash) {
-            return;
+          return;
         }
       } else {
         // Solo mostrar "Consultando" si no hay caché previo
@@ -8262,7 +8268,7 @@
         const summary = await window.ss_gemini.summarize(dataForAi);
         diagText.textContent = summary;
         diagText.style.opacity = "1";
-        
+
         // Guardar el nuevo análisis y su hash
         localStorage.setItem(cacheKey, summary);
         localStorage.setItem(hashKey, dataHash);
