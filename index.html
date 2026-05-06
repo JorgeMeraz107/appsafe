@@ -6797,39 +6797,6 @@
     /* ── Estado de la pantalla de edición ── */
     window.contactFields = [];      // arreglo de {id, name, role, number, emoji}
 
-    function confirmDeleteStudent() {
-      if (!currentStudentId) return;
-      const s = students[currentStudentId];
-      if (!s) return;
-
-      SS_SoundManager.play('modal_warn');
-      showConfirm({
-        title: '¿Eliminar perfil de hijo?',
-        sub: `Esta acción es permanente. Se eliminará a <b>${escapeHTML(s.name)}</b> de tu cuenta, junto con su historial, zonas seguras y configuración de sensores.`,
-        okText: 'Eliminar permanentemente',
-        okClass: 'btn-danger',
-        onOk: async () => {
-          try {
-            showToast(`Eliminando a ${s.name}...`);
-            await deleteStudentFS(currentStudentId);
-            
-            // Limpiar localmente
-            delete students[currentStudentId];
-            delete liveData[currentStudentId];
-            
-            SS_SoundManager.play('save_done');
-            showToast('Perfil eliminado con éxito', 'safe');
-            
-            // Regresar a la pantalla principal
-            goBack();
-          } catch (e) {
-            console.error("Error al eliminar alumno:", e);
-            showToast('Error al eliminar perfil', 'danger');
-          }
-        }
-      });
-    }
-    window.confirmDeleteStudent = confirmDeleteStudent;
 
     /* ── Abrir pantalla de edición ──────── */
     function openEditStudent(studentId) {
@@ -7537,32 +7504,34 @@
 
     /* ── Eliminar alumno ─────────────────── */
     function confirmDeleteStudent() {
-      SS_SoundManager.play('modal_warn');
-      if (!editingStudentId || !currentUser()) return;
+      if (!editingStudentId) return;
       const s = students[editingStudentId];
+      if (!s) return;
 
+      SS_SoundManager.play('modal_warn');
       showConfirm({
-        title: 'Eliminar Hijo',
-        sub: `¿Estás seguro de que quieres eliminar a <b>${s?.name || 'este hijo'}</b>? Esta acción no se puede deshacer.`,
-        okText: 'Eliminar para siempre',
+        title: '¿Eliminar perfil de hijo?',
+        sub: `Esta acción es permanente. Se eliminará a <b>${escapeHTML(s.name)}</b> de tu cuenta, junto con su historial, zonas seguras y configuración de sensores.`,
+        okText: 'Eliminar permanentemente',
         okClass: 'btn-danger',
-        onOk: () => {
-          const btn = document.querySelector('#es-danger-zone button');
-          const originalText = btn ? btn.textContent : '';
-          if (btn) { btn.disabled = true; btn.textContent = 'Eliminando...'; }
-
-          deleteStudentFS(editingStudentId)
-            .then(() => {
-              showToast('Alumno eliminado');
-              navigateTo('children');
-            })
-            .catch(err => {
-              showToast('Error al eliminar');
-              console.error(err);
-            })
-            .finally(() => {
-              if (btn) { btn.disabled = false; btn.textContent = originalText; }
-            });
+        onOk: async () => {
+          try {
+            showToast(`Eliminando a ${s.name}...`);
+            await deleteStudentFS(editingStudentId);
+            
+            // Limpiar localmente
+            delete students[editingStudentId];
+            delete liveData[editingStudentId];
+            
+            SS_SoundManager.play('save_done');
+            showToast('Perfil eliminado con éxito', 'safe');
+            
+            // Regresar a la pantalla principal
+            navigateTo('children');
+          } catch (e) {
+            console.error("Error al eliminar alumno:", e);
+            showToast('Error al eliminar perfil', 'danger');
+          }
         }
       });
     }
