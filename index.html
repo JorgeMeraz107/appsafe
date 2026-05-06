@@ -3115,7 +3115,7 @@
         </div>
 
         <!-- AI Assistant Insight -->
-        <div id="ai-safety-tip-container" class="anim-item" style="margin: 20px 20px 0; display: none;">
+        <div id="ai-safety-tip-container" class="anim-item" style="margin: 20px 20px 0; display: block;">
           <div class="card"
             style="padding: 18px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); display: flex; align-items: flex-start; gap: 16px; box-shadow: var(--shadow);">
             <div
@@ -6413,7 +6413,7 @@
       if (total === 0) {
         homeList.innerHTML = '';
         if (noChildren) noChildren.style.display = 'block';
-        // Sin hijos: ocultar tarjeta de IA completamente
+        // Sin hijos: ocultar tarjeta de IA completamente si realmente no hay datos
         if (aiTipContainer) aiTipContainer.style.display = 'none';
         return;
       }
