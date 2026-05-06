@@ -2799,18 +2799,39 @@
     }
 
     @keyframes logo-pulse {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.05); opacity: 0.9; }
+
+      0%,
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+
+      50% {
+        transform: scale(1.05);
+        opacity: 0.9;
+      }
     }
 
     @keyframes ring-spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     @keyframes text-fade {
-      0%, 100% { opacity: 0.3; }
-      50% { opacity: 1; }
+
+      0%,
+      100% {
+        opacity: 0.3;
+      }
+
+      50% {
+        opacity: 1;
+      }
     }
   </style>
 </head>
@@ -3095,8 +3116,11 @@
 
           <div class="card stat-card">
             <div class="stat-icon" style="background:rgba(255, 71, 87, 0.1);">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                <line x1="12" y1="9" x2="12" y2="13" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
               </svg>
             </div>
             <div class="stat-value" id="home-stat-sos" style="color:var(--danger);">0</div>
@@ -3105,7 +3129,8 @@
 
           <div class="card stat-card" onclick="openEditParentProfile()">
             <div class="stat-icon" style="background:rgba(107, 77, 255, 0.1);">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B4DFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B4DFF" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
               </svg>
             </div>
@@ -3120,12 +3145,18 @@
             style="padding: 18px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); display: flex; align-items: flex-start; gap: 16px; box-shadow: var(--shadow);">
             <div
               style="background: rgba(107, 77, 255, 0.1); width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #6B4DFF;">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path
+                  d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+              </svg>
             </div>
             <div style="flex: 1;">
               <div
                 style="font-size: 11px; font-weight: 800; color: #6B4DFF; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z"/></svg>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z" />
+                </svg>
                 Asistente Inteligente
               </div>
               <div id="ai-safety-tip-text"
@@ -3301,12 +3332,20 @@
         <div id="student-ai-diagnosis-container" class="anim-item" style="padding: 0 20px 16px; display: block;">
           <div class="card"
             style="padding: 18px; background: linear-gradient(135deg, rgba(107, 77, 255, 0.05), rgba(107, 77, 255, 0.02)); border: 1px solid rgba(107, 77, 255, 0.15); border-radius: 16px; display: flex; align-items: center; gap: 14px;">
-            <div style="background: #6B4DFF; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: white; box-shadow: 0 4px 12px rgba(107, 77, 255, 0.3);">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            <div
+              style="background: #6B4DFF; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: white; box-shadow: 0 4px 12px rgba(107, 77, 255, 0.3);">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+              </svg>
             </div>
             <div style="flex: 1;">
-              <div style="font-size: 10px; font-weight: 800; color: #6B4DFF; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 2px;">Diagnóstico de Seguridad IA</div>
-              <div id="student-ai-diagnosis-text" style="font-size: 12px; color: var(--text-2); line-height: 1.4; font-weight: 500;">Analizando telemetría del dispositivo...</div>
+              <div
+                style="font-size: 10px; font-weight: 800; color: #6B4DFF; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 2px;">
+                Diagnóstico de Seguridad IA</div>
+              <div id="student-ai-diagnosis-text"
+                style="font-size: 12px; color: var(--text-2); line-height: 1.4; font-weight: 500;">Analizando telemetría
+                del dispositivo...</div>
             </div>
           </div>
         </div>
@@ -3979,12 +4018,16 @@
         <div style="display: flex; gap: 8px;">
           <button class="icon-btn" onclick="markAllAlertsRead()" title="Marcar leídas">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M4 10L8 14L16 6" stroke="var(--text-2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M4 10L8 14L16 6" stroke="var(--text-2)" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" />
             </svg>
           </button>
           <button class="icon-btn" onclick="clearAllNotifications()" title="Limpiar todo" style="color: var(--danger);">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></polyline>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                </polyline>
             </svg>
           </button>
         </div>
@@ -4930,7 +4973,7 @@
     function clearAllNotifications() {
       const all = getAllHistoryEvents();
       if (all.length === 0) return;
-      
+
       const dismissed = getDismissedAlerts();
       all.forEach(ev => {
         if (!dismissed.includes(ev._stableId.toString())) {
@@ -4949,7 +4992,7 @@
 
       const timeVal = getMillis(ev.ts) || getMillis(ev.serverTs);
       const timeStr = timeVal ? new Date(timeVal).toLocaleString('es-HN', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }) : 'Recientemente';
-      
+
       showModalContent({
         title: ev.title || ev.type.toUpperCase(),
         sub: `${ev.childName} • ${timeStr}`,
@@ -6561,22 +6604,22 @@
     /**
      * Usa la ubicación actual del alumno seleccionado en el picker
      */
-    window.useCurrentStudentLocPicker = function() {
+    window.useCurrentStudentLocPicker = function () {
       const s = students[currentStudentId];
       const live = liveData[currentStudentId];
       if (!s || !live || !live.latitude) {
         showToast('Ubicación del alumno no disponible');
         return;
       }
-      
+
       const lat = live.latitude;
       const lng = live.longitude;
-      
+
       const iframe = document.getElementById('picker-iframe');
       if (iframe) {
         iframe.src = `https://maps.google.com/maps?q=${lat},${lng}&z=16&output=embed`;
       }
-      
+
       // Guardar temporalmente para cuando el usuario confirme
       window.lastPickerPos = { lat, lng };
       showToast('Ubicación del alumno cargada');
@@ -6585,7 +6628,7 @@
     function loadStudentProfile(id) {
       const s = students[id];
       if (!s) return;
-      
+
       // Cargar diagnóstico IA de este alumno
       loadStudentAiDiagnosis(id);
 
@@ -7850,7 +7893,7 @@
       btn.style.border = '2px solid var(--blue-acc)';
       btn.style.opacity = '1';
       document.getElementById('edit-parent-avatar').value = emoji;
-      
+
       // Actualizar vista previa
       const preview = document.getElementById('parent-photo-preview');
       if (preview) {
@@ -7880,7 +7923,7 @@
           const minSide = Math.min(img.width, img.height);
           const sx = (img.width - minSide) / 2;
           const sy = (img.height - minSide) / 2;
-          
+
           ctx.drawImage(img, sx, sy, minSide, minSide, 0, 0, size, size);
 
           // Convertir a WebP con calidad optimizada (0.7)
@@ -7892,13 +7935,13 @@
           if (preview) {
             preview.innerHTML = `<img src="${optimizedBase64}" style="width:100%;height:100%;object-fit:cover;">`;
           }
-          
+
           // Desmarcar avatares predeterminados
           document.querySelectorAll('.avatar-option').forEach(b => {
             b.style.border = '2px solid transparent';
             b.style.opacity = '0.5';
           });
-          
+
           showToast("Foto optimizada (WebP)", "safe");
         };
         img.src = e.target.result;
@@ -7911,7 +7954,7 @@
       const newPhone = document.getElementById('edit-parent-phone').value.trim();
       const newRole = document.getElementById('edit-parent-role').value;
       const newAvatar = document.getElementById('edit-parent-avatar').value || 'https://api.dicebear.com/7.x/micah/svg?seed=Aneka&backgroundColor=ffdfbf';
-      
+
       if (!newName) return showToast('El nombre es obligatorio', 'warn');
 
       SS_SoundManager.play('save_done');
@@ -7927,13 +7970,13 @@
             avatar: newAvatar
           });
         }
-        
+
         currentParentProfile.name = newName;
         currentParentProfile.phone = newPhone;
         currentParentProfile.role = newRole;
         currentParentProfile.avatar = newAvatar;
         localStorage.setItem('ss_parent_profile', JSON.stringify(currentParentProfile));
-        
+
         renderParentProfile();
         closeModal();
         showToast('Perfil actualizado con éxito', 'safe');
@@ -8129,57 +8172,110 @@
 
       tipContainer.style.display = 'block';
 
+      // 1. Cargar caché inmediatamente si existe (para modo offline o navegación rápida)
+      const cachedTip = localStorage.getItem('ss_cached_ai_tip');
+      const cachedTime = localStorage.getItem('ss_cached_ai_tip_time');
+      
+      if (cachedTip) {
+        tipText.textContent = cachedTip;
+        tipContainer.style.opacity = '1';
+        
+        // Si el caché tiene menos de 2 horas y hay internet, no recargar para ahorrar tokens
+        const isFresh = cachedTime && (Date.now() - parseInt(cachedTime) < 2 * 60 * 60 * 1000);
+        if (isFresh && navigator.onLine) return; 
+      }
+
+      // Si no hay internet, nos quedamos con el caché (o no hacemos nada si no hay caché)
+      if (!navigator.onLine && cachedTip) return;
+
       try {
         const tip = await window.ss_gemini.getTip();
         if (tip && tip.length > 5) {
           tipText.textContent = tip;
           tipContainer.style.opacity = '1';
+          // Guardar el nuevo consejo en caché
+          localStorage.setItem('ss_cached_ai_tip', tip);
+          localStorage.setItem('ss_cached_ai_tip_time', Date.now().toString());
         }
       } catch (e) {
-        if (e.message.includes("no ha configurado llaves")) {
+        if (!cachedTip) { // Solo mostrar error si no teníamos nada en caché
+          if (e.message.includes("no ha configurado llaves")) {
             tipText.textContent = "Sincronizando con el Centro de Inteligencia Admin...";
+          } else {
+            tipText.textContent = "Consejo de seguridad no disponible offline.";
+          }
         }
       }
     };
 
     /**
-     * Genera un diagnóstico IA específico para un alumno
+     * Genera un diagnóstico IA específico para un alumno con caché inteligente
      */
-    window.loadStudentAiDiagnosis = async function(id) {
-        const diagText = document.getElementById('student-ai-diagnosis-text');
-        if (!diagText) return;
+    window.loadStudentAiDiagnosis = async function (id) {
+      const diagText = document.getElementById('student-ai-diagnosis-text');
+      if (!diagText) return;
 
-        const s = students[id];
-        const live = liveData[id] || {}; // Fallback si no hay datos en vivo aún
+      const s = students[id];
+      const live = liveData[id] || {}; // Fallback si no hay datos en vivo aún
 
-        if (!s) {
-            diagText.textContent = "Cargando perfil del alumno...";
+      if (!s) {
+        diagText.textContent = "Cargando perfil del alumno...";
+        return;
+      }
+
+      // Preparar datos para el análisis
+      const dataForAi = {
+        name: s.name,
+        battery: live.battery !== undefined ? live.battery : 0.5,
+        sos: live.sos || false,
+        location: live.location_name || "Ubicación en proceso...",
+        motion: live.motion || "Normal"
+      };
+
+      // Crear un 'hash' de los datos actuales para saber si algo cambió
+      const dataHash = JSON.stringify(dataForAi);
+      const cacheKey = `ss_cached_diag_${id}`;
+      const hashKey = `ss_cached_diag_hash_${id}`;
+
+      // 1. Revisar caché local
+      const cachedDiag = localStorage.getItem(cacheKey);
+      const cachedHash = localStorage.getItem(hashKey);
+
+      if (cachedDiag) {
+        diagText.textContent = cachedDiag;
+        diagText.style.opacity = "1";
+        
+        // Si los datos base NO han cambiado, usar el caché para ahorrar tokens (Ahorro Inteligente)
+        if (cachedHash === dataHash) {
             return;
         }
-
+      } else {
+        // Solo mostrar "Consultando" si no hay caché previo
         diagText.textContent = "Consultando con Gemini...";
         diagText.style.opacity = "0.5";
+      }
 
-        try {
-            const dataForAi = {
-                name: s.name,
-                battery: live.battery !== undefined ? live.battery : 0.5, // 50% por defecto si no hay dato
-                sos: live.sos || false,
-                location: live.location_name || "Ubicación en proceso...",
-                motion: live.motion || "Normal"
-            };
-            
-            const summary = await window.ss_gemini.summarize(dataForAi);
-            diagText.textContent = summary;
-            diagText.style.opacity = "1";
-        } catch (e) {
-            if (e.message.includes("no ha configurado llaves")) {
-                diagText.textContent = "Esperando autorización de IA desde el Panel Admin...";
-            } else {
-                diagText.textContent = "Análisis no disponible en este momento.";
-                console.error("AI Diagnosis Error:", e);
-            }
+      // Si no hay internet, nos quedamos obligatoriamente con el caché
+      if (!navigator.onLine && cachedDiag) return;
+
+      try {
+        const summary = await window.ss_gemini.summarize(dataForAi);
+        diagText.textContent = summary;
+        diagText.style.opacity = "1";
+        
+        // Guardar el nuevo análisis y su hash
+        localStorage.setItem(cacheKey, summary);
+        localStorage.setItem(hashKey, dataHash);
+      } catch (e) {
+        if (!cachedDiag) { // Solo mostrar error si no hay respaldo offline
+          if (e.message.includes("no ha configurado llaves")) {
+            diagText.textContent = "Esperando autorización de IA desde el Panel Admin...";
+          } else {
+            diagText.textContent = "Análisis no disponible offline.";
+            console.error("AI Diagnosis Error:", e);
+          }
         }
+      }
     };
 
     function showModalContent(m) {
@@ -8355,7 +8451,7 @@
               // Card Position - Mejorada para evitar recortes
               const screenH = window.innerHeight;
               const cardH = 220; // Altura estimada aproximada
-              
+
               if (cy > screenH / 2) {
                 // Si el objetivo está abajo, poner card arriba
                 let topPos = cy - (size / 2) - cardH - 20;
