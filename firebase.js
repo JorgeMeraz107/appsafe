@@ -377,6 +377,33 @@ export async function markAllNotificationsRead(uid) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   EXPORTA instancias base para uso directo si se necesita
+   AI CONFIGURATION (Gemini)
+   ═══════════════════════════════════════════════════════════════ */
+
+/**
+ * Suscribe en tiempo real a la configuración de IA gestionada desde el Panel Admin.
+ */
+export function subscribeToAiConfig(onConfig) {
+    const configRef = doc(db, "config", "gemini");
+    return onSnapshot(configRef, (snap) => {
+        if (snap.exists()) {
+            onConfig(snap.data());
+        } else {
+            onConfig({ active_keys: [] });
+        }
+    });
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   EXPORTA instancias base y objeto global
    ═══════════════════════════════════════════════════════════════ */
 export { auth, db };
+
+// Exponer funciones críticas para gemini-service.js
+window.ss_firebase = {
+    db,
+    auth,
+    subscribeToAiConfig,
+    subscribeStudents,
+    subscribeStudentLive
+};

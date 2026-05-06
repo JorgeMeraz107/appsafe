@@ -1,21 +1,49 @@
 /**
  * SchoolSafe - Gemini AI Integration Service
  * Handles communication with Google Gemini Flash API
+ * NOW SYNCED WITH ADMIN PANEL CLUSTER
  */
 
-const GEMINI_API_KEYS = [
-    "AIzaSyDrBf97fISf8FfNC9HL03WRrxv00begO9M", // Key 1
-    "AIzaSyDHfax49kOT8EeUznoZc_Ub6X1qbA1q3ck", // Key 2
-    "AIzaSyAlLFDkgvGobDZm_QxEGu7JyZRmqGEQZ8o"  // Key 3
-];
-
+let GEMINI_API_KEYS = []; // Se llena dinámicamente desde Firestore
 let currentKeyIndex = 0;
+let aiInitialized = false;
+
+/**
+ * Inicializa el servicio esperando a que Firebase esté listo
+ * y suscribiéndose a las llaves gestionadas por el Administrador.
+ */
+function initAiService() {
+    const fb = window.ss_firebase;
+    
+    if (fb && typeof fb.subscribeToAiConfig === 'function') {
+        fb.subscribeToAiConfig((config) => {
+            GEMINI_API_KEYS = config.active_keys || [];
+            aiInitialized = true;
+            console.log(`🤖 IA de Padres: Sincronizada con ${GEMINI_API_KEYS.length} llaves desde el Panel Admin.`);
+        });
+    } else {
+        // Reintento por si firebase.js aún no se carga
+        setTimeout(initAiService, 500);
+    }
+}
+
+// Iniciar sincronización de inmediato
+initAiService();
 
 /**
  * Sends a prompt to Gemini and returns the text response.
  * Implements key rotation for reliability.
  */
 async function askGemini(prompt, retryCount = 0) {
+    if (!aiInitialized) {
+        // Pequeña espera si se intenta usar antes de sincronizar
+        await new Promise(r => setTimeout(r, 1000));
+    }
+
+    if (GEMINI_API_KEYS.length === 0) {
+        throw new Error("El administrador no ha configurado llaves de IA activas.");
+    }
+
     if (retryCount >= GEMINI_API_KEYS.length) {
         throw new Error("RESTRICCION_DE_USO");
     }
@@ -40,10 +68,8 @@ async function askGemini(prompt, retryCount = 0) {
             const err = await response.json();
             const errMsg = err.error?.message || "";
             
-            // Log detallado para que el usuario sepa por qué falla realmente
             console.error(`❌ Error en IA (Llave ${currentKeyIndex}): Status ${response.status}`, err);
             
-            // Si la cuota se excedió (429) o la llave es inválida, rotar y reintentar
             if (response.status === 429 || errMsg.includes("API_KEY_INVALID") || response.status === 400) {
                 console.warn(`🔄 Rotando llave ${currentKeyIndex}...`);
                 currentKeyIndex = (currentKeyIndex + 1) % GEMINI_API_KEYS.length;
@@ -58,7 +84,6 @@ async function askGemini(prompt, retryCount = 0) {
     } catch (error) {
         if (error.message === "RESTRICCION_DE_USO") throw error;
         
-        // Reintento genérico para errores de conexión
         if (retryCount < GEMINI_API_KEYS.length - 1) {
             currentKeyIndex = (currentKeyIndex + 1) % GEMINI_API_KEYS.length;
             return await askGemini(prompt, retryCount + 1);
@@ -71,8 +96,6 @@ async function askGemini(prompt, retryCount = 0) {
 
 /**
  * Specialized function to generate a safety report.
- * @param {Object} studentData - Sensor and status data.
- * @returns {Promise<string>}
  */
 async function generateSafetySummary(studentData) {
     const systemPrompt = `ACTÚA COMO UN ASISTENTE DE SEGURIDAD EMPÁTICO Y PROFESIONAL.
@@ -96,7 +119,6 @@ Movimiento: ${studentData.motion || "Reposo/Normal"}
 
 /**
  * Generates a random daily safety tip.
- * @returns {Promise<string>}
  */
 async function getSafetyTip() {
     const prompt = "Genera un consejo de seguridad escolar breve, cálido y humano para un padre (máximo 15 palabras, sin emojis).";
