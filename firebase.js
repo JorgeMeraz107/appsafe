@@ -391,6 +391,9 @@ export function subscribeToAiConfig(onConfig) {
         } else {
             onConfig({ active_keys: [] });
         }
+    }, (err) => {
+        console.error("❌ Error de permisos al leer config IA:", err);
+        onConfig({ active_keys: [], error: err.message });
     });
 }
 

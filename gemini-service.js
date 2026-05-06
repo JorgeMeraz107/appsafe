@@ -36,13 +36,20 @@ function initAiService() {
 async function refreshAiConfig() {
     return new Promise((resolve) => {
         const fb = window.ss_firebase;
+        const timeout = setTimeout(() => {
+            console.warn("⏳ Tiempo de espera agotado al sincronizar IA.");
+            resolve();
+        }, 5000); // 5 segundos máximo de espera
+
         if (fb && fb.subscribeToAiConfig) {
             const unsub = fb.subscribeToAiConfig((config) => {
+                clearTimeout(timeout);
                 GEMINI_API_KEYS = config.active_keys || [];
                 unsub();
                 resolve();
             });
         } else {
+            clearTimeout(timeout);
             resolve();
         }
     });

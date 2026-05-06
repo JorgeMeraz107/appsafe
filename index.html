@@ -6558,6 +6558,30 @@
     }
 
     /* ── Carga datos dinámicos en pantalla de perfil ── */
+    /**
+     * Usa la ubicación actual del alumno seleccionado en el picker
+     */
+    window.useCurrentStudentLocPicker = function() {
+      const s = students[currentStudentId];
+      const live = liveData[currentStudentId];
+      if (!s || !live || !live.latitude) {
+        showToast('Ubicación del alumno no disponible');
+        return;
+      }
+      
+      const lat = live.latitude;
+      const lng = live.longitude;
+      
+      const iframe = document.getElementById('picker-iframe');
+      if (iframe) {
+        iframe.src = `https://maps.google.com/maps?q=${lat},${lng}&z=16&output=embed`;
+      }
+      
+      // Guardar temporalmente para cuando el usuario confirme
+      window.lastPickerPos = { lat, lng };
+      showToast('Ubicación del alumno cargada');
+    };
+
     function loadStudentProfile(id) {
       const s = students[id];
       if (!s) return;
