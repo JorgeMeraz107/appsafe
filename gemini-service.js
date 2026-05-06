@@ -21,15 +21,31 @@ function initAiService() {
             aiInitialized = true;
             console.log(`🤖 IA de Padres: Sincronizada con ${GEMINI_API_KEYS.length} llaves desde el Panel Admin.`);
             
-            // Si la UI ya está cargada, avisarle que ya puede generar el reporte
             if (typeof window.loadSafetyTip === 'function') {
                 window.loadSafetyTip();
             }
         });
     } else {
-        // Reintento por si firebase.js aún no se carga
         setTimeout(initAiService, 500);
     }
+}
+
+/**
+ * Fuerza una actualización de las llaves desde la nube
+ */
+async function refreshAiConfig() {
+    return new Promise((resolve) => {
+        const fb = window.ss_firebase;
+        if (fb && fb.subscribeToAiConfig) {
+            const unsub = fb.subscribeToAiConfig((config) => {
+                GEMINI_API_KEYS = config.active_keys || [];
+                unsub();
+                resolve();
+            });
+        } else {
+            resolve();
+        }
+    });
 }
 
 // Iniciar sincronización de inmediato
@@ -40,9 +56,10 @@ initAiService();
  * Implements key rotation for reliability.
  */
 async function askGemini(prompt, retryCount = 0) {
-    if (!aiInitialized) {
-        // Pequeña espera si se intenta usar antes de sincronizar
-        await new Promise(r => setTimeout(r, 1000));
+    if (!aiInitialized || GEMINI_API_KEYS.length === 0) {
+        // Intentar refrescar la config antes de rendirse
+        await refreshAiConfig();
+        aiInitialized = true;
     }
 
     if (GEMINI_API_KEYS.length === 0) {
