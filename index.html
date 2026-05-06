@@ -5170,7 +5170,10 @@
     }
 
     function openNotifPanel() {
+      // Análisis Inteligente: Al abrir el panel, marcamos todo como visto para borrar el badge
+      localStorage.setItem('last_seen_notifs', Date.now().toString());
       renderNotifications();
+      
       SS_SoundManager.play('panel_in');
       document.getElementById('notif-panel')?.classList.add('open');
       document.getElementById('notif-backdrop')?.classList.add('open');
@@ -5180,6 +5183,9 @@
       SS_SoundManager.play('panel_out');
       document.getElementById('notif-panel')?.classList.remove('open');
       document.getElementById('notif-backdrop')?.classList.remove('open');
+      
+      // Actualizar el estado de la pantalla principal al cerrar
+      if (currentScreen === 'alerts') renderAlertsScreen();
     }
 
     function handleNotifTap(type, studentId) {
@@ -5191,14 +5197,27 @@
     function clearAllNotifs() {
       SS_SoundManager.play('panel_out');
       showConfirm({
-        title: 'Limpiar notificaciones',
-        sub: '¿Estás seguro de que quieres marcar todas las notificaciones como leídas? Esta acción no se puede deshacer.',
-        okText: 'Limpiar todo',
+        title: 'Vaciar notificaciones',
+        sub: '¿Estás seguro de que quieres limpiar y eliminar todas las notificaciones? Esta acción vaciará el panel por completo y de forma real.',
+        okText: 'Vaciar todo',
         onOk: () => {
           localStorage.setItem('last_seen_notifs', Date.now().toString());
+          
+          // VACIAR DE FORMA REAL (Descartar todas las actuales)
+          const all = getAllHistoryEvents();
+          if (all.length > 0) {
+            const dismissed = getDismissedAlerts();
+            all.forEach(ev => {
+              if (!dismissed.includes(ev._stableId.toString())) {
+                dismissed.push(ev._stableId.toString());
+              }
+            });
+            localStorage.setItem('ss_dismissed_alerts_v1', JSON.stringify(dismissed));
+          }
+
           renderNotifications();
           if (currentScreen === 'alerts') renderAlertsScreen();
-          showToast('Notificaciones limpiadas');
+          showToast('Notificaciones vaciadas correctamente');
         }
       });
     }
