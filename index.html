@@ -6382,9 +6382,17 @@
             <div style="font-size:11px;color:var(--text-3);">${schedText}</div>
           </div>
         </div>
-        <svg class="student-card-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <path d="M8 6L12 10L8 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-        </svg>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:12px;margin-left:10px;">
+          <button class="icon-btn" style="color:var(--danger);opacity:0.6;" onclick="event.stopPropagation(); confirmDeleteStudent('${id}')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+          </button>
+          <svg class="student-card-arrow" width="16" height="16" viewBox="0 0 20 20" fill="none" style="margin-right:-4px;">
+            <path d="M8 6L12 10L8 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
       </div>`
       }).join('');
     }
@@ -7503,31 +7511,36 @@
     }
 
     /* ── Eliminar alumno ─────────────────── */
-    function confirmDeleteStudent() {
-      if (!editingStudentId) return;
-      const s = students[editingStudentId];
+    function confirmDeleteStudent(studentId) {
+      const idToDelete = studentId || editingStudentId;
+      if (!idToDelete) return;
+      const s = students[idToDelete];
       if (!s) return;
+
+      const role = currentParentProfile?.role || 'Padre';
+      const greeting = role === 'Madre' ? 'Estimada madre' : role === 'Padre' ? 'Estimado padre' : 'Estimado encargado';
 
       SS_SoundManager.play('modal_warn');
       showConfirm({
         title: '¿Eliminar perfil de hijo?',
-        sub: `Esta acción es permanente. Se eliminará a <b>${escapeHTML(s.name)}</b> de tu cuenta, junto con su historial, zonas seguras y configuración de sensores.`,
+        sub: `${greeting}, esta acción es permanente. Se eliminará a <b>${escapeHTML(s.name)}</b> de tu cuenta, junto con su historial, zonas seguras y configuración de sensores.`,
         okText: 'Eliminar permanentemente',
         okClass: 'btn-danger',
         onOk: async () => {
           try {
             showToast(`Eliminando a ${s.name}...`);
-            await deleteStudentFS(editingStudentId);
+            await deleteStudentFS(idToDelete);
             
             // Limpiar localmente
-            delete students[editingStudentId];
-            delete liveData[editingStudentId];
+            delete students[idToDelete];
+            delete liveData[idToDelete];
             
             SS_SoundManager.play('save_done');
             showToast('Perfil eliminado con éxito', 'safe');
             
-            // Regresar a la pantalla principal
-            navigateTo('children');
+            // Regresar a la pantalla principal o refrescar lista
+            if (currentScreen === 'edit-student') navigateTo('children');
+            else renderChildrenList();
           } catch (e) {
             console.error("Error al eliminar alumno:", e);
             showToast('Error al eliminar perfil', 'danger');
