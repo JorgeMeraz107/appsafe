@@ -8123,9 +8123,15 @@
      */
     window.loadStudentAiDiagnosis = async function(id) {
         const diagText = document.getElementById('student-ai-diagnosis-text');
+        if (!diagText) return;
+
         const s = students[id];
-        const live = liveData[id];
-        if (!diagText || !s || !live) return;
+        const live = liveData[id] || {}; // Fallback si no hay datos en vivo aún
+
+        if (!s) {
+            diagText.textContent = "Cargando perfil del alumno...";
+            return;
+        }
 
         diagText.textContent = "Consultando con Gemini...";
         diagText.style.opacity = "0.5";
@@ -8133,16 +8139,22 @@
         try {
             const dataForAi = {
                 name: s.name,
-                battery: live.battery || 0,
+                battery: live.battery !== undefined ? live.battery : 0.5, // 50% por defecto si no hay dato
                 sos: live.sos || false,
-                location: live.location_name || "Desconocida",
-                motion: live.motion || "Inmóvil"
+                location: live.location_name || "Ubicación en proceso...",
+                motion: live.motion || "Normal"
             };
+            
             const summary = await window.ss_gemini.summarize(dataForAi);
             diagText.textContent = summary;
             diagText.style.opacity = "1";
         } catch (e) {
-            diagText.textContent = "Análisis no disponible temporalmente.";
+            if (e.message.includes("no ha configurado llaves")) {
+                diagText.textContent = "Esperando autorización de IA desde el Panel Admin...";
+            } else {
+                diagText.textContent = "Análisis no disponible en este momento.";
+                console.error("AI Diagnosis Error:", e);
+            }
         }
     };
 
