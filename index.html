@@ -8087,16 +8087,26 @@
         return;
       }
 
+      // Mostrar contenedor en estado de "espera inteligente"
+      tipContainer.style.display = 'block';
+
       try {
         const tip = await window.ss_gemini.getTip();
         if (tip && tip.length > 5) {
           tipText.textContent = tip;
-          tipContainer.style.display = 'block';
+          // Pequeña animación de entrada suave
+          tipContainer.style.opacity = '1';
         } else {
           tipContainer.style.display = 'none';
         }
       } catch (e) {
-        tipContainer.style.display = 'none';
+        // Si el error es por falta de llaves, mostrar mensaje informativo en lugar de ocultar
+        if (e.message.includes("no ha configurado llaves")) {
+            tipText.textContent = "Sincronizando con el Centro de Inteligencia Admin...";
+            tipText.style.opacity = '0.6';
+        } else {
+            tipContainer.style.display = 'none';
+        }
       }
     };
 

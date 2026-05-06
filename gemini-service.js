@@ -20,6 +20,11 @@ function initAiService() {
             GEMINI_API_KEYS = config.active_keys || [];
             aiInitialized = true;
             console.log(`🤖 IA de Padres: Sincronizada con ${GEMINI_API_KEYS.length} llaves desde el Panel Admin.`);
+            
+            // Si la UI ya está cargada, avisarle que ya puede generar el reporte
+            if (typeof window.loadSafetyTip === 'function') {
+                window.loadSafetyTip();
+            }
         });
     } else {
         // Reintento por si firebase.js aún no se carga
