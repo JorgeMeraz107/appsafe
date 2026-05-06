@@ -268,7 +268,10 @@ export async function saveStudentFS(data, studentId = null) {
  * Elimina un alumno de Firestore.
  */
 export async function deleteStudentFS(studentId) {
+    // Eliminar documento principal
     await deleteDoc(doc(db, "students", studentId));
+    // Eliminar rastro en vivo
+    await deleteDoc(doc(db, "student_live", studentId));
 }
 
 /* ═══════════════════════════════════════════════════════════════

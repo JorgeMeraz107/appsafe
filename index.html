@@ -5173,7 +5173,7 @@
       // Análisis Inteligente: Al abrir el panel, marcamos todo como visto para borrar el badge
       localStorage.setItem('last_seen_notifs', Date.now().toString());
       renderNotifications();
-      
+
       SS_SoundManager.play('panel_in');
       document.getElementById('notif-panel')?.classList.add('open');
       document.getElementById('notif-backdrop')?.classList.add('open');
@@ -5183,7 +5183,7 @@
       SS_SoundManager.play('panel_out');
       document.getElementById('notif-panel')?.classList.remove('open');
       document.getElementById('notif-backdrop')?.classList.remove('open');
-      
+
       // Actualizar el estado de la pantalla principal al cerrar
       if (currentScreen === 'alerts') renderAlertsScreen();
     }
@@ -5202,7 +5202,7 @@
         okText: 'Vaciar todo',
         onOk: () => {
           localStorage.setItem('last_seen_notifs', Date.now().toString());
-          
+
           // VACIAR DE FORMA REAL (Descartar todas las actuales)
           const all = getAllHistoryEvents();
           if (all.length > 0) {
@@ -6796,6 +6796,40 @@
 
     /* ── Estado de la pantalla de edición ── */
     window.contactFields = [];      // arreglo de {id, name, role, number, emoji}
+
+    function confirmDeleteStudent() {
+      if (!currentStudentId) return;
+      const s = students[currentStudentId];
+      if (!s) return;
+
+      SS_SoundManager.play('modal_warn');
+      showConfirm({
+        title: '¿Eliminar perfil de hijo?',
+        sub: `Esta acción es permanente. Se eliminará a <b>${escapeHTML(s.name)}</b> de tu cuenta, junto con su historial, zonas seguras y configuración de sensores.`,
+        okText: 'Eliminar permanentemente',
+        okClass: 'btn-danger',
+        onOk: async () => {
+          try {
+            showToast(`Eliminando a ${s.name}...`);
+            await deleteStudentFS(currentStudentId);
+            
+            // Limpiar localmente
+            delete students[currentStudentId];
+            delete liveData[currentStudentId];
+            
+            SS_SoundManager.play('save_done');
+            showToast('Perfil eliminado con éxito', 'safe');
+            
+            // Regresar a la pantalla principal
+            goBack();
+          } catch (e) {
+            console.error("Error al eliminar alumno:", e);
+            showToast('Error al eliminar perfil', 'danger');
+          }
+        }
+      });
+    }
+    window.confirmDeleteStudent = confirmDeleteStudent;
 
     /* ── Abrir pantalla de edición ──────── */
     function openEditStudent(studentId) {
