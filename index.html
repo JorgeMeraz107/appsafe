@@ -4951,10 +4951,11 @@
     }
 
     function dismissAlert(id) {
-      SS_SoundManager.play('panel_out');
+      SS_SoundManager.play('pop');
       const dismissed = getDismissedAlerts();
-      if (!dismissed.includes(id.toString())) {
-        dismissed.push(id.toString());
+      const sid = String(id);
+      if (!dismissed.includes(sid)) {
+        dismissed.push(sid);
         localStorage.setItem('ss_dismissed_alerts_v1', JSON.stringify(dismissed));
       }
       const el = document.querySelector(`.swipe-container[data-id="${id}"]`);
@@ -5018,8 +5019,8 @@
         const events = historyData[childId] || [];
         events.forEach(ev => {
           const t = getMillis(ev.ts) || getMillis(ev.serverTs);
-          const evId = ev.id || t.toString();
-          if (!dismissed.includes(evId.toString())) {
+          const evId = String(ev.id || t);
+          if (!dismissed.includes(evId)) {
             allEvents.push({ ...ev, childId, childName: students[childId]?.name || 'Hijo', _stableId: evId });
           }
         });
@@ -5096,7 +5097,7 @@
       const lastSeen = parseInt(localStorage.getItem('last_seen_notifs') || '0', 10);
 
       const unreadCount = events.filter(e => {
-        const t = getMillis(e.ts) || getMillis(e.serverTs);
+        const t = getMillis(e.ts || e.serverTs);
         return t > lastSeen;
       }).length;
 
@@ -5169,9 +5170,16 @@
       }
     }
 
-    function openNotifPanel() {
-      // Análisis Inteligente: Al abrir el panel, marcamos todo como visto para borrar el badge
-      localStorage.setItem('last_seen_notifs', Date.now().toString());
+    async function openNotifPanel() {
+      // Análisis Inteligente: Al abrir el panel, marcamos todo como visto localmente y en Firestore
+      const now = Date.now();
+      localStorage.setItem('last_seen_notifs', now.toString());
+      
+      const u = currentUser();
+      if (u && window.ss_firebase?.markAllNotificationsRead) {
+        try { await window.ss_firebase.markAllNotificationsRead(u.uid); } catch(e){}
+      }
+
       renderNotifications();
 
       SS_SoundManager.play('panel_in');
@@ -5208,8 +5216,9 @@
           if (all.length > 0) {
             const dismissed = getDismissedAlerts();
             all.forEach(ev => {
-              if (!dismissed.includes(ev._stableId.toString())) {
-                dismissed.push(ev._stableId.toString());
+              const sid = String(ev._stableId);
+              if (!dismissed.includes(sid)) {
+                dismissed.push(sid);
               }
             });
             localStorage.setItem('ss_dismissed_alerts_v1', JSON.stringify(dismissed));
@@ -5287,7 +5296,13 @@
         setTimeout(initEmergencyMap, 100);
       }
       if (screen === 'alerts') {
+        localStorage.setItem('last_seen_notifs', Date.now().toString());
+        const u = currentUser();
+        if (u && window.ss_firebase?.markAllNotificationsRead) {
+          window.ss_firebase.markAllNotificationsRead(u.uid).catch(()=>{});
+        }
         renderAlertsScreen();
+        renderNotifications(); // Actualizar badge inmediatamente
       }
       if (screen === 'settings') {
         onSettingsEnter();
@@ -5823,7 +5838,7 @@
       const lastSeen = parseInt(localStorage.getItem('last_seen_notifs') || '0', 10);
 
       const unreadCount = allEvents.filter(e => {
-        const t = e.ts?.toMillis ? e.ts.toMillis() : (e.serverTs?.toMillis() || 0);
+        const t = getMillis(e.ts || e.serverTs);
         return t > lastSeen;
       }).length;
 

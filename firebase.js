@@ -411,5 +411,6 @@ window.ss_firebase = {
     auth,
     subscribeToAiConfig,
     subscribeStudents,
-    subscribeStudentLive
+    subscribeStudentLive,
+    markAllNotificationsRead
 };
