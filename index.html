@@ -6631,26 +6631,7 @@
     /**
      * Usa la ubicación actual del alumno seleccionado en el picker
      */
-    window.useCurrentStudentLocPicker = function () {
-      const s = students[currentStudentId];
-      const live = liveData[currentStudentId];
-      if (!s || !live || !live.latitude) {
-        showToast('Ubicación del alumno no disponible');
-        return;
-      }
-
-      const lat = live.latitude;
-      const lng = live.longitude;
-
-      const iframe = document.getElementById('picker-iframe');
-      if (iframe) {
-        iframe.src = `https://maps.google.com/maps?q=${lat},${lng}&z=16&output=embed`;
-      }
-
-      // Guardar temporalmente para cuando el usuario confirme
-      window.lastPickerPos = { lat, lng };
-      showToast('Ubicación del alumno cargada');
-    };
+    // [Removed duplicate useCurrentStudentLocPicker to resolve SyntaxError and property mismatch]
 
     function loadStudentProfile(id) {
       const s = students[id];
@@ -7149,14 +7130,20 @@
 
     function useCurrentStudentLocPicker() {
       SS_SoundManager.play('nav_tab');
-      const data = getStudentLive(editingStudentId || currentStudentId);
+      // Intentar obtener el ID del alumno que estamos editando o el actual en perfil
+      const id = typeof editingStudentId !== 'undefined' ? editingStudentId : currentStudentId;
+      const data = getStudentLive(id);
+      
       if (data && data.lat != null) {
         pickerLat = data.lat;
         pickerLng = data.lng;
         updatePickerUI();
         showToast("Usando ubicación actual del alumno.");
+      } else {
+        showToast("Ubicación del alumno no disponible en tiempo real.", "warn");
       }
     }
+    window.useCurrentStudentLocPicker = useCurrentStudentLocPicker;
 
     // Botón rápido en el formulario (fuera del picker)
     function useMyGPSLocation() {
