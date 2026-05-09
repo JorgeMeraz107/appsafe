@@ -3256,28 +3256,10 @@
           </svg>
           Hijos
         </button>
-        <div style="flex:1;min-width:0;display:flex;align-items:center;gap:10px;margin-left:8px;">
-          <div id="student-hero-avatar" class="avatar"
-            style="width:34px;height:34px;font-size:14px;flex-shrink:0;background:var(--bg-item);">
-          </div>
-          <div class="topbar-title" id="student-hero-name"
-            style="text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">—</div>
-        </div>
-        <!-- Chat: acción de comunicación, va junto a Llamar -->
-        <button class="icon-btn" onclick="openChat(currentStudentId)" title="Mensaje de Seguridad"
-          style="position:relative;">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-          </svg>
-        </button>
-        <button class="icon-btn" onclick="callStudent(currentStudentId)" title="Llamar">
-          <svg width="20" height="20" viewBox="0 0 22 22" fill="none">
-            <path
-              d="M20 14.4C18.8 14.4 17.6 14.2 16.5 13.8C16.2 13.7 15.8 13.8 15.6 14L13.9 15.7C11.6 14.5 9.5 12.5 8.3 10.1L10 8.4C10.2 8.2 10.3 7.8 10.2 7.5C9.8 6.4 9.6 5.2 9.6 4C9.6 3.4 9.2 3 8.6 3H5.4C4.8 3 4 3.3 4 4C4 13.1 10.9 20 20 20C20.7 20 21 19.2 21 18.6V15.4C21 14.8 20.6 14.4 20 14.4Z"
-              fill="var(--safe)" />
-          </svg>
-        </button>
-        <button class="icon-btn" onclick="openEditStudent(currentStudentId)" title="Editar">
+        <!-- Nombre completo sin avatar ni otros iconos para que no se trunque -->
+        <div class="topbar-title" id="student-hero-name"
+          style="flex:1;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:0 8px;">—</div>
+        <button class="icon-btn" onclick="openEditStudent(currentStudentId)" title="Editar perfil">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
             <path d="M14 3L17 6L7 16H4V13L14 3Z" stroke="var(--text-2)" stroke-width="1.5" stroke-linecap="round"
               fill="none" />
@@ -3324,6 +3306,27 @@
               Obteniendo ubicación...
             </div>
           </div>
+        </div>
+
+        <!-- BARRA DE ACCIONES: Chat y Llamar — acciones de comunicación visibles inmediatamente -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px 20px;background:var(--surface);border-bottom:1px solid var(--border);">
+          <button onclick="openChat(currentStudentId)"
+            style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;height:60px;background:rgba(41,121,255,0.07);border:1px solid rgba(41,121,255,0.18);border-radius:14px;cursor:pointer;transition:all 0.2s;"
+            onmousedown="this.style.opacity='0.7'" onmouseup="this.style.opacity='1'" ontouchstart="this.style.opacity='0.7'" ontouchend="this.style.opacity='1'">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue-acc)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span style="font-size:11px;font-weight:600;color:var(--blue-acc);">Mensaje</span>
+          </button>
+          <button onclick="callStudent(currentStudentId)"
+            style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;height:60px;background:rgba(15,191,122,0.07);border:1px solid rgba(15,191,122,0.2);border-radius:14px;cursor:pointer;transition:all 0.2s;"
+            onmousedown="this.style.opacity='0.7'" onmouseup="this.style.opacity='1'" ontouchstart="this.style.opacity='0.7'" ontouchend="this.style.opacity='1'">
+            <svg width="20" height="20" viewBox="0 0 22 22" fill="none">
+              <path d="M20 14.4C18.8 14.4 17.6 14.2 16.5 13.8C16.2 13.7 15.8 13.8 15.6 14L13.9 15.7C11.6 14.5 9.5 12.5 8.3 10.1L10 8.4C10.2 8.2 10.3 7.8 10.2 7.5C9.8 6.4 9.6 5.2 9.6 4C9.6 3.4 9.2 3 8.6 3H5.4C4.8 3 4 3.3 4 4C4 13.1 10.9 20 20 20C20.7 20 21 19.2 21 18.6V15.4C21 14.8 20.6 14.4 20 14.4Z"
+                fill="var(--safe)" />
+            </svg>
+            <span style="font-size:11px;font-weight:600;color:var(--safe);">Llamar</span>
+          </button>
         </div>
 
         <!-- Smart Security Summary (NUEVO) -->
