@@ -3756,7 +3756,13 @@
 
           <!-- CONSEJO CONTEXTUAL -->
           <div style="background:rgba(41,121,255,0.07);border:1px solid rgba(41,121,255,0.18);border-radius:10px;padding:10px 12px;display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;">
-            <span style="font-size:18px;flex-shrink:0;">💡</span>
+            <div style="flex-shrink:0;width:18px;height:18px;color:var(--blue-acc);margin-top:1px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+            </div>
             <div style="font-size:11px;color:var(--text-2);line-height:1.5;">
               <b>Consejo de precisión:</b> Para que el trayecto funcione bien,
               configura la <b>Casa</b> estando en tu hogar y la <b>Escuela</b> buscándola
@@ -3767,7 +3773,12 @@
           <div class="card" style="padding:12px 16px;">
             <!-- Casa -->
             <div class="safe-zone-card" style="margin-top:4px;" onclick="openLocationPicker('home')">
-              <div class="safe-zone-icon" style="background:rgba(15,191,122,0.1);color:var(--safe);">🏠</div>
+              <div class="safe-zone-icon" style="background:rgba(15,191,122,0.1);color:var(--safe);display:flex;align-items:center;justify-content:center;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                  <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+              </div>
               <div class="safe-zone-info">
                 <div class="safe-zone-name" id="es-home-label">Casa / Hogar</div>
                 <div class="safe-zone-addr" id="es-home-addr">Toca para configurar ubicación</div>
@@ -3779,7 +3790,14 @@
             </div>
             <!-- Escuela -->
             <div class="safe-zone-card" onclick="openLocationPicker('school')">
-              <div class="safe-zone-icon" style="background:rgba(41,121,255,0.1);color:var(--blue-acc);">🏫</div>
+              <div class="safe-zone-icon" style="background:rgba(41,121,255,0.1);color:var(--blue-acc);display:flex;align-items:center;justify-content:center;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M2 20h20"/>
+                  <path d="M4 20V10l8-6 8 6v10"/>
+                  <rect x="9" y="14" width="6" height="6"/>
+                  <path d="M12 4v2"/>
+                </svg>
+              </div>
               <div class="safe-zone-info">
                 <div class="safe-zone-name" id="es-school-label">Escuela / Colegio</div>
                 <div class="safe-zone-addr" id="es-school-addr">Toca para configurar ubicación</div>
@@ -7176,7 +7194,7 @@
       const btnStu    = document.getElementById('picker-btn-student');
       const btnStuLbl = document.getElementById('picker-btn-student-label');
 
-      if (titleEl) titleEl.textContent = `${emoji} Ubicar ${title}`;
+      if (titleEl) titleEl.textContent = `Ubicar ${title}`;
       if (pointEl) pointEl.textContent = `Marca el punto de "${title}"`;
 
       /* ── Análisis inteligente del contexto ──────────────────────────
@@ -7202,14 +7220,16 @@
           ? `Alumno (hace ${mins} min)` : 'Alumno en vivo';
       }
 
-      // Texto de instrucción contextual adaptado
+      // Texto de instrucción contextual adaptado (SVG inline en lugar de emojis)
       if (hintEl) {
+        const svgInfo = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;margin-top:-2px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+        const svgCheck = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;margin-top:-2px;"><polyline points="20 6 9 17 4 12"/></svg>`;
         if (!hasLive) {
-          hintEl.textContent = type === 'home'
-            ? `💡 Estás configurando tu Casa. Si ya estás en casa, toca "Mi GPS actual".`
-            : `💡 Estás configurando la Escuela. Búscala por nombre arriba o usa tu GPS si estás ahí.`;
+          hintEl.innerHTML = type === 'home'
+            ? `${svgInfo} Configura tu Casa. Si ya estás en casa, toca "Mi GPS actual".`
+            : `${svgInfo} Configura la Escuela. Buscála por nombre arriba o usa tu GPS si estás ahí.`;
         } else {
-          hintEl.textContent = `✅ El alumno está activo. Puedes centrar el mapa en su posición o usar tu GPS.`;
+          hintEl.innerHTML = `${svgCheck} Alumno activo. Centra el mapa en su posición o usa tu GPS.`;
         }
       }
 
