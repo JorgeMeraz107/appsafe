@@ -2833,6 +2833,21 @@
         opacity: 1;
       }
     }
+    /* ── Chat Bubbles ── */
+    .chat-messages { display: flex; flex-direction: column; gap: 10px; padding: 20px; flex: 1; overflow-y: auto; background: var(--bg-app); }
+    .chat-bubble { max-width: 80%; padding: 10px 14px; border-radius: 18px; font-size: 14px; line-height: 1.4; position: relative; animation: msgIn 0.3s ease-out; }
+    .chat-bubble.parent { align-self: flex-end; background: var(--blue-acc); color: white; border-bottom-right-radius: 4px; box-shadow: 0 4px 12px rgba(41,121,255,0.2); }
+    .chat-bubble.student { align-self: flex-start; background: var(--surface); color: var(--text-1); border-bottom-left-radius: 4px; border: 1px solid var(--border); }
+    .chat-time { font-size: 9px; opacity: 0.6; margin-top: 4px; display: block; }
+    .chat-bubble.parent .chat-time { text-align: right; color: rgba(255,255,255,0.8); }
+    
+    .chat-input-bar { padding: 12px 16px; background: var(--surface); border-top: 1px solid var(--border); display: flex; gap: 10px; align-items: center; padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
+    .chat-input { flex: 1; background: var(--bg-app); border: 1px solid var(--border); border-radius: 20px; padding: 10px 16px; font-size: 14px; color: var(--text-1); outline: none; transition: border 0.2s; }
+    .chat-input:focus { border-color: var(--blue-acc); }
+    .chat-send-btn { width: 40px; height: 40px; background: var(--blue-acc); color: white; border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s; }
+    .chat-send-btn:active { transform: scale(0.9); }
+    
+    @keyframes msgIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 
@@ -3582,6 +3597,16 @@
             </div>
           </div>
 
+          <!-- Quick Chat Action -->
+          <div style="padding: 0 16px 12px; background:var(--surface);">
+            <button onclick="openChat(currentStudentId)" class="btn btn-primary btn-full" style="height:44px; gap:8px; background:var(--blue-acc); box-shadow: 0 4px 15px rgba(41,121,255,0.2); border-radius:12px; font-weight:700;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+              Chat de Seguridad con mi Hijo
+            </button>
+          </div>
+
           <iframe id="safe-zone-route-map" width="100%" height="420" frameborder="0" style="border:0; display:block;"
             allowfullscreen></iframe>
 
@@ -3727,8 +3752,18 @@
         <!-- Safe Zones Tracking -->
         <div class="settings-section anim-item" style="margin:0;">
           <div class="settings-section-title">Rastreo de Zonas Seguras</div>
-          <div style="font-size:12px;color:var(--text-3);margin-bottom:8px;">Define el Hogar y la Escuela para recibir
-            alertas de llegada/salida.</div>
+          <div style="font-size:12px;color:var(--text-3);margin-bottom:8px;">Define el Hogar y la Escuela para recibir alertas de llegada/salida del alumno.</div>
+
+          <!-- CONSEJO CONTEXTUAL -->
+          <div style="background:rgba(41,121,255,0.07);border:1px solid rgba(41,121,255,0.18);border-radius:10px;padding:10px 12px;display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;">
+            <span style="font-size:18px;flex-shrink:0;">💡</span>
+            <div style="font-size:11px;color:var(--text-2);line-height:1.5;">
+              <b>Consejo de precisión:</b> Para que el trayecto funcione bien,
+              configura la <b>Casa</b> estando en tu hogar y la <b>Escuela</b> buscándola
+              por nombre o yendo físicamente ahí. Puedes usar tu GPS en cada caso.
+            </div>
+          </div>
+
           <div class="card" style="padding:12px 16px;">
             <!-- Casa -->
             <div class="safe-zone-card" style="margin-top:4px;" onclick="openLocationPicker('home')">
@@ -3763,7 +3798,7 @@
                 style="margin-right:6px;vertical-align:middle;margin-top:-2px;">
                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
                 <circle cx="12" cy="10" r="3" />
-              </svg> Usar mi ubicación GPS actual
+              </svg> Usar mi GPS actual (aplicar a zona activa)
             </button>
           </div>
         </div>
@@ -4525,18 +4560,37 @@
             onkeydown="if(event.key==='Enter') searchInPicker()">
         </div>
 
-        <div style="display:flex;gap:8px;pointer-events:auto;">
-          <button class="btn btn-ghost"
-            style="flex:1;background:var(--bg);box-shadow:var(--shadow-sm);font-size:11px;height:36px;"
+        <!-- BOTONES DINÁMICOS INTELIGENTES: se adaptan según contexto (nuevo vs existente con live data) -->
+        <div style="display:flex;gap:8px;pointer-events:auto;flex-wrap:wrap;">
+
+          <!-- Botón 1: GPS del padre — SIEMPRE visible, es la opción principal y más confiable -->
+          <button id="picker-btn-gps" class="btn btn-ghost"
+            style="flex:1;background:var(--bg);box-shadow:var(--shadow-sm);font-size:11px;height:36px;min-width:130px;"
+            onclick="useMyGPSLocationPicker()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px;vertical-align:middle;margin-top:-2px;">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+              <circle cx="12" cy="9" r="2.5"/>
+            </svg>
+            <span id="picker-btn-gps-label">Mi GPS actual</span>
+          </button>
+
+          <!-- Botón 2: Ubicación del alumno — SOLO visible cuando el alumno tiene live data activa -->
+          <button id="picker-btn-student" class="btn btn-ghost"
+            style="flex:1;background:var(--bg);box-shadow:var(--shadow-sm);font-size:11px;height:36px;min-width:130px;display:none;border-color:var(--safe);color:var(--safe);"
             onclick="useCurrentStudentLocPicker()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-              stroke-linecap="round" stroke-linejoin="round"
-              style="margin-right:6px;vertical-align:middle;margin-top:-2px;">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-              <circle cx="12" cy="10" r="3" />
-            </svg> Usar ubicación del alumno
+              stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px;vertical-align:middle;margin-top:-2px;">
+              <circle cx="12" cy="8" r="4"/>
+              <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+            </svg>
+            <span id="picker-btn-student-label">Alumno en vivo</span>
           </button>
+
         </div>
+
+        <!-- TEXTO DE INSTRUCCIÓN CONTEXTUAL: guía al padre según qué está configurando -->
+        <div id="picker-hint" style="pointer-events:none;margin-top:6px;padding:6px 10px;background:rgba(0,0,0,0.45);border-radius:8px;font-size:10px;color:rgba(255,255,255,0.85);line-height:1.4;text-align:center;">Toca el mapa para mover el marcador o busca una dirección arriba.</div>
       </div>
 
       <div class="picker-fab" onclick="recenterPicker()">
@@ -4560,8 +4614,38 @@
     </div>
 
     <!-- ══════════════════════════════
+       SCREEN: CHAT CON HIJO
+    ══════════════════════════════ -->
+    <div class="screen" id="screen-chat">
+      <div class="topbar">
+        <button class="nav-back-btn" onclick="goBack()">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M11 4L7 9L11 14" stroke="var(--blue-acc)" stroke-width="2.2" stroke-linecap="round" />
+          </svg>
+          <span id="chat-back-label">Atrás</span>
+        </button>
+        <div class="topbar-title" id="chat-title">Chat de Seguridad</div>
+        <div style="width:40px;"></div>
+      </div>
+      
+      <div class="chat-messages" id="chat-messages-list">
+        <!-- Mensajes cargados dinámicamente -->
+      </div>
+      
+      <div class="chat-input-bar">
+        <input type="text" id="chat-input-field" class="chat-input" placeholder="Escribe un mensaje..." onkeypress="if(event.key==='Enter') sendChatMsg()">
+        <button class="chat-send-btn" onclick="sendChatMsg()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════
        BOTTOM NAVIGATION
-  ══════════════════════════════ -->
+    ══════════════════════════════ -->
     <nav id="bottom-nav" style="display: none;">
       <button class="nav-item active" id="nav-home" data-tab="home" onclick="switchTab('home')">
         <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
@@ -5174,10 +5258,10 @@
       // Análisis Inteligente: Al abrir el panel, marcamos todo como visto localmente y en Firestore
       const now = Date.now();
       localStorage.setItem('last_seen_notifs', now.toString());
-      
+
       const u = currentUser();
       if (u && window.ss_firebase?.markAllNotificationsRead) {
-        try { await window.ss_firebase.markAllNotificationsRead(u.uid); } catch(e){}
+        try { await window.ss_firebase.markAllNotificationsRead(u.uid); } catch (e) { }
       }
 
       renderNotifications();
@@ -5299,7 +5383,7 @@
         localStorage.setItem('last_seen_notifs', Date.now().toString());
         const u = currentUser();
         if (u && window.ss_firebase?.markAllNotificationsRead) {
-          window.ss_firebase.markAllNotificationsRead(u.uid).catch(()=>{});
+          window.ss_firebase.markAllNotificationsRead(u.uid).catch(() => { });
         }
         renderAlertsScreen();
         renderNotifications(); // Actualizar badge inmediatamente
@@ -7080,36 +7164,94 @@
     let pickerLng = null;
 
     function openLocationPicker(type) {
+      SS_SoundManager.play('panel_in');
       currentPickerType = type;
       const title = type === 'home' ? 'Hogar' : 'Escuela';
-      const titleEl = document.getElementById('picker-title');
-      const pointEl = document.getElementById('picker-point-name');
+      const emoji  = type === 'home' ? '🏠' : '🏫';
+      const titleEl   = document.getElementById('picker-title');
+      const pointEl   = document.getElementById('picker-point-name');
+      const hintEl    = document.getElementById('picker-hint');
+      const btnGps    = document.getElementById('picker-btn-gps');
+      const btnGpsLbl = document.getElementById('picker-btn-gps-label');
+      const btnStu    = document.getElementById('picker-btn-student');
+      const btnStuLbl = document.getElementById('picker-btn-student-label');
 
-      if (titleEl) titleEl.textContent = `Ubicar ${title}`;
+      if (titleEl) titleEl.textContent = `${emoji} Ubicar ${title}`;
       if (pointEl) pointEl.textContent = `Marca el punto de "${title}"`;
 
-      // Load existing coords if they exist
-      const latVal = document.getElementById(`es-${type}-lat`)?.value;
-      const lngVal = document.getElementById(`es-${type}-lng`)?.value;
+      /* ── Análisis inteligente del contexto ──────────────────────────
+         Caso A: Alumno NUEVO (editingStudentId === null)
+           → No hay live data posible → mostrar solo GPS del padre
+         Caso B: Alumno EXISTENTE con live data activa (lat != null)
+           → Mostrar AMBOS botones: GPS del padre y alumno en vivo
+         Caso C: Alumno EXISTENTE sin live data (desvinculado o sin GPS)
+           → Solo GPS del padre (igual que Caso A)
+      ─────────────────────────────────────────────────────────────── */
+      const liveData_  = getStudentLive(editingStudentId);
+      const hasLive    = editingStudentId != null && liveData_ && liveData_.lat != null;
 
-      if (latVal && lngVal && latVal !== '') {
-        pickerLat = parseFloat(latVal);
-        pickerLng = parseFloat(lngVal);
-      } else {
-        // Fallback to student live loc
-        const live = getStudentLive(editingStudentId || currentStudentId);
-        if (live && live.lat != null) {
-          pickerLat = live.lat;
-          pickerLng = live.lng;
+      // Adaptar texto del botón GPS según si también hay opción de alumno
+      if (btnGpsLbl) btnGpsLbl.textContent = hasLive ? 'Mi GPS' : 'Usar mi GPS actual';
+      // Mostrar botón del alumno SOLO en Caso B
+      if (btnStu) btnStu.style.display = hasLive ? 'flex' : 'none';
+      if (hasLive && btnStuLbl) {
+        const mins = liveData_.ts
+          ? Math.round((Date.now() - (getMillis(liveData_.ts) || Date.now())) / 60000)
+          : null;
+        btnStuLbl.textContent = mins != null && mins < 60
+          ? `Alumno (hace ${mins} min)` : 'Alumno en vivo';
+      }
+
+      // Texto de instrucción contextual adaptado
+      if (hintEl) {
+        if (!hasLive) {
+          hintEl.textContent = type === 'home'
+            ? `💡 Estás configurando tu Casa. Si ya estás en casa, toca "Mi GPS actual".`
+            : `💡 Estás configurando la Escuela. Búscala por nombre arriba o usa tu GPS si estás ahí.`;
         } else {
-          // Fallback to default (Honduras Center)
-          pickerLat = 14.0722;
-          pickerLng = -87.1921;
+          hintEl.textContent = `✅ El alumno está activo. Puedes centrar el mapa en su posición o usar tu GPS.`;
         }
       }
 
-      updatePickerUI();
-      navigateTo('location-picker');
+      /* ── Determinar coordenadas iniciales del mapa ──────────────────
+         Prioridad: coords ya guardadas > GPS del padre > Honduras center
+      ─────────────────────────────────────────────────────────────── */
+      const latVal = document.getElementById(`es-${type}-lat`)?.value;
+      const lngVal = document.getElementById(`es-${type}-lng`)?.value;
+
+      if (latVal && latVal !== '' && lngVal) {
+        // Ya tiene coords guardadas: mostrar esas directamente
+        pickerLat = parseFloat(latVal);
+        pickerLng  = parseFloat(lngVal);
+        navigateTo('location-picker');
+        updatePickerUI();
+      } else if (hasLive) {
+        // Alumno con live data: centrar en el alumno como referencia
+        pickerLat = liveData_.lat;
+        pickerLng = liveData_.lng;
+        navigateTo('location-picker');
+        updatePickerUI();
+      } else {
+        // Sin coords guardadas y sin live data: usar GPS del padre automáticamente
+        // Navegar primero para que el usuario vea el picker cargando
+        pickerLat = 14.0722; pickerLng = -87.1921; // Honduras fallback mientras carga
+        navigateTo('location-picker');
+        updatePickerUI();
+        // Luego obtener el GPS real en background
+        if ('geolocation' in navigator) {
+          showToast(`Centrando mapa en tu ubicación...`, 'info');
+          navigator.geolocation.getCurrentPosition(
+            pos => {
+              pickerLat = pos.coords.latitude;
+              pickerLng = pos.coords.longitude;
+              updatePickerUI();
+              showToast(`Mapa centrado. Ajusta el marcador si es necesario.`, 'safe');
+            },
+            () => { /* Mantener fallback Honduras — no molestar al padre */ },
+            { enableHighAccuracy: true, timeout: 8000 }
+          );
+        }
+      }
     }
 
     function updatePickerUI() {
@@ -7145,17 +7287,19 @@
 
     function useCurrentStudentLocPicker() {
       SS_SoundManager.play('nav_tab');
-      // Intentar obtener el ID del alumno que estamos editando o el actual en perfil
-      const id = typeof editingStudentId !== 'undefined' ? editingStudentId : currentStudentId;
-      const data = getStudentLive(id);
-      
+      // Solo se puede llamar cuando el alumno EXISTE y tiene live data (el botón no aparece si no)
+      const data = getStudentLive(editingStudentId);
       if (data && data.lat != null) {
         pickerLat = data.lat;
         pickerLng = data.lng;
         updatePickerUI();
-        showToast("Usando ubicación actual del alumno.");
+        // Calcular hace cuánto fue la última actualización
+        const mins = data.ts ? Math.round((Date.now() - (getMillis(data.ts) || Date.now())) / 60000) : null;
+        const freshness = (mins != null && mins < 60) ? ` (hace ${mins} min)` : '';
+        showToast(`Ubicación del alumno cargada${freshness}.`, 'safe');
       } else {
-        showToast("Ubicación del alumno no disponible en tiempo real.", "warn");
+        // Fallback defensivo: esto no debería ocurrir porque el botón se oculta sin live data
+        showToast("El alumno no tiene GPS activo ahora mismo.", "warn");
       }
     }
     window.useCurrentStudentLocPicker = useCurrentStudentLocPicker;
@@ -7532,14 +7676,14 @@
           try {
             showToast(`Eliminando a ${s.name}...`);
             await deleteStudentFS(idToDelete);
-            
+
             // Limpiar localmente
             delete students[idToDelete];
             delete liveData[idToDelete];
-            
+
             SS_SoundManager.play('save_done');
             showToast('Perfil eliminado con éxito', 'safe');
-            
+
             // Regresar a la pantalla principal o refrescar lista
             if (currentScreen === 'edit-student') navigateTo('children');
             else renderChildrenList();
@@ -8763,6 +8907,69 @@
     window.validateLogin = validateLogin;
     window.loginGoogle = loginGoogle;
     window.logoutUser = logoutUser;
+    /* ── Chat Logic ─────────────────────── */
+    let chatUnsub = null;
+    let chatStudentId = null;
+
+    window.openChat = function(studentId) {
+      const s = students[studentId];
+      if (!s) return;
+      chatStudentId = studentId;
+      
+      document.getElementById('chat-title').textContent = `Chat: ${s.name}`;
+      document.getElementById('chat-messages-list').innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-3);font-size:12px;">Cargando mensajes...</div>';
+      
+      SS_SoundManager.play('panel_in');
+      navigateTo('chat');
+
+      if (chatUnsub) chatUnsub();
+      if (window.ss_firebase?.subscribeToChat) {
+        chatUnsub = window.ss_firebase.subscribeToChat(studentId, (msgs) => {
+          renderChatMessages(msgs);
+        });
+      }
+    };
+
+    function renderChatMessages(msgs) {
+      const list = document.getElementById('chat-messages-list');
+      if (!list) return;
+      
+      if (msgs.length === 0) {
+        list.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--text-3);font-size:13px;">No hay mensajes recientes. Escribe algo para comenzar.</div>';
+        return;
+      }
+
+      list.innerHTML = msgs.map(m => {
+        const isParent = m.sender === 'parent';
+        const bubbleClass = isParent ? 'parent' : 'student';
+        const time = m.ts ? new Date(getMillis(m.ts)).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '';
+        
+        return `
+          <div class="chat-bubble ${bubbleClass}">
+            ${escapeHTML(m.text)}
+            <span class="chat-time">${time}</span>
+          </div>
+        `;
+      }).join('');
+      
+      list.scrollTop = list.scrollHeight;
+    }
+
+    window.sendChatMsg = async function() {
+      const input = document.getElementById('chat-input-field');
+      const text = input?.value.trim();
+      if (!text || !chatStudentId) return;
+
+      input.value = '';
+      SS_SoundManager.play('nav_tab');
+
+      try {
+        await window.ss_firebase.sendChatMessage(chatStudentId, 'parent', text);
+      } catch(e) {
+        showToast("Error al enviar mensaje", "danger");
+      }
+    };
+
     window.navigateTo = navigateTo;
     window.switchTab = switchTab;
     window.openNotifPanel = openNotifPanel;

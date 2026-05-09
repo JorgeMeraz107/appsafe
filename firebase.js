@@ -31,6 +31,7 @@ import {
     where,
     orderBy,
     limit,
+    addDoc,
     serverTimestamp,
     initializeFirestore,
     persistentLocalCache,
@@ -386,6 +387,9 @@ export async function markAllNotificationsRead(uid) {
 /**
  * Suscribe en tiempo real a la configuración de IA gestionada desde el Panel Admin.
  */
+/**
+ * Suscribe en tiempo real a la configuración de IA gestionada desde el Panel Admin.
+ */
 export function subscribeToAiConfig(onConfig) {
     const configRef = doc(db, "config", "gemini");
     return onSnapshot(configRef, (snap) => {
@@ -401,6 +405,40 @@ export function subscribeToAiConfig(onConfig) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   LIGTHWEIGHT CHAT — students/{id}/chat
+   ───────────────────────────────────────────────────────────────
+   Sistema de mensajería efímero y ligero.
+   ═══════════════════════════════════════════════════════════════ */
+
+/**
+ * Suscribe al chat en tiempo real (últimos 20 mensajes).
+ */
+export function subscribeToChat(studentId, onChange) {
+    const q = query(
+        collection(db, "students", studentId, "chat"),
+        orderBy("ts", "asc"),
+        limit(20)
+    );
+    return onSnapshot(q, snap => {
+        const msgs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        onChange(msgs);
+    });
+}
+
+/**
+ * Envía un mensaje al chat.
+ */
+export async function sendChatMessage(studentId, sender, text) {
+    if (!text.trim()) return;
+    const chatRef = collection(db, "students", studentId, "chat");
+    await addDoc(chatRef, {
+        sender: sender, // 'parent' o 'student'
+        text: text.trim(),
+        ts: serverTimestamp()
+    });
+}
+
+/* ═══════════════════════════════════════════════════════════════
    EXPORTA instancias base y objeto global
    ═══════════════════════════════════════════════════════════════ */
 export { auth, db };
@@ -412,5 +450,7 @@ window.ss_firebase = {
     subscribeToAiConfig,
     subscribeStudents,
     subscribeStudentLive,
-    markAllNotificationsRead
+    markAllNotificationsRead,
+    subscribeToChat,
+    sendChatMessage
 };
