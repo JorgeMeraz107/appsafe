@@ -3256,9 +3256,14 @@
           </svg>
           Hijos
         </button>
-        <!-- Nombre completo sin avatar ni otros iconos para que no se trunque -->
-        <div class="topbar-title" id="student-hero-name"
-          style="flex:1;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:0 8px;">—</div>
+        <!-- Avatar y Nombre completo centrado, conservando todo el espacio libre -->
+        <div style="flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:8px;margin:0 8px;">
+          <div id="student-hero-avatar" class="avatar"
+            style="width:30px;height:30px;font-size:13px;flex-shrink:0;background:var(--bg-item);box-shadow:var(--shadow-sm);">
+          </div>
+          <div class="topbar-title" id="student-hero-name"
+            style="text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">—</div>
+        </div>
         <button class="icon-btn" onclick="openEditStudent(currentStudentId)" title="Editar perfil">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
             <path d="M14 3L17 6L7 16H4V13L14 3Z" stroke="var(--text-2)" stroke-width="1.5" stroke-linecap="round"
