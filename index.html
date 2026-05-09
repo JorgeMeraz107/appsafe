@@ -8583,7 +8583,7 @@
         renotify: type === 'sos',          // SOS siempre vibra de nuevo
         requireInteraction: type === 'sos',          // SOS no desaparece solo
         vibrate: type === 'sos' ? [300, 100, 300, 100, 300] : [150],
-        data: { type, title: type === 'sos' ? `SOS ACTIVADO: ${students[currentStudentId]?.name || 'Tu hijo'}` : title },
+        data: { type, title: `SOS ACTIVADO: ${students[currentStudentId]?.name || 'Tu hijo'}` },
       };
 
       // Vía Service Worker — funciona en background
@@ -8802,12 +8802,21 @@
               students = data;
               localStorage.setItem('ss_students_v1', JSON.stringify(students));
 
+              // Si el hijo actual desaparece de la lista, volver a Home
+              if (currentStudentId && !students[currentStudentId] && (currentScreen === 'student' || currentScreen === 'emergency')) {
+                showToast('Este dispositivo ha sido desvinculado');
+                navigateTo('home');
+              }
+
               // Datos iniciales cargados -> ocultar loader
               hideAppLoader();
 
               const settingsRoleEl = document.getElementById('settings-user-role');
               const count = Object.keys(students).length;
-              if (settingsRoleEl) settingsRoleEl.textContent = `Cuenta de Padre · ${count} ${count === 1 ? 'hijo vinculado' : 'hijos vinculados'}`;
+              if (settingsRoleEl) {
+                const roleStr = currentParentProfile?.role || 'Padre';
+                settingsRoleEl.textContent = `${roleStr} · ${count} ${count === 1 ? 'hijo vinculado' : 'hijos vinculados'}`;
+              }
 
               Object.keys(students).forEach(childId => {
                 if (!unsubLive[childId]) {
@@ -8823,7 +8832,7 @@
                       if (!prevLive.sos && !alreadyDismissed) {
                         sendPushNotification({
                           type: 'sos',
-                          title: `🆘 SOS ACTIVADO: ${students[childId]?.name || 'Tu hijo'}`,
+                          title: `SOS ACTIVADO: ${students[childId]?.name || 'Tu hijo'}`,
                           body: 'Toca aquí para ver ubicación y llamar'
                         });
                         VoiceAssistant.speak(`¡Alerta! SOS activado por ${students[childId]?.name || 'tu hijo'}.`, 'high');
