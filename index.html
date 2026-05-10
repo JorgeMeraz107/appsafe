@@ -7738,7 +7738,7 @@
         <div class="avatar" style="width:38px;height:38px;font-size:14px;background:linear-gradient(135deg,#0D2E4F,#1A3358);overflow:hidden;">${getStudentAvatarHTML(s)}</div>
         <div class="settings-item-text">
           <div class="settings-item-label">${s.name}</div>
-          <div class="settings-item-sub">${s.grade || ''}${phone ? ' · 📱 ' + formatPhoneParent(phone) : ' · Sin número'}</div>
+          <div class="settings-item-sub">${s.grade || ''}${phone ? ' · ' + formatPhoneParent(phone) : ' · Sin número'}</div>
         </div>
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="opacity:0.4;flex-shrink:0;">
           <path d="M6 4L10 8L6 12" stroke="var(--text-h)" stroke-width="1.5" stroke-linecap="round"/>
@@ -7939,12 +7939,12 @@
         content: `
       <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
         <div class="card" style="padding:14px 16px;display:flex;gap:12px;align-items:center;">
-          <div style="width:36px;height:36px;background:var(--safe-bg);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">🏠</div>
+          <div style="width:36px;height:36px;background:var(--safe-bg);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--safe);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
           <div style="flex:1;"><div style="font-weight:600;font-size:14px;">Casa</div><div style="font-size:12px;color:var(--text-3);">Col. Palmira, San Pedro Sula · Radio 150m</div></div>
           <div class="status-pill status-safe" style="font-size:11px;"><div class="status-dot"></div>Activa</div>
         </div>
         <div class="card" style="padding:14px 16px;display:flex;gap:12px;align-items:center;">
-          <div style="width:36px;height:36px;background:rgba(41,121,255,0.1);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">🏫</div>
+          <div style="width:36px;height:36px;background:rgba(41,121,255,0.1);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--blue-acc);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m4 6 8-4 8 4"/><path d="m18 10 4 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-8l4-2"/><path d="M14 22v-4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v4"/><path d="M18 5v17"/><path d="M6 5v17"/></svg></div>
           <div style="flex:1;"><div style="font-weight:600;font-size:14px;">Colegio Lincoln</div><div style="font-size:12px;color:var(--text-3);">Radio 200m · Activo Lun–Vie</div></div>
           <div class="status-pill status-safe" style="font-size:11px;"><div class="status-dot"></div>Activa</div>
         </div>
@@ -7952,10 +7952,10 @@
       <button class="btn btn-primary btn-full" style="height:48px;" onclick="closeModal();switchTab('map')">+ Agregar Nueva Zona en Mapa</button>`
       },
       'call-911': {
-        title: '🚨 ¿Llamar a Autoridades?',
+        title: '¿Llamar a Autoridades?',
         sub: 'Esto te conectará con los servicios de emergencia. Úsalo solo en una emergencia confirmada.',
         content: `
-      <button class="btn btn-danger btn-full" style="height:56px;font-size:16px;margin-bottom:12px;" onclick="closeModal()">☎️ Llamar al 911 Ahora</button>
+      <button class="btn btn-danger btn-full" style="height:56px;font-size:16px;margin-bottom:12px;display:flex;align-items:center;justify-content:center;" onclick="closeModal()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:10px;"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 1.11L7.13 8.9a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 1.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg> Llamar al 911 Ahora</button>
       <button class="btn btn-ghost btn-full" style="height:48px;" onclick="closeModal()">Cancelar — No es una emergencia</button>`
       },
       'dismiss-sos': {
@@ -8958,7 +8958,11 @@
 
       if (chatUnsub) chatUnsub();
       if (window.ss_firebase?.subscribeToChat) {
-        chatUnsub = window.ss_firebase.subscribeToChat(studentId, (msgs) => {
+        chatUnsub = window.ss_firebase.subscribeToChat(studentId, (msgs, err) => {
+          if (err) {
+            document.getElementById('chat-messages-list').innerHTML = `<div style="text-align:center;padding:20px;color:var(--danger);font-size:12px;">Error: ${err.message}</div>`;
+            return;
+          }
           renderChatMessages(msgs);
         });
       }
@@ -9000,7 +9004,8 @@
       try {
         await window.ss_firebase.sendChatMessage(chatStudentId, 'parent', text);
       } catch(e) {
-        showToast("Error al enviar mensaje", "danger");
+        console.error("Error al enviar chat:", e);
+        showToast(`Error al enviar: ${e.message || 'Desconocido'}`, "danger");
       }
     };
 
