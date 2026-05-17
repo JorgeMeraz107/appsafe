@@ -416,12 +416,14 @@ export function subscribeToAiConfig(onConfig) {
 export function subscribeToChat(studentId, onChange) {
     const q = query(
         collection(db, "students", studentId, "chat"),
-        orderBy("ts", "asc"),
         limit(20)
     );
     return onSnapshot(q, snap => {
         const msgs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         onChange(msgs);
+    }, err => {
+        console.error("❌ Error en subscribeToChat (Parent):", err);
+        if (onChange) onChange([], err);
     });
 }
 
