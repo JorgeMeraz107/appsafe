@@ -8951,73 +8951,7 @@
     window.validateLogin = validateLogin;
     window.loginGoogle = loginGoogle;
     window.logoutUser = logoutUser;
-    /* ── Chat Logic ─────────────────────── */
-    let chatUnsub = null;
-    let chatStudentId = null;
 
-    window.openChat = function(studentId) {
-      const s = students[studentId];
-      if (!s) return;
-      chatStudentId = studentId;
-      
-      document.getElementById('chat-title').textContent = `Chat: ${s.name}`;
-      document.getElementById('chat-messages-list').innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-3);font-size:12px;">Cargando mensajes...</div>';
-      
-      SS_SoundManager.play('panel_in');
-      navigateTo('chat');
-
-      if (chatUnsub) chatUnsub();
-      if (window.ss_firebase?.subscribeToChat) {
-        chatUnsub = window.ss_firebase.subscribeToChat(studentId, (msgs, err) => {
-          if (err) {
-            document.getElementById('chat-messages-list').innerHTML = `<div style="text-align:center;padding:20px;color:var(--danger);font-size:12px;">Error: ${err.message}</div>`;
-            return;
-          }
-          renderChatMessages(msgs);
-        });
-      }
-    };
-
-    function renderChatMessages(msgs) {
-      const list = document.getElementById('chat-messages-list');
-      if (!list) return;
-      
-      if (msgs.length === 0) {
-        list.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--text-3);font-size:13px;">No hay mensajes recientes. Escribe algo para comenzar.</div>';
-        return;
-      }
-
-      list.innerHTML = msgs.map(m => {
-        const isParent = m.sender === 'parent';
-        const bubbleClass = isParent ? 'parent' : 'student';
-        const time = m.ts ? new Date(getMillis(m.ts)).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '';
-        
-        return `
-          <div class="chat-bubble ${bubbleClass}">
-            ${escapeHTML(m.text)}
-            <span class="chat-time">${time}</span>
-          </div>
-        `;
-      }).join('');
-      
-      list.scrollTop = list.scrollHeight;
-    }
-
-    window.sendChatMsg = async function() {
-      const input = document.getElementById('chat-input-field');
-      const text = input?.value.trim();
-      if (!text || !chatStudentId) return;
-
-      input.value = '';
-      SS_SoundManager.play('nav_tab');
-
-      try {
-        await window.ss_firebase.sendChatMessage(chatStudentId, 'parent', text);
-      } catch(e) {
-        console.error("Error al enviar chat:", e);
-        showToast(`Error al enviar: ${e.message || 'Desconocido'}`, "danger");
-      }
-    };
 
     window.navigateTo = navigateTo;
     window.switchTab = switchTab;
