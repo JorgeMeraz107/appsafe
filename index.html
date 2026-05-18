@@ -4653,6 +4653,44 @@
         <!-- Mensajes cargados dinámicamente -->
       </div>
       
+      <!-- Emojis Rápidos de Seguridad y Estado -->
+      <div class="chat-emoji-bar" style="display: flex; gap: 8px; padding: 8px 12px; background: var(--bg-card); border-top: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; align-items: center;">
+        <style>
+          .chat-emoji-bar::-webkit-scrollbar { display: none; }
+          .emoji-btn {
+            background: var(--bg-body, #1e293b);
+            border: 1px solid var(--border, #334155);
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 13px;
+            color: var(--text-main, #f8fafc);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: inherit;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+          }
+          .emoji-btn:hover {
+            background: var(--border, #475569) !important;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+          }
+          .emoji-btn:active {
+            transform: translateY(0) scale(0.95);
+          }
+        </style>
+        <button onclick="insertEmoji('✅')" class="emoji-btn">✅ Todo bien</button>
+        <button onclick="insertEmoji('⚠️')" class="emoji-btn">⚠️ Demorado</button>
+        <button onclick="insertEmoji('🚌')" class="emoji-btn">🚌 En camino</button>
+        <button onclick="insertEmoji('🏫')" class="emoji-btn">🏫 Escuela</button>
+        <button onclick="insertEmoji('🏠')" class="emoji-btn">🏠 En casa</button>
+        <button onclick="insertEmoji('🚶')" class="emoji-btn">🚶 Caminando</button>
+        <button onclick="insertEmoji('👍')" class="emoji-btn">👍 Entendido</button>
+        <button onclick="insertEmoji('❤️')" class="emoji-btn">❤️ Te quiero</button>
+      </div>
       <div class="chat-input-bar">
         <input type="text" id="chat-input-field" class="chat-input" placeholder="Escribe un mensaje..." onkeypress="if(event.key==='Enter') sendChatMsg()">
         <button class="chat-send-btn" onclick="sendChatMsg()">
@@ -9014,26 +9052,51 @@
 
     function encryptChatE2E(text) {
       if (!text) return "";
-      let result = "";
-      for (let i = 0; i < text.length; i++) {
-        result += String.fromCharCode(text.charCodeAt(i) ^ E2E_SECRET_KEY.charCodeAt(i % E2E_SECRET_KEY.length));
+      try {
+        const encoder = new TextEncoder();
+        const bytes = encoder.encode(text);
+        const xorBytes = new Uint8Array(bytes.length);
+        for (let i = 0; i < bytes.length; i++) {
+          xorBytes[i] = bytes[i] ^ E2E_SECRET_KEY.charCodeAt(i % E2E_SECRET_KEY.length);
+        }
+        let binary = "";
+        for (let i = 0; i < xorBytes.length; i++) {
+          binary += String.fromCharCode(xorBytes[i]);
+        }
+        return btoa(binary);
+      } catch (e) {
+        console.error("Error al encriptar:", e);
+        return text;
       }
-      return btoa(unescape(encodeURIComponent(result))); // Base64 Safe
     }
 
     function decryptChatE2E(base64text) {
       if (!base64text) return "";
       try {
-        let text = decodeURIComponent(escape(atob(base64text)));
-        let result = "";
-        for (let i = 0; i < text.length; i++) {
-          result += String.fromCharCode(text.charCodeAt(i) ^ E2E_SECRET_KEY.charCodeAt(i % E2E_SECRET_KEY.length));
+        const binary = atob(base64text);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) {
+          bytes[i] = binary.charCodeAt(i);
         }
-        return result;
+        const xorBytes = new Uint8Array(bytes.length);
+        for (let i = 0; i < bytes.length; i++) {
+          xorBytes[i] = bytes[i] ^ E2E_SECRET_KEY.charCodeAt(i % E2E_SECRET_KEY.length);
+        }
+        const decoder = new TextDecoder();
+        return decoder.decode(xorBytes);
       } catch (e) {
-        return base64text; // Fallback por si el mensaje no estaba encriptado (versiones anteriores)
+        // Fallback por si el mensaje era plano o falló
+        return base64text;
       }
     }
+
+    window.insertEmoji = function(emoji) {
+      const input = document.getElementById('chat-input-field');
+      if (input) {
+        input.value += emoji + " ";
+        input.focus();
+      }
+    };
 
     let chatUnsub = null;
 
@@ -9125,10 +9188,10 @@
         return;
       }
 
-      // Ordenar cronológicamente ascendente
+      // Ordenar cronológicamente ascendente (usando Date.now() como fallback si el timestamp de Firestore está pendiente)
       msgs.sort((a, b) => {
-        const ta = a.ts ? (a.ts.toMillis ? a.ts.toMillis() : a.ts) : 0;
-        const tb = b.ts ? (b.ts.toMillis ? b.ts.toMillis() : b.ts) : 0;
+        const ta = a.ts ? (a.ts.toMillis ? a.ts.toMillis() : a.ts) : Date.now();
+        const tb = b.ts ? (b.ts.toMillis ? b.ts.toMillis() : b.ts) : Date.now();
         return ta - tb;
       });
 
