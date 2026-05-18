@@ -3580,80 +3580,103 @@
             </div>
           </div>
 
-          <!-- Análisis Inteligente (NUEVO) -->
+          <!-- Análisis Inteligente (Profesional) -->
           <div
-            style="background:linear-gradient(90deg, var(--safe-bg), transparent); padding:10px 16px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border);">
-            <span style="font-size:16px;">✨</span>
-            <div id="safe-zone-analysis-text" style="font-size:12px; font-weight:600; color:var(--text-2);">Analizando
-              parámetros de ruta y seguridad...</div>
+            style="background:var(--safe-bg); padding:12px 16px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border);">
+            <div style="width:24px; height:24px; border-radius:50%; background:var(--safe); color:white; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                <polyline points="9 12 11 14 15 10"/>
+              </svg>
+            </div>
+            <div id="safe-zone-analysis-text" style="font-size:12px; font-weight:600; color:var(--safe); line-height:1.4;">
+              Alumno dentro de parámetros seguros. Monitoreo GPS estable.
+            </div>
           </div>
 
           <!-- Panel de Telemetría de Seguridad (Dashboard de Control) -->
           <div
-            style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px; padding:12px 16px; background:var(--surface); border-bottom:1px solid var(--border);">
+            style="display:grid; grid-template-columns: 1fr 1fr 1fr; padding:16px; background:var(--surface); border-bottom:1px solid var(--border);">
             <div style="text-align:center;">
               <div
-                style="font-size:9px; color:var(--text-3); text-transform:uppercase; font-weight:700; letter-spacing:0.03em;">
-                Llegada Est.</div>
-              <div id="route-eta" style="font-size:13px; font-weight:700; color:var(--blue-acc);">-- min</div>
+                style="font-size:10px; color:var(--text-3); font-weight:700; letter-spacing:0.05em; margin-bottom:4px;">
+                LLEGADA EST.</div>
+              <div id="route-eta" style="font-size:15px; font-weight:800; color:var(--text-1);">-- min</div>
             </div>
             <div style="text-align:center; border-left:1px solid var(--border); border-right:1px solid var(--border);">
               <div
-                style="font-size:9px; color:var(--text-3); text-transform:uppercase; font-weight:700; letter-spacing:0.03em;">
-                Velocidad</div>
-              <div id="route-speed" style="font-size:13px; font-weight:700; color:var(--safe);">-- km/h</div>
+                style="font-size:10px; color:var(--text-3); font-weight:700; letter-spacing:0.05em; margin-bottom:4px;">
+                VELOCIDAD</div>
+              <div id="route-speed" style="font-size:15px; font-weight:800; color:var(--safe);">-- km/h</div>
             </div>
             <div style="text-align:center;">
               <div
-                style="font-size:9px; color:var(--text-3); text-transform:uppercase; font-weight:700; letter-spacing:0.03em;">
-                Batería Hijo</div>
-              <div id="route-battery" style="font-size:13px; font-weight:700; color:var(--text-1);">--%</div>
+                style="font-size:10px; color:var(--text-3); font-weight:700; letter-spacing:0.05em; margin-bottom:4px;">
+                BATERÍA HIJO</div>
+              <div id="route-battery" style="font-size:15px; font-weight:800; color:var(--text-1);">--%</div>
             </div>
           </div>
 
-
-          <iframe id="safe-zone-route-map" width="100%" height="420" frameborder="0" style="border:0; display:block;"
-            allowfullscreen></iframe>
+          <div style="position:relative;">
+            <!-- Indicador para que el usuario no arrastre el mapa por error al hacer scroll -->
+            <div style="position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.6); color:white; font-size:10px; padding:4px 8px; border-radius:12px; backdrop-filter:blur(4px); pointer-events:none; z-index:10; font-weight:600; letter-spacing:0.02em;">
+              Mapa Táctico
+            </div>
+            <iframe id="safe-zone-route-map" width="100%" height="420" frameborder="0" style="border:0; display:block;" allowfullscreen></iframe>
+          </div>
 
           <!-- Legend & Quick Actions -->
-          <div style="background:var(--surface); padding:12px 16px; border-top:1px solid var(--border);">
+          <div style="background:var(--surface); padding:16px; border-top:1px solid var(--border);">
+            
+            <!-- Leyenda del Mapa Profesional -->
             <div
-              style="display:flex; flex-wrap:wrap; gap:12px; font-size:11px; color:var(--text-3); margin-bottom:12px; padding-bottom:12px; border-bottom:1px dotted var(--border);">
-              <div style="display:flex; align-items:center; gap:5px;">
-                <div style="width:8px; height:8px; background:#4285F4; border-radius:50%;"></div> Casa (A)
+              style="display:flex; justify-content:space-between; align-items:center; font-size:11px; color:var(--text-2); margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid var(--border);">
+              <div style="display:flex; align-items:center; gap:6px; font-weight:600;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4285F4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                  <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+                Origen
               </div>
-              <div style="display:flex; align-items:center; gap:5px;">
-                <div style="width:8px; height:8px; background:#34A853; border-radius:50%;"></div> <b>Hijo (B)</b>
+              <div style="display:flex; align-items:center; gap:6px; font-weight:800; color:var(--text-1);">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34A853" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/>
+                </svg>
+                Alumno
               </div>
-              <div style="display:flex; align-items:center; gap:5px;">
-                <div style="width:8px; height:8px; background:#EA4335; border-radius:50%;"></div> Colegio (C)
+              <div style="display:flex; align-items:center; gap:6px; font-weight:600;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#EA4335" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                </svg>
+                Destino
               </div>
             </div>
 
             <!-- Botones de Acción para el Padre -->
-            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
               <button class="btn btn-primary"
-                style="height:38px; font-size:12px; gap:6px; border-radius:10px; background:var(--blue-acc); box-shadow:0 4px 15px rgba(41,121,255,0.3);"
+                style="height:44px; font-size:12px; font-weight:700; gap:8px; border-radius:12px; background:var(--blue-acc); box-shadow:0 4px 15px rgba(41,121,255,0.3);"
                 onclick="openChat()">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                 </svg>
-                Chat E2E
+                Chat Seguro
               </button>
+              
               <button id="btn-traffic" class="btn btn-ghost"
-                style="height:38px; font-size:12px; gap:6px; border-radius:10px; transition: all 0.3s;"
+                style="height:44px; font-size:12px; font-weight:600; gap:8px; border-radius:12px; background:rgba(148,163,184,0.1); border:none;"
                 onclick="toggleRouteTraffic()">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/>
                 </svg>
                 Tráfico
               </button>
+              
               <button class="btn btn-ghost"
-                style="height:38px; font-size:12px; gap:6px; border-radius:10px; color:var(--danger); border-color:var(--danger-bg);"
-                onclick="showToast('Incidencia reportada a central de seguridad')">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-                  <line x1="12" y1="9" x2="12" y2="13" />
+                style="height:44px; font-size:12px; font-weight:600; gap:8px; border-radius:12px; background:var(--danger-bg); color:var(--danger); border:none;"
+                onclick="showToast('Incidencia reportada a central de seguridad', 'danger')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
                 </svg>
                 Reportar
               </button>
