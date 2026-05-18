@@ -7,8 +7,8 @@
    Compatible con: Chrome Android, Edge, Desktop Chrome
 ═══════════════════════════════════════════════════════ */
 
-const SW_VERSION = 'schoolsafe-sw-v4';
-const CACHE_NAME = 'schoolsafe-static-v4';
+const SW_VERSION = 'schoolsafe-sw-v5';
+const CACHE_NAME = 'schoolsafe-static-v5';
 
 // ── Assets críticos para carga offline instantánea ──
 const STATIC_ASSETS = [
