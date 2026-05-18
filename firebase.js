@@ -416,6 +416,7 @@ export function subscribeToAiConfig(onConfig) {
 export function subscribeToChat(studentId, onChange) {
     const q = query(
         collection(db, "students", studentId, "chat"),
+        orderBy("ts", "desc"),
         limit(20)
     );
     return onSnapshot(q, snap => {
