@@ -3618,7 +3618,7 @@
           </div>
 
           <div style="position:relative;">
-            <iframe id="safe-zone-route-map" width="100%" height="280" frameborder="0" style="border:0; display:block;" allowfullscreen></iframe>
+            <iframe id="safe-zone-route-map" width="100%" height="280" frameborder="0" style="border:0; outline:none; display:block;" allowfullscreen></iframe>
           </div>
 
           <!-- Legend & Quick Actions -->
@@ -3643,29 +3643,29 @@
             </div>
 
             <!-- Botones de Acción para el Padre -->
-            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
               <button class="btn btn-primary"
-                style="height:44px; font-size:12px; font-weight:700; gap:8px; border-radius:12px; background:var(--blue-acc); box-shadow:0 4px 15px rgba(41,121,255,0.3);"
+                style="height:44px; font-size:11px; font-weight:700; gap:4px; border-radius:12px; background:var(--blue-acc); box-shadow:0 4px 15px rgba(41,121,255,0.3); white-space:nowrap; padding:0 4px;"
                 onclick="openChat()">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                 </svg>
                 Chat Seguro
               </button>
               
               <button id="btn-traffic" class="btn btn-ghost"
-                style="height:44px; font-size:12px; font-weight:600; gap:8px; border-radius:12px; background:rgba(148,163,184,0.1); border:none;"
+                style="height:44px; font-size:11px; font-weight:600; gap:4px; border-radius:12px; background:rgba(148,163,184,0.1); border:none; white-space:nowrap; padding:0 4px;"
                 onclick="toggleRouteTraffic()">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
                   <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/>
                 </svg>
                 Tráfico
               </button>
               
               <button class="btn btn-ghost"
-                style="height:44px; font-size:12px; font-weight:600; gap:8px; border-radius:12px; background:var(--danger-bg); color:var(--danger); border:none;"
+                style="height:44px; font-size:11px; font-weight:600; gap:4px; border-radius:12px; background:var(--danger-bg); color:var(--danger); border:none; white-space:nowrap; padding:0 4px;"
                 onclick="showToast('Incidencia reportada a central de seguridad', 'danger')">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
                   <polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
                 </svg>
                 Reportar
