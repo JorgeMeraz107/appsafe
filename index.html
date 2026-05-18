@@ -7642,30 +7642,26 @@
         if (configuredZones === 2) {
           routeContainer.style.display = 'block';
 
-          const liveLat = live?.lat;
-          const liveLng = live?.lng;
-          let newUrl;
-
-          if (liveLat && liveLng) {
-            // Ruta dinámica: Casa -> Hijo (Posición Real) -> Escuela
-            newUrl = `https://maps.google.com/maps?saddr=${s.homeLat},${s.homeLng}&daddr=${liveLat},${liveLng}+to:${s.schoolLat},${s.schoolLng}&output=embed&hl=es`;
-            if (routeTrafficEnabled) newUrl += '&layer=t';
-          } else {
-            // Ruta estática si no hay señal GPS actual
-            newUrl = `https://maps.google.com/maps?saddr=${s.homeLat},${s.homeLng}&daddr=${s.schoolLat},${s.schoolLng}&output=embed&hl=es`;
-            if (routeTrafficEnabled) newUrl += '&layer=t';
-          }
-
-          // Lógica de Análisis Inteligente Avanzada
+          // Lógica de Análisis Inteligente Avanzada y Cálculo de Distancias
           const analysisText = document.getElementById('safe-zone-analysis-text');
           const routeEta = document.getElementById('route-eta');
           const routeSpeed = document.getElementById('route-speed');
           const routeBattery = document.getElementById('route-battery');
           const badge = document.getElementById('route-status-badge');
 
+          let newUrl;
           if (live && liveLat && liveLng) {
             const dHome = haversine(liveLat, liveLng, s.homeLat, s.homeLng);
             const dSchool = haversine(liveLat, liveLng, s.schoolLat, s.schoolLng);
+            
+            // Determinar si va hacia el Hogar o hacia la Escuela
+            const isGoingHome = dHome > dSchool; 
+            const destLat = isGoingHome ? s.homeLat : s.schoolLat;
+            const destLng = isGoingHome ? s.homeLng : s.schoolLng;
+
+            // Mostrar solo ruta de Alumno -> Destino Real para que Google Maps auto-ajuste el zoom perfectamente.
+            newUrl = `https://maps.google.com/maps?saddr=${liveLat},${liveLng}&daddr=${destLat},${destLng}&output=embed&hl=es`;
+            if (routeTrafficEnabled) newUrl += '&layer=t';
 
             // Simulación de telemetría basada en datos reales
             if (routeSpeed) routeSpeed.textContent = live.speed ? `${Math.round(live.speed * 3.6)} km/h` : 'Estacionario';
@@ -7673,30 +7669,39 @@
 
             if (analysisText) {
               if (dHome < 200) {
-                analysisText.textContent = "Hijo en Casa. Todo en orden.";
+                analysisText.textContent = "Alumno en Casa. Parámetros seguros.";
                 if (routeEta) routeEta.textContent = "0 min";
                 if (badge) { badge.textContent = "En Casa"; badge.className = "status-pill status-safe"; }
               } else if (dSchool < 200) {
-                analysisText.textContent = "Hijo en Colegio. Llegada confirmada.";
+                analysisText.textContent = "Alumno en Colegio. Llegada confirmada.";
                 if (routeEta) routeEta.textContent = "Llegó";
                 if (badge) { badge.textContent = "En Destino"; badge.className = "status-pill status-safe"; }
               } else {
-                // Cálculo de ETA aproximado (suponiendo 30km/h promedio)
-                const mins = Math.round((dSchool / 500));
+                // Cálculo de ETA aproximado
+                const dTarget = isGoingHome ? dHome : dSchool;
+                const mins = Math.round((dTarget / 500));
                 if (routeEta) routeEta.textContent = `${mins} min`;
 
-                // Detección de Desvíos (Análisis Inteligente)
-                // Si la distancia a la escuela es mayor que la distancia entre casa y escuela, podría estar alejándose
                 const totalPath = haversine(s.homeLat, s.homeLng, s.schoolLat, s.schoolLng);
-                if (dSchool > totalPath + 1000) {
-                  analysisText.textContent = "⚠️ Alerta: Posible desvío detectado. Fuera del corredor habitual.";
+                if (dTarget > totalPath + 1000) {
+                  analysisText.textContent = "⚠️ Alerta: Fuera del corredor habitual. Verificando desvío.";
                   if (badge) { badge.textContent = "Desvío"; badge.className = "status-pill status-danger"; }
                 } else {
-                  analysisText.textContent = "Trayecto Normal: En curso hacia el destino.";
+                  analysisText.textContent = `Monitoreo GPS activo. Dirigiéndose a ${isGoingHome ? 'Casa' : 'Colegio'}.`;
                   if (badge) { badge.textContent = "En Ruta"; badge.className = "status-pill status-safe"; }
                 }
               }
             }
+          } else {
+            // Ruta estática si no hay señal GPS actual (Casa -> Escuela)
+            newUrl = `https://maps.google.com/maps?saddr=${s.homeLat},${s.homeLng}&daddr=${s.schoolLat},${s.schoolLng}&output=embed&hl=es`;
+            if (routeTrafficEnabled) newUrl += '&layer=t';
+            
+            if (routeSpeed) routeSpeed.textContent = '--';
+            if (routeBattery) routeBattery.textContent = '--';
+            if (analysisText) analysisText.textContent = "Esperando señal satelital...";
+            if (routeEta) routeEta.textContent = "-- min";
+            if (badge) { badge.textContent = "Sin GPS"; badge.className = "status-pill status-warn"; }
           }
 
           // Solo recargar si la ubicación cambió significativamente (redondeamos a 5 decimales ~1 metro)
