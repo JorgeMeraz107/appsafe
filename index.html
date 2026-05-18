@@ -7649,6 +7649,8 @@
           const routeBattery = document.getElementById('route-battery');
           const badge = document.getElementById('route-status-badge');
 
+          const liveLat = live?.lat;
+          const liveLng = live?.lng;
           let newUrl;
           if (live && liveLat && liveLng) {
             const dHome = haversine(liveLat, liveLng, s.homeLat, s.homeLng);
