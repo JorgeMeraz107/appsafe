@@ -5733,8 +5733,7 @@
         // Tile Última Sync
         const tileSync = document.getElementById('tile-last-sync');
         if (tileSync && data.ts) {
-          const mins = Math.round((Date.now() - data.ts) / 60000);
-          tileSync.textContent = mins < 1 ? 'Actualizado ahora' : `visto hace ${mins} min`;
+          tileSync.textContent = formatTimeAgo(data.ts);
         }
 
         // ─── 2. GPS Y SEÑAL ───────────────────
@@ -6174,8 +6173,7 @@
         const locEl = document.getElementById('emergency-location');
         const battEl = document.getElementById('emergency-battery-chip');
         if (locEl) {
-          const ago = data.ts ? Math.round((Date.now() - data.ts) / 60000) : null;
-          const timeText = ago !== null ? ` · Visto hace ${ago} min` : '';
+          const timeText = data.ts ? ` · Visto ${formatTimeAgo(data.ts)}` : '';
           locEl.textContent = `${data.placeName || `${parseFloat(data.lat).toFixed(4)}, ${parseFloat(data.lng).toFixed(4)}`}${timeText}`;
         }
         if (battEl) battEl.textContent = `${Math.round((data.battery || 0) * 100)}% batería`;
@@ -7182,6 +7180,25 @@
       return R * c; // Distancia en metros
     }
 
+    function formatTimeAgo(ts) {
+      if (!ts) return '';
+      const millis = ts.toMillis ? ts.toMillis() : (typeof ts === 'string' ? Date.parse(ts) : ts);
+      if (isNaN(millis)) return '';
+      const diffMs = Date.now() - millis;
+      const diffMins = Math.round(diffMs / 60000);
+      
+      if (diffMins < 1) return 'hace unos segundos';
+      if (diffMins < 60) return `hace ${diffMins} min`;
+      
+      const diffHrs = Math.floor(diffMins / 60);
+      if (diffHrs < 24) {
+        return `hace ${diffHrs} ${diffHrs === 1 ? 'hora' : 'horas'}`;
+      }
+      
+      const diffDays = Math.floor(diffHrs / 24);
+      return `hace ${diffDays} ${diffDays === 1 ? 'día' : 'días'}`;
+    }
+
     /* ═══════════════════════════════════════
        PROFESSIONAL LOCATION PICKER LOGIC
     ═══════════════════════════════════════ */
@@ -7221,11 +7238,8 @@
       // Mostrar botón del alumno SOLO en Caso B
       if (btnStu) btnStu.style.display = hasLive ? 'flex' : 'none';
       if (hasLive && btnStuLbl) {
-        const mins = liveData_.ts
-          ? Math.round((Date.now() - (getMillis(liveData_.ts) || Date.now())) / 60000)
-          : null;
-        btnStuLbl.textContent = mins != null && mins < 60
-          ? `Alumno (hace ${mins} min)` : 'Alumno en vivo';
+        btnStuLbl.textContent = liveData_.ts
+          ? `Alumno (${formatTimeAgo(getMillis(liveData_.ts))})` : 'Alumno en vivo';
       }
 
       // Texto de instrucción contextual adaptado (SVG inline en lugar de emojis)
@@ -7321,9 +7335,7 @@
         pickerLat = data.lat;
         pickerLng = data.lng;
         updatePickerUI();
-        // Calcular hace cuánto fue la última actualización
-        const mins = data.ts ? Math.round((Date.now() - (getMillis(data.ts) || Date.now())) / 60000) : null;
-        const freshness = (mins != null && mins < 60) ? ` (hace ${mins} min)` : '';
+        const freshness = data.ts ? ` (${formatTimeAgo(getMillis(data.ts))})` : '';
         showToast(`Ubicación del alumno cargada${freshness}.`, 'safe');
       } else {
         // Fallback defensivo: esto no debería ocurrir porque el botón se oculta sin live data
