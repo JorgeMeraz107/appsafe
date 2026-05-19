@@ -3493,7 +3493,8 @@
                 onclick="viewZoneOnMap('home')">Ver</button>
             </div>
             <div class="sensor-value" id="home-distance">—</div>
-            <div class="safe-zone-status sz-pending" id="home-status">No definido</div>
+            <div class="sensor-sub" id="home-coords-display" style="font-size:10px; opacity:0.6; margin-top:2px;">No configurado</div>
+            <div class="safe-zone-status sz-pending" id="home-status" style="margin-top:4px;">No definido</div>
           </div>
 
           <div class="sensor-card info" id="safe-zone-school-card">
@@ -3504,7 +3505,8 @@
                 onclick="viewZoneOnMap('school')">Ver</button>
             </div>
             <div class="sensor-value" id="school-distance">—</div>
-            <div class="safe-zone-status sz-pending" id="school-status">No definido</div>
+            <div class="sensor-sub" id="school-coords-display" style="font-size:10px; opacity:0.6; margin-top:2px;">No configurado</div>
+            <div class="safe-zone-status sz-pending" id="school-status" style="margin-top:4px;">No definido</div>
           </div>
 
           <!-- Movimiento -->
@@ -7578,6 +7580,7 @@
         const distEl = document.getElementById(`${z.id}-distance`);
         const statusEl = document.getElementById(`${z.id}-status`);
         const cardEl = document.getElementById(`safe-zone-${z.id}-card`);
+        const coordsEl = document.getElementById(`${z.id}-coords-display`);
 
         if (!distEl || !statusEl) return;
 
@@ -7585,10 +7588,12 @@
           distEl.textContent = '—';
           statusEl.textContent = 'No definido';
           statusEl.className = 'safe-zone-status sz-pending';
+          if (coordsEl) coordsEl.textContent = 'No configurado';
           return;
         }
 
         configuredZones++;
+        if (coordsEl) coordsEl.textContent = `📍 ${z.lat.toFixed(4)}, ${z.lng.toFixed(4)}`;
 
         // Si la zona está configurada pero no hay ubicación en vivo del alumno
         if (!live || live.lat == null) {
