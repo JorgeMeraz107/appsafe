@@ -3498,7 +3498,7 @@
 
           <div class="sensor-card info" id="safe-zone-school-card">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-              <div class="sensor-label">Escuela</div>
+              <div class="sensor-label">Colegio</div>
               <button class="btn btn-ghost"
                 style="height:22px;padding:0 6px;font-size:9px;border:1px solid var(--border);border-radius:6px;"
                 onclick="viewZoneOnMap('school')">Ver</button>
@@ -7569,7 +7569,7 @@
 
       const zones = [
         { id: 'home', lat: s.homeLat, lng: s.homeLng, name: 'Hogar' },
-        { id: 'school', lat: s.schoolLat, lng: s.schoolLng, name: 'Escuela' }
+        { id: 'school', lat: s.schoolLat, lng: s.schoolLng, name: 'Colegio' }
       ];
 
       let configuredZones = 0;
@@ -7590,7 +7590,13 @@
 
         configuredZones++;
 
-        if (live && live.lat != null) {
+        // Si la zona está configurada pero no hay ubicación en vivo del alumno
+        if (!live || live.lat == null) {
+          distEl.textContent = '—';
+          statusEl.textContent = 'Sin señal';
+          statusEl.className = 'safe-zone-status sz-pending';
+          if (cardEl) cardEl.style.border = '1px solid var(--border)';
+        } else {
           const d = haversine(live.lat, live.lng, z.lat, z.lng);
           distEl.textContent = d < 1000 ? `${Math.round(d)}m` : `${(d / 1000).toFixed(1)}km`;
 
