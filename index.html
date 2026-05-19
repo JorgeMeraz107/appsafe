@@ -4653,43 +4653,7 @@
         <!-- Mensajes cargados dinámicamente -->
       </div>
       
-      <!-- Emojis Rápidos de Seguridad y Estado -->
-      <div class="chat-emoji-bar" style="display: flex; gap: 8px; padding: 8px 12px; background: var(--bg-card); border-top: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; align-items: center;">
-        <style>
-          .chat-emoji-bar::-webkit-scrollbar { display: none; }
-          .emoji-btn {
-            background: var(--bg-body, #1e293b);
-            border: 1px solid var(--border, #334155);
-            border-radius: 20px;
-            padding: 6px 14px;
-            font-size: 13px;
-            color: var(--text-main, #f8fafc);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            white-space: nowrap;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            font-family: inherit;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-          }
-          .emoji-btn:hover {
-            background: var(--border, #475569) !important;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-          }
-          .emoji-btn:active {
-            transform: translateY(0) scale(0.95);
-          }
-        </style>
-        <button onclick="insertEmoji('👍')" class="emoji-btn">👍 Entendido</button>
-        <button onclick="insertEmoji('❤️')" class="emoji-btn">❤️ Te quiero</button>
-        <button onclick="insertEmoji('📍')" class="emoji-btn">📍 ¿Dónde estás?</button>
-        <button onclick="insertEmoji('🚗')" class="emoji-btn">🚗 Voy por ti</button>
-        <button onclick="insertEmoji('🏠')" class="emoji-btn">🏠 Te espero en casa</button>
-        <button onclick="insertEmoji('⚠️')" class="emoji-btn">⚠️ Ten cuidado</button>
-        <button onclick="insertEmoji('📞')" class="emoji-btn">📞 Llámame</button>
-      </div>
+
       <div class="chat-input-bar">
         <input type="text" id="chat-input-field" class="chat-input" placeholder="Escribe un mensaje..." onkeypress="if(event.key==='Enter') sendChatMsg()">
         <button class="chat-send-btn" onclick="sendChatMsg()">
