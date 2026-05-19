@@ -9057,6 +9057,11 @@
     function decryptChatE2E(base64text) {
       if (!base64text) return "";
       try {
+        const base64Regex = /^[A-Za-z0-9+/=]+$/;
+        if (base64text.includes(" ") || !base64Regex.test(base64text) || base64text.length < 4) {
+          return base64text;
+        }
+
         const binary = atob(base64text);
         const bytes = new Uint8Array(binary.length);
         for (let i = 0; i < binary.length; i++) {
@@ -9067,9 +9072,19 @@
           xorBytes[i] = bytes[i] ^ E2E_SECRET_KEY.charCodeAt(i % E2E_SECRET_KEY.length);
         }
         const decoder = new TextDecoder();
-        return decoder.decode(xorBytes);
+        const decrypted = decoder.decode(xorBytes);
+
+        const controlCharRegex = /[\x00-\x08\x0E-\x1F\x7F-\x9F]/;
+        if (controlCharRegex.test(decrypted)) {
+          return "🔒 Mensaje cifrado (abre la app nuevamente para sincronizar)";
+        }
+
+        return decrypted;
       } catch (e) {
-        // Fallback por si el mensaje era plano o falló
+        const base64Regex = /^[A-Za-z0-9+/=]+$/;
+        if (!base64text.includes(" ") && base64Regex.test(base64text) && base64text.length >= 4) {
+          return "🔒 Mensaje cifrado (abre la app nuevamente para sincronizar)";
+        }
         return base64text;
       }
     }
