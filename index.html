@@ -4811,11 +4811,12 @@
         'login_welcome.mp3', 'nav_tab.mp3', 'nav_page.mp3', 'ai_magic.mp3',
         'call_dial.mp3', 'sos_alarm.mp3', 'save_done.mp3',
         'save_error.mp3', 'panel_in.mp3', 'panel_out.mp3',
-        'alert_pop.mp3', 'alert_new.mp3', 'modal_open.mp3', 'modal_warn.mp3'
+        'alert_pop.mp3', 'alert_new.mp3', 'modal_open.mp3', 'modal_warn.mp3',
+        'sos_cancelled.wav'
       ],
       init() {
         this.files.forEach(file => {
-          const name = file.replace('.mp3', '');
+          const name = file.replace('.mp3', '').replace('.wav', '');
           this.sounds[name] = new Audio(`sounds/${file}`);
           this.sounds[name].preload = 'auto';
           if (name === 'sos_alarm') this.sounds[name].loop = true;
@@ -6209,6 +6210,10 @@
       if (window.app_updateStudentLiveFS) {
         window.app_updateStudentLiveFS(emergencyChildId, { sos: false }).catch(e => console.warn("No se pudo limpiar SOS en vivo:", e));
       }
+      
+      // Detener alarma y reproducir confirmación de alivio
+      SS_SoundManager.stop('sos_alarm');
+      SS_SoundManager.play('sos_cancelled');
 
       showToast('Alerta SOS descartada.', 'safe');
       closeModal();
@@ -8887,6 +8892,7 @@
                           title: `SOS ACTIVADO: ${students[childId]?.name || 'Tu hijo'}`,
                           body: 'Toca aquí para ver ubicación y llamar'
                         });
+                        SS_SoundManager.play('sos_alarm');
                         VoiceAssistant.speak(`¡Alerta! SOS activado por ${students[childId]?.name || 'tu hijo'}.`, 'high');
                         if (currentScreen !== 'emergency' || emergencyChildId !== childId) {
                           navigateTo('emergency', { id: childId });
@@ -8895,6 +8901,10 @@
                         // Primera carga: SOS sigue activo y no fue descartado aún
                         navigateTo('emergency', { id: childId });
                       }
+                    } else if (prevLive && prevLive.sos && liveInfo && !liveInfo.sos) {
+                      // El hijo canceló el SOS
+                      SS_SoundManager.stop('sos_alarm');
+                      SS_SoundManager.play('sos_cancelled');
                     }
 
                     if (liveInfo && liveInfo.impact && !prevLive.impact) {
