@@ -4812,7 +4812,9 @@
         'call_dial.mp3', 'sos_alarm.mp3', 'save_done.mp3',
         'save_error.mp3', 'panel_in.mp3', 'panel_out.mp3',
         'alert_pop.mp3', 'alert_new.mp3', 'modal_open.mp3', 'modal_warn.mp3',
-        'sos_cancelled.wav'
+        'sos_cancelled.wav', 'checkin_sent.wav', 'impact_detected.wav',
+        'link_success.wav', 'smart_alert.wav', 'sos_activated.wav',
+        'zone_exit.wav', 'zone_home_enter.wav', 'zone_school_enter.wav'
       ],
       init() {
         this.files.forEach(file => {
@@ -8910,6 +8912,7 @@
                     if (liveInfo && liveInfo.impact && !prevLive.impact) {
                       sendPushNotification({ type: 'impact', title: `IMPACTO FUERTE DETECTADO`, body: `${students[childId]?.name || 'Tu hijo'} registró un golpe.` });
                       VoiceAssistant.speak(`Aviso: Se ha detectado un impacto en el dispositivo de ${students[childId]?.name || 'tu hijo'}.`, 'high');
+                      SS_SoundManager.play('impact_detected');
                     }
 
                     if (currentStudentId == childId && currentScreen === 'student') {
@@ -8953,8 +8956,26 @@
               if (newCritical) {
                 showToast(`${newCritical.title}`, 'danger');
                 if (window.AudioController) AudioController.playSOS();
+                SS_SoundManager.play('sos_alarm');
               } else if (newGeneric) {
-                if (window.AudioController) AudioController.playNotification();
+                // Play specific audio files based on notification type
+                if (newGeneric.type === 'checkin') {
+                  SS_SoundManager.play('checkin_sent');
+                } else if (newGeneric.type === 'smart_alert' || newGeneric.type === 'silent_sos') {
+                  SS_SoundManager.play('smart_alert');
+                } else if (newGeneric.type === 'safe') {
+                  if (newGeneric.body && newGeneric.body.includes('Casa')) {
+                    SS_SoundManager.play('zone_home_enter');
+                  } else if (newGeneric.body && newGeneric.body.includes('Escuela')) {
+                    SS_SoundManager.play('zone_school_enter');
+                  } else {
+                    SS_SoundManager.play('alert_pop');
+                  }
+                } else if (newGeneric.type === 'zone_exit') {
+                  SS_SoundManager.play('zone_exit');
+                } else {
+                  SS_SoundManager.play('alert_pop');
+                }
 
                 // Intelligent Voice for Geofences
                 if (newGeneric.type === 'checkin' || newGeneric.type === 'safe') {
