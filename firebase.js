@@ -344,13 +344,24 @@ export async function updateStudentLiveFS(studentId, data) {
 export function subscribeNotifications(uid, onChange, onError) {
     const q = query(
         collection(db, "notifications"),
-        where("parentid", "==", uid),
-        orderBy("ts", "desc"),
-        limit(50)
+        where("parentid", "==", uid)
     );
     return onSnapshot(q, snap => {
-        const notifs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        onChange(notifs);
+        const notifs = snap.docs.map(d => {
+            const data = d.data();
+            return { id: d.id, ...data };
+        });
+
+        // Ordenar por fecha (ts) de forma descendente en memoria local
+        notifs.sort((a, b) => {
+            const tsA = a.ts?.toMillis ? a.ts.toMillis() : (a.ts instanceof Date ? a.ts.getTime() : (Number(a.ts) || 0));
+            const tsB = b.ts?.toMillis ? b.ts.toMillis() : (b.ts instanceof Date ? b.ts.getTime() : (Number(b.ts) || 0));
+            return tsB - tsA;
+        });
+
+        // Limitar a los últimos 50 para mantener la app ligera
+        const limited = notifs.slice(0, 50);
+        onChange(limited);
     }, err => {
         if (onError) onError(err);
         else console.error("Error en subscribeNotifications:", err);
@@ -446,7 +457,7 @@ export async function sendChatMessage(studentId, sender, text) {
    ═══════════════════════════════════════════════════════════════ */
 export { auth, db };
 
-// Exponer funciones críticas para gemini-service.js
+// Exponer funciones críticas para gemini-service.js y sincronización manual
 window.ss_firebase = {
     db,
     auth,
@@ -455,5 +466,8 @@ window.ss_firebase = {
     subscribeStudentLive,
     markAllNotificationsRead,
     subscribeToChat,
-    sendChatMessage
+    sendChatMessage,
+    getStudentsFS,
+    getStudentLiveFS,
+    updateStudentLiveFS
 };

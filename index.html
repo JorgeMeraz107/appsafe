@@ -6130,13 +6130,64 @@
     /* ═══════════════════════════════════════
        MAPA DE EMERGENCIA — Google Maps iframe
     ═══════════════════════════════════════ */
-    function initEmergencyMap() {
-      const student = students[emergencyChildId];
+    let emergencyMapRetryCount = 0;
+    async function initEmergencyMap() {
+      // 1. Intentar cargar desde el objeto 'students' en memoria
+      let student = students[emergencyChildId];
+
+      // 2. Si no está en memoria, intentar leer de la caché de localStorage
       if (!student) {
-        showToast('No se encontró información del alumno');
-        goBack();
-        return;
+        try {
+          const cachedStudentsRaw = localStorage.getItem('ss_students_v1');
+          if (cachedStudentsRaw) {
+            const cachedStudents = JSON.parse(cachedStudentsRaw);
+            if (cachedStudents && cachedStudents[emergencyChildId]) {
+              student = cachedStudents[emergencyChildId];
+              // Actualizar localmente para futuros usos
+              students[emergencyChildId] = student;
+            }
+          }
+        } catch (e) {
+          console.warn("Error leyendo caché de alumnos:", e);
+        }
       }
+
+      // 3. Si sigue sin encontrarse y hay conexión, intentar un fetch directo rápido de Firestore
+      if (!student && window.ss_firebase && window.ss_firebase.getStudentsFS) {
+        try {
+          console.log("Direct fetch attempt for students list to resolve race condition...");
+          const user = window.ss_firebase.auth.currentUser;
+          if (user) {
+            const freshStudents = await window.ss_firebase.getStudentsFS(user.uid);
+            if (freshStudents && freshStudents[emergencyChildId]) {
+              students = freshStudents;
+              localStorage.setItem('ss_students_v1', JSON.stringify(students));
+              student = students[emergencyChildId];
+            }
+          }
+        } catch (err) {
+          console.warn("Direct fetch for students failed:", err);
+        }
+      }
+
+      // 4. Si aún no está cargado, mostrar un toast amigable y reintentar en 1.5s (solo una vez)
+      if (!student) {
+        if (emergencyMapRetryCount < 1) {
+          emergencyMapRetryCount++;
+          showToast('Cargando datos del alumno...', 'info');
+          setTimeout(initEmergencyMap, 1500);
+          return;
+        } else {
+          // Si ya falló el reintento, mostrar error fatal y volver
+          emergencyMapRetryCount = 0;
+          showToast('No se encontró información del alumno');
+          goBack();
+          return;
+        }
+      }
+
+      // Resetear contador tras éxito
+      emergencyMapRetryCount = 0;
 
       // Populate UI
       const nameEl = document.getElementById('emergency-name');
@@ -6157,6 +6208,56 @@
       const iframe = document.getElementById('em-gmap');
       const loading = document.getElementById('em-map-loading');
       if (!iframe) return;
+
+      // Utilidad para extraer ms
+      function getTimestampMs(ts) {
+        if (!ts) return 0;
+        if (ts.toMillis) return ts.toMillis();
+        if (ts.seconds) return ts.seconds * 1000;
+        if (ts.toDate) return ts.toDate().getTime();
+        const num = Number(ts);
+        if (!isNaN(num) && num > 0) return num;
+        const d = new Date(ts);
+        if (!isNaN(d.getTime())) return d.getTime();
+        return 0;
+      }
+
+      // Controlar Badge de SOS Activo / Sin Señal Reciente si los datos están desactualizados (> 5 mins)
+      const badgeEl = document.querySelector('.emergency-sos-badge');
+      const pulseRings = document.querySelectorAll('.emergency-student-section .pulse-ring');
+      
+      if (data) {
+        const tsMs = getTimestampMs(data.ts);
+        const ageMs = Date.now() - tsMs;
+        const isStale = tsMs > 0 && ageMs > 300000; // más de 5 minutos
+
+        if (badgeEl) {
+          if (isStale) {
+            badgeEl.textContent = "SIN SEÑAL RECIENTE";
+            badgeEl.style.background = "#F59E0B"; // Color ámbar premium
+            badgeEl.style.borderColor = "#D97706";
+            badgeEl.style.boxShadow = "0 0 12px rgba(245, 158, 11, 0.4)";
+            
+            // Calmar animación de pulso
+            pulseRings.forEach(ring => {
+              ring.style.animation = "none";
+              ring.style.border = "1px solid rgba(245, 158, 11, 0.2)";
+            });
+          } else {
+            badgeEl.textContent = "SOS ACTIVO";
+            badgeEl.style.background = ""; // Restaurar estilos CSS originales
+            badgeEl.style.borderColor = "";
+            badgeEl.style.boxShadow = "";
+            
+            // Reactivar animación de pulso
+            pulseRings.forEach((ring, idx) => {
+              ring.style.animation = `pulse-ring 3s cubic-bezier(0.215, 0.61, 0.355, 1) infinite`;
+              ring.style.animationDelay = `${idx * 0.8}s`;
+              ring.style.border = "";
+            });
+          }
+        }
+      }
 
       if (data && data.lat != null) {
         iframe.src = `https://maps.google.com/maps?q=${data.lat},${data.lng}&z=17&output=embed&hl=es`;
@@ -8832,6 +8933,49 @@
       // IA: Cargar consejo del día
       setTimeout(() => loadSafetyTip(), 2000);
 
+      // ──── PWA Foreground Sync (visibilitychange) ──────────────────
+      // Cuando el sistema operativo suspende la app PWA, la conexión Firestore
+      // puede tardar hasta 60s en reconectarse. Este listener fuerza una
+      // sincronización inmediata al volver al primer plano.
+      document.addEventListener('visibilitychange', async () => {
+        if (document.visibilityState === 'visible') {
+          console.log("📱 App volvió al primer plano — forzando sincronización inmediata...");
+          try {
+            const fb = window.ss_firebase;
+            if (!fb || !fb.auth || !fb.auth.currentUser) return;
+            const uid = fb.auth.currentUser.uid;
+
+            // Re-fetch de alumnos
+            if (fb.getStudentsFS) {
+              const freshStudents = await fb.getStudentsFS(uid);
+              if (freshStudents) {
+                students = freshStudents;
+                localStorage.setItem('ss_students_v1', JSON.stringify(students));
+                renderHomeScreen();
+              }
+            }
+
+            // Re-fetch de datos en vivo de cada alumno
+            if (fb.getStudentLiveFS) {
+              for (const childId of Object.keys(students)) {
+                try {
+                  const freshLive = await fb.getStudentLiveFS(childId);
+                  if (freshLive) {
+                    liveData[childId] = freshLive;
+                  }
+                } catch (e) {
+                  console.warn(`Error al re-fetch live data para ${childId}:`, e);
+                }
+              }
+              renderHomeScreen();
+              if (currentScreen === 'student') updateSensors();
+              if (currentScreen === 'emergency') initEmergencyMap();
+            }
+          } catch (err) {
+            console.warn("Error en foreground sync:", err);
+          }
+        }
+      });
 
       // ──── Firebase: Sesión persistente ───────────────────────────
       onAuthChange(async user => {
@@ -8911,8 +9055,9 @@
 
                     if (liveInfo && liveInfo.impact && !prevLive.impact) {
                       sendPushNotification({ type: 'impact', title: `IMPACTO FUERTE DETECTADO`, body: `${students[childId]?.name || 'Tu hijo'} registró un golpe.` });
+                      // VoiceAssistant OK para informar al padre, pero el sonido de impacto es del alumno
                       VoiceAssistant.speak(`Aviso: Se ha detectado un impacto en el dispositivo de ${students[childId]?.name || 'tu hijo'}.`, 'high');
-                      SS_SoundManager.play('impact_detected');
+                      SS_SoundManager.play('alert_pop'); // Sonido neutro de alerta para el padre
                     }
 
                     if (currentStudentId == childId && currentScreen === 'student') {
@@ -8958,27 +9103,25 @@
                 if (window.AudioController) AudioController.playSOS();
                 SS_SoundManager.play('sos_alarm');
               } else if (newGeneric) {
-                // Play specific audio files based on notification type
+                // ─────────────────────────────────────────────────────────
+                // NOTA: Los sonidos zone_home_enter / zone_school_enter /
+                // zone_exit e impact_detected son EXCLUSIVOS de la app del
+                // alumno. El padre recibe un alert_pop neutro para no
+                // confundir al usuario con sonidos que pertenecen al hijo.
+                // ─────────────────────────────────────────────────────────
                 if (newGeneric.type === 'checkin') {
                   SS_SoundManager.play('checkin_sent');
                 } else if (newGeneric.type === 'smart_alert' || newGeneric.type === 'silent_sos') {
                   SS_SoundManager.play('smart_alert');
-                } else if (newGeneric.type === 'safe') {
-                  if (newGeneric.body && newGeneric.body.includes('Casa')) {
-                    SS_SoundManager.play('zone_home_enter');
-                  } else if (newGeneric.body && newGeneric.body.includes('Escuela')) {
-                    SS_SoundManager.play('zone_school_enter');
-                  } else {
-                    SS_SoundManager.play('alert_pop');
-                  }
-                } else if (newGeneric.type === 'zone_exit') {
-                  SS_SoundManager.play('zone_exit');
                 } else {
+                  // Todos los demás (safe / zone_exit / zone_enter / genérico)
+                  // usan alert_pop. Los sonidos de zona son solo para el alumno.
                   SS_SoundManager.play('alert_pop');
                 }
 
-                // Intelligent Voice for Geofences
-                if (newGeneric.type === 'checkin' || newGeneric.type === 'safe') {
+                // El asistente de voz solo habla para check-ins y smart alerts
+                // (no para zonas — esas voces suenan en el dispositivo del alumno)
+                if (newGeneric.type === 'checkin' || newGeneric.type === 'smart_alert') {
                   VoiceAssistant.speak(newGeneric.body || newGeneric.title);
                 }
               }
