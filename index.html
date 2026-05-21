@@ -8767,6 +8767,9 @@
     ═══════════════════════════════════════ */
     const TutorialController = {
       step: 0,
+      active: false,                   // ← flag para saber si el tutorial está abierto
+      pendingEmergency: null,          // childId con SOS pendiente durante tutorial
+      pendingAlertSound: null,         // nombre del sonido pendiente durante tutorial
       steps: [
         { title: '¡Bienvenido!', body: 'Esta es tu central de seguridad. Vamos a darte un breve recorrido por las funciones clave.', target: null },
         { title: 'Notificaciones Rápidas', body: 'Aquí podrás ver las últimas alertas sin salir de donde estés.', target: '#top-notif-btn' },
@@ -8780,6 +8783,9 @@
       start() {
         if (currentScreen !== 'home') navigateTo('home');
         this.step = 0;
+        this.active = true;            // ← marcar tutorial como activo
+        this.pendingEmergency = null;
+        this.pendingAlertSound = null;
         document.getElementById('tutorial-overlay').classList.add('active');
         this.render();
       },
@@ -8861,12 +8867,29 @@
         this.finish();
       },
       async finish() {
+        this.active = false;           // ← marcar tutorial como inactivo
         document.getElementById('tutorial-overlay').classList.remove('active');
         const u = currentUser();
         if (u && window.app_setTutorialSeenFS) {
           await window.app_setTutorialSeenFS(u.uid);
           currentParentProfile.tutorialSeen = true;
           navigateTo('home');
+        }
+
+        // Procesar alertas que llegaron mientras el tutorial estaba abierto
+        if (this.pendingEmergency) {
+          const childId = this.pendingEmergency;
+          this.pendingEmergency = null;
+          showToast(`⚠️ SOS pendiente de ${students[childId]?.name || 'tu hijo'} — revisa la pantalla de emergencia`, 'danger');
+          setTimeout(() => {
+            SS_SoundManager.play('sos_alarm');
+            VoiceAssistant.speak(`Atención. Hay un SOS activo de ${students[childId]?.name || 'tu hijo'}.`, 'high');
+            navigateTo('emergency', { id: childId });
+          }, 500);
+        } else if (this.pendingAlertSound) {
+          const sound = this.pendingAlertSound;
+          this.pendingAlertSound = null;
+          setTimeout(() => SS_SoundManager.play(sound), 300);
         }
       }
     };
@@ -9038,14 +9061,23 @@
                           title: `SOS ACTIVADO: ${students[childId]?.name || 'Tu hijo'}`,
                           body: 'Toca aquí para ver ubicación y llamar'
                         });
-                        SS_SoundManager.play('sos_alarm');
-                        VoiceAssistant.speak(`¡Alerta! SOS activado por ${students[childId]?.name || 'tu hijo'}.`, 'high');
-                        if (currentScreen !== 'emergency' || emergencyChildId !== childId) {
-                          navigateTo('emergency', { id: childId });
+                        if (TutorialController.active) {
+                          // Tutorial abierto: encolar SOS para procesar al cerrar
+                          TutorialController.pendingEmergency = childId;
+                        } else {
+                          SS_SoundManager.play('sos_alarm');
+                          VoiceAssistant.speak(`¡Alerta! SOS activado por ${students[childId]?.name || 'tu hijo'}.`, 'high');
+                          if (currentScreen !== 'emergency' || emergencyChildId !== childId) {
+                            navigateTo('emergency', { id: childId });
+                          }
                         }
                       } else if (!alreadyDismissed && currentScreen !== 'emergency') {
                         // Primera carga: SOS sigue activo y no fue descartado aún
-                        navigateTo('emergency', { id: childId });
+                        if (!TutorialController.active) {
+                          navigateTo('emergency', { id: childId });
+                        } else {
+                          TutorialController.pendingEmergency = childId;
+                        }
                       }
                     } else if (prevLive && prevLive.sos && liveInfo && !liveInfo.sos) {
                       // El hijo canceló el SOS
@@ -9100,8 +9132,13 @@
 
               if (newCritical) {
                 showToast(`${newCritical.title}`, 'danger');
-                if (window.AudioController) AudioController.playSOS();
-                SS_SoundManager.play('sos_alarm');
+                if (!TutorialController.active) {
+                  if (window.AudioController) AudioController.playSOS();
+                  SS_SoundManager.play('sos_alarm');
+                } else {
+                  // Guardar en cola para cuando termine el tutorial
+                  TutorialController.pendingAlertSound = 'sos_alarm';
+                }
               } else if (newGeneric) {
                 // ─────────────────────────────────────────────────────────
                 // NOTA: Los sonidos zone_home_enter / zone_school_enter /
@@ -9109,20 +9146,21 @@
                 // alumno. El padre recibe un alert_pop neutro para no
                 // confundir al usuario con sonidos que pertenecen al hijo.
                 // ─────────────────────────────────────────────────────────
-                if (newGeneric.type === 'checkin') {
-                  SS_SoundManager.play('checkin_sent');
-                } else if (newGeneric.type === 'smart_alert' || newGeneric.type === 'silent_sos') {
-                  SS_SoundManager.play('smart_alert');
-                } else {
-                  // Todos los demás (safe / zone_exit / zone_enter / genérico)
-                  // usan alert_pop. Los sonidos de zona son solo para el alumno.
-                  SS_SoundManager.play('alert_pop');
-                }
+                // Mientras el tutorial esté activo, silenciar sonidos genéricos
+                // para no confundir al usuario en su primera experiencia.
+                if (!TutorialController.active) {
+                  if (newGeneric.type === 'checkin') {
+                    SS_SoundManager.play('checkin_sent');
+                  } else if (newGeneric.type === 'smart_alert' || newGeneric.type === 'silent_sos') {
+                    SS_SoundManager.play('smart_alert');
+                  } else {
+                    SS_SoundManager.play('alert_pop');
+                  }
 
-                // El asistente de voz solo habla para check-ins y smart alerts
-                // (no para zonas — esas voces suenan en el dispositivo del alumno)
-                if (newGeneric.type === 'checkin' || newGeneric.type === 'smart_alert') {
-                  VoiceAssistant.speak(newGeneric.body || newGeneric.title);
+                  // El asistente de voz solo habla para check-ins y smart alerts
+                  if (newGeneric.type === 'checkin' || newGeneric.type === 'smart_alert') {
+                    VoiceAssistant.speak(newGeneric.body || newGeneric.title);
+                  }
                 }
               }
             }, (err) => {
