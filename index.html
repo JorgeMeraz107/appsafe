@@ -5401,7 +5401,12 @@
         setTimeout(loadParentMap, 100);
       }
       if (screen === 'emergency') {
-        if (data.id) emergencyChildId = data.id;
+        if (data.id) {
+          emergencyChildId = data.id;
+        } else if (!emergencyChildId || !students[emergencyChildId]) {
+          const inDanger = Object.keys(students).find(id => students[id].status === 'danger' || (liveData[id] && liveData[id].sos));
+          emergencyChildId = inDanger || Object.keys(students)[0];
+        }
         if (nav) nav.style.display = 'none';
         startEmTimer();
         setTimeout(initEmergencyMap, 100);
@@ -8001,6 +8006,14 @@
       if (type === 'danger') t.classList.add('toast-danger');
       if (type === 'warn') t.classList.add('toast-warn');
 
+      t.onclick = null;
+      if (type === 'danger') {
+        t.onclick = () => {
+          t.classList.remove('show');
+          navigateTo('emergency');
+        };
+      }
+
       t.classList.add('show');
       if (toastTimeout) clearTimeout(toastTimeout);
       toastTimeout = setTimeout(() => t.classList.remove('show'), 4000);
@@ -9079,10 +9092,12 @@
                           TutorialController.pendingEmergency = childId;
                         }
                       }
-                    } else if (prevLive && prevLive.sos && liveInfo && !liveInfo.sos) {
+                    } else if (prevLive && prevLive.sos && (!liveInfo || !liveInfo.sos)) {
                       // El hijo canceló el SOS
                       SS_SoundManager.stop('sos_alarm');
                       SS_SoundManager.play('sos_cancelled');
+                      const dismissedKey = `ss_sos_dismissed_${childId}_${prevLive.sosTs || 'active'}`;
+                      localStorage.removeItem(dismissedKey);
                     }
 
                     if (liveInfo && liveInfo.impact && !prevLive.impact) {
