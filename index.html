@@ -5090,8 +5090,8 @@
       }
 
       showConfirm({
-        title: 'Vaciar todas las notificaciones',
-        sub: '¿Estás seguro de que quieres limpiar y eliminar todas las notificaciones? Esto vaciará toda la lista y los contadores por completo.',
+        title: 'Vaciar notificaciones',
+        sub: '¿Estás seguro de que deseas eliminar todas las notificaciones? Esta acción vaciará la lista y restablecerá los contadores.',
         okText: 'Vaciar todo',
         onOk: () => {
           localStorage.setItem('last_seen_notifs', Date.now().toString());
@@ -5341,7 +5341,7 @@
       SS_SoundManager.play('panel_out');
       showConfirm({
         title: 'Vaciar notificaciones',
-        sub: '¿Estás seguro de que quieres limpiar y eliminar todas las notificaciones? Esta acción vaciará el panel por completo y de forma real.',
+        sub: '¿Estás seguro de que deseas eliminar todas las notificaciones? Esta acción vaciará la lista y restablecerá los contadores.',
         okText: 'Vaciar todo',
         onOk: () => {
           localStorage.setItem('last_seen_notifs', Date.now().toString());
