@@ -5049,6 +5049,7 @@
     // Notifications state
     let notifications = [];
     let unsubNotifs = null;
+    let currentAlertFilter = 'Todos';
     function getMillis(val) {
       if (!val) return 0;
       if (typeof val.toMillis === 'function') return val.toMillis();
@@ -5098,8 +5099,9 @@
 
           const dismissed = getDismissedAlerts();
           all.forEach(ev => {
-            if (!dismissed.includes(ev._stableId.toString())) {
-              dismissed.push(ev._stableId.toString());
+            const sid = String(ev._stableId || ev.id);
+            if (!dismissed.includes(sid)) {
+              dismissed.push(sid);
             }
           });
           localStorage.setItem('ss_dismissed_alerts_v1', JSON.stringify(dismissed));
@@ -5110,9 +5112,26 @@
             window.ss_firebase.markAllNotificationsRead(u.uid).catch(() => {});
           }
 
+          notifications = [];
+
+          // Cerrar el panel flotante si está abierto
+          document.getElementById('notif-panel')?.classList.remove('open');
+          document.getElementById('notif-backdrop')?.classList.remove('open');
+
+          // Restablecer filtro de categoría de alertas a "Todos"
+          currentAlertFilter = 'Todos';
+          const tabsContainer = document.querySelector('#screen-alerts .filter-tabs');
+          if (tabsContainer) {
+            tabsContainer.querySelectorAll('.filter-tab').forEach(t => {
+              if (t.textContent.trim() === 'Todos') t.classList.add('active');
+              else t.classList.remove('active');
+            });
+          }
+
           SS_SoundManager.play('save_success');
           renderNotifications();
           renderAlertsScreen();
+          renderHomeScreen();
           showToast('Notificaciones vaciadas correctamente');
         }
       });
@@ -5338,32 +5357,7 @@
     }
 
     function clearAllNotifs() {
-      SS_SoundManager.play('panel_out');
-      showConfirm({
-        title: 'Vaciar notificaciones',
-        sub: '¿Estás seguro de que deseas eliminar todas las notificaciones? Esta acción vaciará la lista y restablecerá los contadores.',
-        okText: 'Vaciar todo',
-        onOk: () => {
-          localStorage.setItem('last_seen_notifs', Date.now().toString());
-
-          // VACIAR DE FORMA REAL (Descartar todas las actuales)
-          const all = getAllHistoryEvents();
-          if (all.length > 0) {
-            const dismissed = getDismissedAlerts();
-            all.forEach(ev => {
-              const sid = String(ev._stableId);
-              if (!dismissed.includes(sid)) {
-                dismissed.push(sid);
-              }
-            });
-            localStorage.setItem('ss_dismissed_alerts_v1', JSON.stringify(dismissed));
-          }
-
-          renderNotifications();
-          if (currentScreen === 'alerts') renderAlertsScreen();
-          showToast('Notificaciones vaciadas correctamente');
-        }
-      });
+      clearAllNotifications();
     }
 
     function markAllAlertsRead() {
@@ -6003,12 +5997,30 @@
         if (bannerSub) bannerSub.textContent = 'Todo está bajo control';
       }
 
-      if (allEvents.length === 0) {
+      // Aplicar filtro de categorías
+      let filteredEvents = allEvents;
+      if (currentAlertFilter === 'SOS') {
+        filteredEvents = allEvents.filter(ev => ev.type === 'sos' || ev.type === 'silent_sos');
+      } else if (currentAlertFilter === 'Zona') {
+        filteredEvents = allEvents.filter(ev => ev.type === 'checkin' || ev.type === 'smart_alert' || ev.type === 'gps_off' || ev.type === 'gps_on');
+      } else if (currentAlertFilter === 'Impacto') {
+        filteredEvents = allEvents.filter(ev => ev.type === 'impact');
+      } else if (currentAlertFilter === 'Batería') {
+        filteredEvents = allEvents.filter(ev => ev.type === 'battery');
+      }
+
+      if (filteredEvents.length === 0) {
+        let emptyMsg = "No hay alertas recientes";
+        if (currentAlertFilter === 'SOS') emptyMsg = "No hay alertas de SOS";
+        else if (currentAlertFilter === 'Zona') emptyMsg = "No hay alertas de geocercas o GPS";
+        else if (currentAlertFilter === 'Impacto') emptyMsg = "No hay alertas de impacto o accidentes";
+        else if (currentAlertFilter === 'Batería') emptyMsg = "No hay alertas de batería baja";
+
         container.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--text-3);">
           <div style="margin-bottom:12px;opacity:0.5;display:flex;justify-content:center;">
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13.73 21a2 2 0 0 1-3.46 0"/><path d="M18.63 13A17.89 17.89 0 0 1 18 8"/><path d="M6.26 6.26A5.86 5.86 0 0 0 6 8c0 7-3 9-3 9h14"/><path d="M18 8a6 6 0 0 0-9.33-5"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
           </div>
-          <div style="font-size:14px;font-weight:500;">No hay alertas recientes</div>
+          <div style="font-size:14px;font-weight:500;">${emptyMsg}</div>
         </div>`;
         return;
       }
@@ -6027,7 +6039,7 @@
         gps_on: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>'
       };
       const defaultIcon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>';
-      container.innerHTML = allEvents.map(ev => {
+      container.innerHTML = filteredEvents.map(ev => {
         const color = colors[ev.type] || colors.info;
         const textColor = textColors[ev.type] || 'var(--blue-acc)';
         const icon = icons[ev.type] || defaultIcon;
@@ -6132,7 +6144,10 @@
     function filterMapStudent(id, btn) {
       SS_SoundManager.play('nav_tab');
       activeMapStudent = id;
-      document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+      const container = document.getElementById('map-student-tabs');
+      if (container) {
+        container.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+      }
       if (btn) btn.classList.add('active');
       lastParentMapLat = null;
       loadParentMap();
@@ -6812,10 +6827,15 @@
       const activityList = document.getElementById('home-activity-list');
       if (activityList) {
         let allEvents = [];
+        const dismissed = getDismissedAlerts();
         ids.forEach(childId => {
           const events = historyData[childId] || [];
           events.forEach(ev => {
-            allEvents.push({ ...ev, childId, childName: students[childId]?.name || 'Hijo' });
+            const t = getMillis(ev.ts) || getMillis(ev.serverTs);
+            const evId = String(ev.id || t);
+            if (!dismissed.includes(evId)) {
+              allEvents.push({ ...ev, childId, childName: students[childId]?.name || 'Hijo', _stableId: evId });
+            }
           });
         });
         allEvents.sort((a, b) => {
@@ -8093,6 +8113,8 @@
     function setFilter(el) {
       el.closest('.filter-tabs').querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
       el.classList.add('active');
+      currentAlertFilter = el.textContent.trim();
+      renderAlertsScreen();
     }
 
     /* ═══════════════════════════════════════
