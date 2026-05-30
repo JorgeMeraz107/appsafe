@@ -9175,12 +9175,31 @@
 
           try {
             if (unsubNotifs) unsubNotifs();
+            let isInitialNotifsLoad = true;
             unsubNotifs = subscribeNotifications(user.uid, (data) => {
               const newCritical = data.find(n => n.unread && !notifications.some(old => old.id === n.id) && (n.type === 'sos' || n.type === 'impact'));
               const newGeneric = data.find(n => n.unread && !notifications.some(old => old.id === n.id) && n.type !== 'sos' && n.type !== 'impact');
 
+              // Find new unread notifications that were not in our previous local state
+              const newNotifications = data.filter(n => n.unread && !notifications.some(old => old.id === n.id));
+
               notifications = data;
               renderNotifications();
+
+              // Trigger native browser push notifications for newly arrived ones (skip on initial load to avoid spam)
+              if (!isInitialNotifsLoad) {
+                newNotifications.forEach(n => {
+                  // Skip types that are already handled by subscribeStudentLive (sos, impact, gps_off, gps_on)
+                  const alreadyHandled = ['sos', 'impact', 'gps_off', 'gps_on'].includes(n.type);
+                  if (!alreadyHandled) {
+                    sendPushNotification({
+                      type: n.type || 'info',
+                      title: n.title || 'Alerta de SchoolSafe',
+                      body: n.body || ''
+                    });
+                  }
+                });
+              }
 
               if (newCritical) {
                 showToast(`${newCritical.title}`, 'danger');
@@ -9215,6 +9234,7 @@
                   }
                 }
               }
+              isInitialNotifsLoad = false;
             }, (err) => {
               console.warn("Falta índice de Firestore para notificaciones. Funcionalidad reducida.", err);
             });
