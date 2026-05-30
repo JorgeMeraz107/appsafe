@@ -5084,17 +5084,38 @@
 
     function clearAllNotifications() {
       const all = getAllHistoryEvents();
-      if (all.length === 0) return;
+      if (all.length === 0) {
+        showToast('No hay notificaciones para limpiar');
+        return;
+      }
 
-      const dismissed = getDismissedAlerts();
-      all.forEach(ev => {
-        if (!dismissed.includes(ev._stableId.toString())) {
-          dismissed.push(ev._stableId.toString());
+      showConfirm({
+        title: 'Vaciar todas las notificaciones',
+        sub: '¿Estás seguro de que quieres limpiar y eliminar todas las notificaciones? Esto vaciará toda la lista y los contadores por completo.',
+        okText: 'Vaciar todo',
+        onOk: () => {
+          localStorage.setItem('last_seen_notifs', Date.now().toString());
+
+          const dismissed = getDismissedAlerts();
+          all.forEach(ev => {
+            if (!dismissed.includes(ev._stableId.toString())) {
+              dismissed.push(ev._stableId.toString());
+            }
+          });
+          localStorage.setItem('ss_dismissed_alerts_v1', JSON.stringify(dismissed));
+
+          // Marca leídas en Firestore también
+          const u = currentUser();
+          if (u && window.ss_firebase?.markAllNotificationsRead) {
+            window.ss_firebase.markAllNotificationsRead(u.uid).catch(() => {});
+          }
+
+          SS_SoundManager.play('save_success');
+          renderNotifications();
+          renderAlertsScreen();
+          showToast('Notificaciones vaciadas correctamente');
         }
       });
-      localStorage.setItem('ss_dismissed_alerts_v1', JSON.stringify(dismissed));
-      SS_SoundManager.play('save_success');
-      renderAlertsScreen();
     }
 
     function viewNotificationDetail(stableId) {
